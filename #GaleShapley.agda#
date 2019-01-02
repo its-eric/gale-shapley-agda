@@ -1,0 +1,63 @@
+module GaleShapley where
+
+open import Agda.Builtin.List
+open import Agda.Builtin.String
+open import Data.Maybe
+open import Data.Nat
+open import Data.Bool
+
+record Woman : Set
+record Man : Set
+record Couple : Set
+
+record Woman where
+  inductive
+  field
+    preferenceList : List Man
+    id : ℕ
+    fiancé : Maybe Man
+    hasHusband : Bool
+
+open Woman
+
+record Man where
+  inductive
+  field
+    preferenceList : List Woman
+    id : ℕ
+    fiancée : Maybe Woman
+    wife : Maybe Woman
+
+open Man
+
+w : Woman
+w = record
+      { preferenceList = [] ; id = 0 ; fiancé = nothing ; hasHusband = false }
+
+m : Man
+m = record
+      { preferenceList =  [] ; id = 0 ; fiancée = nothing ; wife = nothing }
+
+l : List Woman
+l = preferenceList m
+
+someId : ℕ
+someId = id w
+
+record Couple where
+  field
+    man : Man
+    woman : Woman
+
+stableMatching : List Couple -> List Couple
+stableMatching = λ c → c
+
+data stableMarriages : List Couple -> Set
+  where
+  
+
+proposeNext : Man  -> List Woman
+  proposeNext man = {!man.pr!}
+
+marry : Set  -> Set
+marry = λ x → {!!}
