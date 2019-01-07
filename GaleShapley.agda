@@ -66,56 +66,64 @@ elemIndex elem xs = ?
 -- Code by @yeputons on Stack Overflow :D
 is-≤ : ℕ → ℕ → Bool
 is-≤ a b with a ≤? b
-... | Dec.yes _ = Bool.true
-... | Dec.no _ = Bool.false
+... | Dec.yes _ = true
+... | Dec.no _ = false
 
-acceptsToMarry : Woman →  Man →  Bool
-acceptsToMarry woman man with fiance woman
-... | just fiance = is-≤ (elemIndex man (preferenceList woman)) (elemIndex fiance (preferenceList woman))
+updateFiancee : Man -> Woman → Man
+updateFiancee m w = record m { fiancee = just w }
 
--- Take the next woman from the list and propose to her, returning the updated list
-_canMarry_ : ∀ {a b} {A : Set a} {B : Set b} →  A →  B →  Bool
-a canMarry b = true
+updateFiance : Woman → Man → Woman
+updateFiance w m = record w { fiance = just m }
 
-proposeNext : ∀ {a} {A : Set a} →  A -> A
-proposeNext m = m
--- proposeNext m = record m { preferenceList = propose (preferenceList m) ; wife = nothing }
+marry : Man → Woman → Couple
+marry man woman = (updateFiancee man woman) ♥ (updateFiance woman man)
 
-nextToPropose : ∀ {a} {A : Set a} →  List A → Maybe A
-nextToPropose [] = nothing
-nextToPropose (x ∷ list) = just x
-
-marry : ∀ {a b} {A : Set a} {B : Set b} →  Man → Woman → Couple
-marry man woman = man ♥ woman
+_acceptsToMarry_ : Woman →  Man → Bool
+woman acceptsToMarry man with fiance woman
+... | just fiance = is-≤ (elemIndex fiance (preferenceList woman)) (elemIndex man (preferenceList woman))
+... | nothing = true
 
 areMarriagesStable : List Couple → Bool
-areMarriagesStable cs = ?
+areMarriagesStable cs = false
+
+bestWoman : Man → Maybe Woman
+bestWoman m = head (preferenceList m)
+
 
 propose : MatchingState → Man → Maybe Couple
-propose candidates man =
-  let
-    womanToPropose = head (preferenceList man)
-    listMen = just (Woman.preferenceList womanToPropose)
+propose candidates man with bestWoman man
+propose candidates man | just woman with woman acceptsToMarry man
+...                    | true  = just (marry man woman)
+...                    | false = nothing
+propose candidates man | nothing = nothing
 
+{-
+  where
+    womanToPropose = head (Man.preferenceList man)
+
+    listMen : Maybe Woman → List Man
+    listMen (just womanToPropose) = Woman.preferenceList womanToPropose
+    listMen nothing = []
+    
     changeState : MatchingState → MatchingState
     changeState candidates = candidates
-  in 
-     (just womanToPropose) acceptsToMarry man
-    {- TODO Rewrite this chunk
-    with womanToPropose acceptsToMarry man
-    ... | candidates -}
+-}
 
-zipCouples : List Man → List Woman → List Couple
-zipCouples men women = []
+zipCouples : List Man → List Couple
+zipCouples [] = []
+zipCouples (m ∷ men) with fiancee m
+... | just woman = marry m woman ∷ zipCouples men
+... | nothing    = zipCouples men
+
+{- TODO : Update free men... Decide how to do this -}
 
 makeNextProposal : MatchingState → List Couple
-makeNextProposal candidates = foldl propose candidates (head MatchingState.freeMen candidates)
-
-makeNextProposal candidates with propose (head MatchingState.freeMen candidates)
-makeNextProposal men women | nothing = makeNextProposal men women
-makeNextProposal men women | just couple with areMarriagesStable (zipCouples men women)
-makeNextProposal men women | just couple | true  = zipCouples men women
-makeNextProposal men women | just couple | false = makeNextProposal men women
+makeNextProposal candidates with propose candidates (just (head (MatchingState.freeMen candidates)))
+makeNextProposal candidates | nothing = makeNextProposal candidates
+makeNextProposal candidates | just couple with areMarriagesStable (zipCouples men women)
+makeNextProposal candidates | just couple | true  = zipCouples men women
+-- Think about this
+makeNextProposal candidates | just couple | false = makeNextProposal (record candidates { })
 
 -- TODO Delete guys
 
