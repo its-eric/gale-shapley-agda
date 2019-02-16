@@ -60,81 +60,27 @@ getPreferenceList person ((p , preferences) ∷ ps) with compare person p
 ... | equal _ = preferences
 ... | _       = getPreferenceList person ps
 
+{-# TERMINATING #-}
 step : MatchingState → MatchingState
+
 -- When there are no more free men, the matching is stable and this is the last step.
 step (mkState [] engagedMen women couples) = mkState [] engagedMen women couples
+
 -- Dummy case : the function shouldn't really be invoked with a man with empty preferences...
 step (mkState ((n , []) ∷ freeMen) engagedMen women couples) = mkState ((n , []) ∷ freeMen) engagedMen women couples
-step (mkState ((n , x ∷ prefs) ∷ freeMen) engagedMen women couples) with propose n (getHusband x couples) (getPreferenceList x women)
-... | true  = mkState freeMen ((n , prefs) ∷ engagedMen) women ((n , x) ∷ couples)
-... | false = mkState ((n , x ∷ prefs) ∷ freeMen) engagedMen women couples
 
--- step record { freemen = [] ; engamen = engamen ; women = women ; couples = couples } = record { freemen = [] ; engamen = engamen ; women = women ; couples = couples }
--- step record { freemen = (x ∷ freemen) ; engamen = engamen ; women = women ; couples = couples } = {!!}
+-- Proposal step
+step (mkState ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples) with getHusband w couples
+... | (suc h)  with propose n (getHusband w couples) (getPreferenceList w women) --Woman has a husband, represented by his literal number
+...             | true  = step (mkState freeMen ((n , prefs) ∷ engagedMen) women ((n , w) ∷ couples))
+...             | false = step (mkState ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples)
+-- Woman didn't have a husband yet (represented by zero) : must accept proposal
+step (mkState ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples) | zero  = step (mkState freeMen ((n , prefs) ∷ engagedMen) women ((n , w) ∷ couples))
 
+-- List of preferences of men and women from the Gale-Shapley canonical example
+listMen : List (ℕ × List ℕ)
+listMen = (1 , ( 1 ∷ 2 ∷ 3 ∷ [] )) ∷ (2 , ( 2 ∷ 3 ∷ 1 ∷ [])) ∷ (3 , ( 3 ∷ 1 ∷ 2 ∷ [])) ∷ []
 
-{-
-updateFiancee : Man -> Woman → Man
-updateFiancee m w = record m { fiancee = just w }
+listWomen : List (ℕ × List ℕ)
+listWomen = (1 , ( 2 ∷ 3 ∷ 1 ∷ [] )) ∷ (2 , ( 3 ∷ 1 ∷ 2 ∷ [])) ∷ ((3 , ( 1 ∷ 2 ∷ 3 ∷ []))) ∷ []
 
-updateFiance : Woman → Man → Woman
-updateFiance w m = record w { fiance = just m }
-
--}
-
-{-
-nextWoman : List  → Man → Maybe Couple
-propose candidates man with bestWoman man
-propose candidates man | just woman with woman acceptsToMarry man
-...                    | true  = just (marry man woman)
-...                    | false = nothing
-propose candidates man | nothing = nothing
-
-  where
-    womanToPropose = head (Man.preferenceList man)
-
-    listMen : Maybe Woman → List Man
-    listMen (just womanToPropose) = Woman.preferenceList womanToPropose
-    listMen nothing = []
-    
-    changeState : MatchingState → MatchingState
-    changeState candidates = candidates
-
-zipCouples : List Man → List Couple
-zipCouples [] = []
-zipCouples (m ∷ men) with fiancee m
-... | just woman = marry m woman ∷ zipCouples men
-... | nothing    = zipCouples men
--}
-
-{- TODO : Update free men... Decide how to do this -}
-
-{-
--- TODO Delete guys
-
-takeWoman : List ℕ → List ℕ
-takeWoman _ = _
-
-getElem : ℕ → List (List ℕ) → List ℕ
-getElem _ [] = []
-getElem 0 (x ∷ xs) = x
-getElem (suc n) (x ∷ xs) = {!!}
-
-isManSingle : ℕ → List (ℕ × ℕ) → Bool
-isManSingle n [] = true
-isManSingle n (c ∷ couples) with (proj₁ c) ≡ n
-... | false = isManSingle n couples
-... | true  = false
-
-getNextFreeMan : List (ℕ × ℕ) → ℕ → Maybe ℕ
-getNextFreeMan [] n = just zero
-getNextFreeMan couples zero = just zero
-getNextFreeMan couples (suc n) with isManSingle (suc n) couples
-... | true  = just (suc n)
-... | false = getNextFreeMan couples n
-
-step : MatchingState → MatchingState
-step ms with getNextFreeMan (couples ms) (length (men ms))
-... | just man = ms -- Split up another case expression for the proposal
-... | nothing  = ms -- Matching is stable
--}
