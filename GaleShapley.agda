@@ -38,10 +38,10 @@ positionInList x (xs ∷ xss) (suc n) with compare x xs
 ... | _        = positionInList x xss (suc (suc n)) --accumulate and keep searching
 
 propose : ℕ → ℕ → List ℕ → Bool
--- If woman is with her most preferred husband, she simply always says no to further proposals.
+-- If the woman is married to 0, she is single. This call won't happen in the current implementation.
 propose man zero preferenceList = false
 -- Otherwise she must compare
-propose man (suc posCurrentHusband) preferenceList = is-≤ (positionInList man preferenceList zero) posCurrentHusband
+propose man (suc n) preferenceList = is-≤ (positionInList man preferenceList zero) (positionInList (suc n) preferenceList zero)
 
 -- We assume the "husbands" to be the proposing side,
 -- therefore if women propose the pair looks like (wife, husband)
@@ -50,9 +50,9 @@ getHusband woman [] = zero --not married yet and this is the first proposal in t
 getHusband woman ((m , w) ∷ []) with compare woman w
 ... | equal _ = m --found your husband!
 ... | _       = zero --not married yet
-getHusband woman ((m , w) ∷ couples) with compare woman w
+getHusband woman ((m , w) ∷ (c ∷ cs)) with compare woman w
 ... | equal _ = m --found your husband!
-... | _       = getHusband woman couples --keep searching
+... | _       = getHusband woman (c ∷ cs) --keep searching
 
 getPreferenceList : ℕ → List (ℕ × List ℕ) → List ℕ
 getPreferenceList person [] = [] --dummy case
@@ -84,3 +84,9 @@ listMen = (1 , ( 1 ∷ 2 ∷ 3 ∷ [] )) ∷ (2 , ( 2 ∷ 3 ∷ 1 ∷ [])) ∷ (
 listWomen : List (ℕ × List ℕ)
 listWomen = (1 , ( 2 ∷ 3 ∷ 1 ∷ [] )) ∷ (2 , ( 3 ∷ 1 ∷ 2 ∷ [])) ∷ ((3 , ( 1 ∷ 2 ∷ 3 ∷ []))) ∷ []
 
+-- Extra example : men and women have only one possible stable set of marriages! What could happen...?
+listDifficultMen : List (ℕ × List ℕ)
+listDifficultMen = (1 , ( 1 ∷ 2 ∷ 3 ∷ 4 ∷ [] )) ∷ (2 , ( 1 ∷ 4 ∷ 3 ∷ 2 ∷ [] )) ∷ (3 , ( 2 ∷ 1 ∷ 3 ∷ 4 ∷ [])) ∷ ((4 , ( 4 ∷ 2 ∷ 3 ∷ 1 ∷ []))) ∷ []
+
+listDifficultWomen : List (ℕ × List ℕ)
+listDifficultWomen = (1 , ( 4 ∷ 3 ∷ 1 ∷ 2 ∷ []) ) ∷ (2 , ( 2 ∷ 4 ∷ 1 ∷ 3 ∷ [])) ∷ (3 , ( 4 ∷ 1 ∷ 2 ∷ 3 ∷ [])) ∷ (4 , (3 ∷ 2 ∷ 1 ∷ 4 ∷ [])) ∷ []
