@@ -113,4 +113,9 @@ listDifficultWomen = (1 , ( 4 ∷ 3 ∷ 1 ∷ 2 ∷ []) ) ∷ (2 , ( 2 ∷ 4 ∷
 -- Proofs! :D
 
 is-stable-matching : List (ℕ × List ℕ) → List (ℕ × List ℕ) → List (ℕ × ℕ) → Bool
-is-stable-matching = {!!}
+-- Dummy cases
+is-stable-matching [] women couples = false
+is-stable-matching (m ∷ men) [] couples = false
+is-stable-matching (m ∷ men) (w ∷ women) [] = false
+-- Serious things!
+is-stable-matching (m ∷ men) (w ∷ women) (c ∷ couples) = {!!}
