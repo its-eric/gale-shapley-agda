@@ -24,30 +24,39 @@ is-≤ a b with a ≤? b
 ... | Dec.yes _ = true
 ... | Dec.no _ = false
 
-positionInList : ℕ → List ℕ → ℕ → ℕ
-positionInList x [] _ = zero --when there is no list...?
+-- Helper function to search for an element in a list of natural numbers.
+positionInList : ℕ → List ℕ → ℕ → Maybe ℕ
+positionInList x [] _ = nothing --searched everywhere but couldn't find it!
 positionInList x (xs ∷ xss) zero with compare x xs
-... | equal _  = zero --found man at the tip of the list!
+... | equal _  = just zero --found man at the tip of the list!
 ... | _        = positionInList x xss (suc zero) --accumulate and keep searching...
 positionInList x (xs ∷ xss) (suc n) with compare x xs
-... | equal _  = suc n --found man somewhere in the list
+... | equal _  = just (suc n) --found man somewhere in the list
 ... | _        = positionInList x xss (suc (suc n)) --accumulate and keep searching
 
-propose : ℕ → ℕ → List ℕ → Bool
+-- m is the proposing man
+-- h is the current husband of the woman
+-- prefs is the preference list of the woman
+-- returns true if the woman prefers m over h
+propose : (m : ℕ)(h : ℕ)(prefs : List ℕ) → Bool
 -- If the woman is married to 0, she is single. This call won't happen in the current implementation.
 propose man zero preferenceList = false
 -- Otherwise she must compare
-propose man (suc n) preferenceList = is-≤ (positionInList man preferenceList zero) (positionInList (suc n) preferenceList zero)
+propose man (suc n) preferenceList with positionInList man preferenceList zero | positionInList (suc n) preferenceList zero
+... | just p  | just q  = is-≤ p q --does she prefer the new guy to the current one?
+... | just p  | nothing = false --shouldn't happen in an ideal world
+... | nothing | just q  = false  --shouldn't happen in an ideal world
+... | nothing | nothing = false  --shouldn't happen in an ideal world
 
 -- We assume the "husbands" to be the proposing side,
 -- therefore if women propose the pair looks like (wife, husband)
-getHusband : ℕ → List (ℕ × ℕ) → ℕ
-getHusband woman [] = zero --not married yet and this is the first proposal in the algorithm!
+getHusband : ℕ → List (ℕ × ℕ) → Maybe ℕ
+getHusband woman [] = nothing --not married yet and this is the first proposal in the algorithm!
 getHusband woman ((m , w) ∷ []) with compare woman w
-... | equal _ = m --found your husband!
-... | _       = zero --not married yet
+... | equal _ = just m --found your husband!
+... | _       = nothing --not married yet
 getHusband woman ((m , w) ∷ (c ∷ cs)) with compare woman w
-... | equal _ = m --found your husband!
+... | equal _ = just m --found your husband!
 ... | _       = getHusband woman (c ∷ cs) --keep searching
 
 getPreferenceList : ℕ → List (ℕ × List ℕ) → List ℕ
@@ -57,6 +66,7 @@ getPreferenceList person ((p , preferences) ∷ ps) with compare person p
 ... | _       = getPreferenceList person ps
 
 -- Safely adding couples : previous marriages are unmade
+-- TODO: addrmNewCouple
 addNewCouple : (ℕ × ℕ) → List (ℕ × ℕ) → List (ℕ × ℕ)
 addNewCouple (m , w) [] = (m , w) ∷ []
 addNewCouple (m , w) ((a , b) ∷ []) with compare w b
@@ -67,6 +77,7 @@ addNewCouple (m , w) ((a , b) ∷ (c ∷ cs)) with compare w b
 ... | _       = (a , b) ∷ addNewCouple (m , w) (c ∷ cs)
 
 -- Safely adding new engaged men to the list : dumped man is removed
+-- TODO: addrmEngagedMan
 addNewEngagedMan : (ℕ × List ℕ) → ℕ → List (ℕ × List ℕ) → List (ℕ × List ℕ)
 addNewEngagedMan (newFiance , prefs) prevFiance [] = (newFiance , prefs) ∷ []
 addNewEngagedMan (newFiance , prefs) prevFiance ((m , prefsM) ∷ []) with compare prevFiance m
@@ -78,7 +89,6 @@ addNewEngagedMan (newFiance , prefs) prevFiance ((m , prefsM) ∷ ms ∷ engaged
 
 -- addNewEngagedMan newFiance prevFiance ((m , prefsM) ∷ engagedMen) = newFiance ∷ filter (λ m → compare prevFiance m) engagedMen
 
-{-# TERMINATING #-}
 step : MatchingState → MatchingState
 
 -- When there are no more free men, the matching is stable and this is the last step.
@@ -89,11 +99,29 @@ step (mkState men ((n , []) ∷ freeMen) engagedMen women couples) = mkState men
 
 -- Proposal step
 step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples) with getHusband w couples
-... | (suc h)  with propose n (suc h) (getPreferenceList w women) --Woman has a husband, represented by his literal number
-...             | true  = step (mkState men (((suc h) , getPreferenceList (suc h) engagedMen) ∷ freeMen) (addNewEngagedMan (n , prefs) (suc h) engagedMen) women (addNewCouple (n , w) couples))
-...             | false = step (mkState men ((n , prefs) ∷ freeMen) engagedMen women couples)
+... | just h with propose n h (getPreferenceList w women) --Woman has a husband, represented by his literal number
+...             | true  = mkState men ((h , getPreferenceList h engagedMen) ∷ freeMen) (addNewEngagedMan (n , prefs) h engagedMen) women (addNewCouple (n , w) couples)
+...             | false = mkState men ((n , prefs) ∷ freeMen) engagedMen women couples
 -- Woman didn't have a husband yet (represented by zero) : must accept proposal
-step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples) | zero  = step (mkState men freeMen ((n , prefs) ∷ engagedMen) women (addNewCouple (n , w) couples))
+step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples) | nothing  = mkState men freeMen ((n , prefs) ∷ engagedMen) women (addNewCouple (n , w) couples)
+
+sumPrefLists : (m : MatchingState) → ℕ
+sumPrefLists (mkState men [] [] women couples) = 0
+sumPrefLists (mkState men [] ((man , prefs) ∷ engagedMen) women couples) = length prefs + sumPrefLists (mkState men [] engagedMen women couples)
+sumPrefLists (mkState men ((man , prefs) ∷ freeMen) engagedMen women couples) = length prefs + sumPrefLists (mkState men freeMen engagedMen women couples)
+
+stepDec : (m : MatchingState) → sumPrefLists m > sumPrefLists (step m)
+stepDec (mkState men [] engagedMen women couples) = ?
+stepDec (mkState men (x ∷ freeMen) engagedMen women couples) = ?
+
+{-# TERMINATING #-}
+allSteps : (m : MatchingState)(k : ℕ) → sumPrefLists m ≡ k → MatchingState
+allSteps m k p with step m
+... | mkState men [] engagedMen women couples = mkState men [] engagedMen women couples
+... | m' = allSteps m' (sumPrefLists m') refl
+
+-- this is for correctness:
+-- stepInv : (m : MatchingState) → Inv m → Inv (step m)
 
 -- List of preferences of men and women from the Gale-Shapley canonical example
 listMen : List (ℕ × List ℕ)
@@ -111,6 +139,13 @@ listDifficultWomen : List (ℕ × List ℕ)
 listDifficultWomen = (1 , ( 4 ∷ 3 ∷ 1 ∷ 2 ∷ []) ) ∷ (2 , ( 2 ∷ 4 ∷ 1 ∷ 3 ∷ [])) ∷ (3 , ( 4 ∷ 1 ∷ 2 ∷ 3 ∷ [])) ∷ (4 , (3 ∷ 2 ∷ 1 ∷ 4 ∷ [])) ∷ []
 
 -- Proofs! :D
+
+data _∈_ {A : Set}(a : A) : List A → Set where
+  now   : (as : List A) → a ∈ (a ∷ as)
+  later : {a' : A}{as : List A} → a ∈ as → a ∈ (a' ∷ as)
+
+is-stable-matching' : MatchingState → Set
+is-stable-matching' (mkState men freeMen engagedMen women couples) = (freeMen ≡ []) × ((c : ℕ × ℕ) → c ∈ couples → {!!} < {!!}) × {!!}
 
 is-stable-matching : List (ℕ × List ℕ) → List (ℕ × List ℕ) → List (ℕ × ℕ) → Bool
 -- Dummy cases
