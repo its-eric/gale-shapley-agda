@@ -1,13 +1,18 @@
 module Acc where
 
 open import Data.Nat
+open import Data.Empty
+open import Function
+open import Induction
+open import Induction.WellFounded
 open import Relation.Binary.Core
 open import Relation.Nullary
 open import Agda.Builtin.Equality
+open import Relation.Binary.PropositionalEquality as PropEq
+  using (_≡_; refl)
 
+-- Based on the paper by Ana Bove
 -- http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.32.6626&rep=rep1&type=pdf
-
--- _∸_
 
 data Maybe (A : Set) : Set where
   Nothing : Maybe A
@@ -16,58 +21,49 @@ data Maybe (A : Set) : Set where
 {- Something like this is defined in the stdlib:
 _<?_ : Decidable _<_
 x <? y = suc x ≤? y 
+
+That is a help for "it is decidable whether a natural number is less than another".
 -}
 
+-- The following lemma -< says if a natural number n is not less than another one (not zero)
+-- then the result of subtracting the second from the first is less than the first.
 -< : {n m : ℕ} → ¬ (n < suc m) → n ∸ suc m < n
 -< = {!!}
 
+-- This could help perhaps...
 trans : Transitive _≤_
 trans z≤n       _         = z≤n
 trans (s≤s m≤n) (s≤s n≤o) = s≤s (trans m≤n n≤o)
 
+-- First we try to prove accessibility using a standard predicate.
 
-{-
+{-- The Haskell version of the mod algorithm would go something like this:
+
 mod : ℕ → ℕ → Maybe ℕ
 mod n zero = Nothing
 mod n (suc m) with n <? suc m
 mod n (suc m) | yes p = Just n
 mod n (suc m) | no ¬p = mod (n ∸ suc m) (suc m)
--}
-{-
-data Acc (A : Set)(_≺_ : A → A → Set) : A → Set where
-  acc : (a : A)(p : (x : A)(h : x ≺ a) → Acc A _≺_ x) → Acc A _≺_ a
+--}
 
-mod : (n m : ℕ) → Acc ℕ _<_ n → Maybe ℕ
-mod n zero h = Nothing
-mod n (suc m) (acc .n hl) with n <? suc m
-mod n (suc m) (acc .n hl) | yes h = Just n
-mod n (suc m) (acc .n hl) | no  h = mod (n ∸ suc m) (suc m) (hl (n ∸ suc m) (-< h))
--}
-
-data Acc : ℕ → Set where
-  acc : (a : ℕ)(p : (x : ℕ)(h : x < a) → Acc x) → Acc a
-
-mod' : (n m : ℕ) → Acc n → Maybe ℕ
+mod' : (n m : ℕ) → Acc _<_ n → Maybe ℕ
 mod' n zero h = Nothing
-mod' n (suc m) (acc .n hl) with n <? suc m
-mod' n (suc m) (acc .n hl) | yes h = Just n
-mod' n (suc m) (acc .n hl) | no  h = mod' (n ∸ suc m) (suc m) (hl (n ∸ suc m) (-< h))
+mod' n (suc m) (acc h₁) with n <? suc m
+... | yes h = Just n
+... | no  h = mod' (n ∸ suc m) (suc m) (h₁ (n ∸ suc m) (-< h))
 
-allacc : (n : ℕ) → Acc n
-allacc zero = acc zero λ _ ()
-allacc (suc n) with allacc n
-allacc (suc n) | acc .n p = {!!}
-
-{--
-acc _ f
+allAcc : (n : ℕ) → Acc _<_ n
+allAcc zero    = acc λ _ ()
+allAcc (suc n) with allAcc n
+allAcc (suc n) | acc h = acc f
   where
-    f : (x : ℕ) → suc x ≤ suc n → Acc x
-    f zero p = acc zero λ _ ()
-    f (suc x) (s≤s h) = acc {!!} {!!}
--}
+    f : (x : ℕ) → suc x ≤ suc n → Acc _<_ x
+    f = {!!}
 
 mod : ℕ → ℕ → Maybe ℕ
-mod n m = mod' n m (allacc n)
+mod n m = mod' n m (allAcc n)
+
+-- From here on we use Bove's method for writing a special accessibility predicate.
 
 data ModAcc : (n m : ℕ) → Set where
   modAcc0 : (n : ℕ) → ModAcc n zero
@@ -77,9 +73,24 @@ data ModAcc : (n m : ℕ) → Set where
 betterMod : (n m : ℕ) → ModAcc n m → Maybe ℕ
 -- The case when m is zero : error
 betterMod n .0 (modAcc0 .n) = Nothing
--- The case when n < m. h1 is a proof of that.
-betterMod n m (modAcc< h1) = Just n
+-- The case when n < m. h₁ is a proof of that.
+betterMod n m (modAcc< h₁) = Just n
 -- h is a proof that m ≠ 0.
--- h1 is a proof that n ≥ m.
--- h2 is the complicated proof, that ModAcc is satisfied by (n - m, m) 
-betterMod n m (modAcc≤ h h1 h2) = betterMod (n ∸ m) m h2
+-- h₁ is a proof that n ≥ m.
+-- h₂ is the complicated proof, that ModAcc is satisfied by (n - m, m) 
+betterMod n m (modAcc≤ h h₁ h₂) = betterMod (n ∸ m) m h₂
+
+modAccAux : (m p : ℕ) → Acc _<_ p → (f : (q : ℕ) → (q < p) → ModAcc q m) → ModAcc p m
+modAccAux zero p h f = modAcc0 p
+modAccAux (suc n) p h f with p <? suc n
+... | yes h₁ = modAcc< h₁
+... | no  h₁ = modAcc≤ ({!!}) h₁ (f (p ∸ suc n) (-< h₁))
+
+Pₙ : {n : ℕ} → ∀ n m → ModAcc n m 
+Pₙ n m = {!!} 
+
+allModAcc : (n m : ℕ) → ModAcc n m
+allModAcc n m = Pₙ n m
+
+finalMod : (n m : ℕ) → Maybe ℕ
+finalMod n m = betterMod n m (allModAcc n m)
