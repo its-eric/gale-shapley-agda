@@ -92,8 +92,8 @@ Pₙ n (suc m) with n <? suc m
 ... | yes h = modAcc< h
 ... | no  h = modAccAux (suc m) n (allAcc n) f where
   f : (q : ℕ) → suc q ≤ n → ModAcc q (suc m)
-  f zero = ?
-  f (suc q) = ?
+  f zero    (s≤s h) = modAcc< {!!}
+  f (suc q) (s≤s h) = modAcc< {!!}
   
 allModAcc : (n m : ℕ) → ModAcc n m
 allModAcc n m = Pₙ n m
