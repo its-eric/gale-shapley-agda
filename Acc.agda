@@ -28,7 +28,7 @@ That is a help for "it is decidable whether a natural number is less than anothe
 -- The following lemma -< says if a natural number n is not less than another one (not zero)
 -- then the result of subtracting the second from the first is less than the first.
 -< : {n m : ℕ} → ¬ (n < suc m) → n ∸ suc m < n
--< = {!!}
+-< = λ p → {!!}
 
 -- This could help perhaps...
 trans : Transitive _≤_
@@ -86,9 +86,15 @@ modAccAux (suc n) p h f with p <? suc n
 ... | yes h₁ = modAcc< h₁
 ... | no  h₁ = modAcc≤ ({!!}) h₁ (f (p ∸ suc n) (-< h₁))
 
-Pₙ : {n : ℕ} → ∀ n m → ModAcc n m 
-Pₙ n m = {!!} 
-
+Pₙ : {n m : ℕ} → ∀ n m → ModAcc n m 
+Pₙ n zero    = modAcc0 n
+Pₙ n (suc m) with n <? suc m
+... | yes h = modAcc< h
+... | no  h = modAccAux (suc m) n (allAcc n) f where
+  f : (q : ℕ) → suc q ≤ n → ModAcc q (suc m)
+  f zero = ?
+  f (suc q) = ?
+  
 allModAcc : (n m : ℕ) → ModAcc n m
 allModAcc n m = Pₙ n m
 
