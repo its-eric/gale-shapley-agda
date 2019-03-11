@@ -141,8 +141,15 @@ data _∈_ {A : Set}(a : A) : List A → Set where
   now   : (as : List A) → a ∈ (a ∷ as)
   later : {a' : A}{as : List A} → a ∈ as → a ∈ (a' ∷ as)
 
+conditionOfStabilitySatisfied : (men : List (ℕ × List ℕ))(women : List (ℕ × List ℕ)) → ℕ × ℕ → ℕ × ℕ → Set
+conditionOfStabilitySatisfied men women (m₁ , w₁) (m₂ , w₂) =
+  (positionInList w₂ (getPreferenceList m₁ men)) > (positionInList w₁ (getPreferenceList m₁ men)) ×
+  (positionInList m₁ (getPreferenceList w₂ women)) > (positionInList m₂ (getPreferenceList w₂ women)) ×
+  (positionInList w₁ (getPreferenceList m₂ men)) > (positionInList w₂ (getPreferenceList m₂ men)) ×
+  (positionInList m₂ (getPreferenceList w₁ women)) > (positionInList m₁ (getPreferenceList w₁ women))
+
 is-stable-matching' : MatchingState → Set
-is-stable-matching' (mkState men freeMen engagedMen women couples) = (freeMen ≡ []) × ((c : ℕ × ℕ) → c ∈ couples → {!!} < {!!}) × {!!}
+is-stable-matching' (mkState men freeMen engagedMen women couples) = (freeMen ≡ []) × ((c₁ c₂ : ℕ × ℕ) → c₁ ∈ couples → c₂ ∈ couples → conditionOfStabilitySatisfied men women c₁ c₂)
 
 is-stable-matching : List (ℕ × List ℕ) → List (ℕ × List ℕ) → List (ℕ × ℕ) → Bool
 -- Dummy cases
