@@ -10,6 +10,9 @@ open import Data.List
 open import Relation.Nullary
 open import Induction.WellFounded
 
+infix 3 _>just_
+infix 4 _from>_
+
 record MatchingState : Set where
   constructor mkState
   field
@@ -26,14 +29,17 @@ is-≤ a b with a ≤? b
 ... | Dec.no _ = false
 
 -- Helper function to search for an element in a list of natural numbers.
-positionInList : ℕ → List ℕ → ℕ → Maybe ℕ
-positionInList x [] _ = nothing --searched everywhere but couldn't find it!
-positionInList x (xs ∷ xss) zero with compare x xs
+positionInListHelper : ℕ → List ℕ → ℕ → Maybe ℕ
+positionInListHelper x [] _ = nothing --searched everywhere but couldn't find it!
+positionInListHelper x (xs ∷ xss) zero with compare x xs
 ... | equal _  = just zero --found man at the tip of the list!
-... | _        = positionInList x xss (suc zero) --accumulate and keep searching...
-positionInList x (xs ∷ xss) (suc n) with compare x xs
+... | _        = positionInListHelper x xss (suc zero) --accumulate and keep searching...
+positionInListHelper x (xs ∷ xss) (suc n) with compare x xs
 ... | equal _  = just (suc n) --found man somewhere in the list
-... | _        = positionInList x xss (suc (suc n)) --accumulate and keep searching
+... | _        = positionInListHelper x xss (suc (suc n)) --accumulate and keep searching
+
+positionInList : ℕ → List ℕ → Maybe ℕ
+positionInList n ns = positionInListHelper n ns zero
 
 -- m is the proposing man
 -- h is the current husband of the woman
@@ -41,7 +47,7 @@ positionInList x (xs ∷ xss) (suc n) with compare x xs
 -- returns true if the woman prefers m over h
 propose : (m : ℕ)(h : ℕ)(prefs : List ℕ) → Bool
 -- Woman compares
-propose man h preferenceList with positionInList man preferenceList zero | positionInList h preferenceList zero
+propose man h preferenceList with positionInList man preferenceList | positionInList h preferenceList
 ... | just p  | just q  = is-≤ p q --does she prefer the new guy to the current one?
 ... | just p  | nothing = false    --shouldn't happen in an ideal world : woman received a proposal from an unknown man??
 ... | nothing | just q  = false    --shouldn't happen in an ideal world : woman married an unknown man previously??
@@ -141,20 +147,37 @@ data _∈_ {A : Set}(a : A) : List A → Set where
   now   : (as : List A) → a ∈ (a ∷ as)
   later : {a' : A}{as : List A} → a ∈ as → a ∈ (a' ∷ as)
 
+data _>just_ : Maybe ℕ → Maybe ℕ → Set where
+  _from>_ : (m n : ℕ) → just m >just just n
+
 conditionOfStabilitySatisfied : (men : List (ℕ × List ℕ))(women : List (ℕ × List ℕ)) → ℕ × ℕ → ℕ × ℕ → Set
 conditionOfStabilitySatisfied men women (m₁ , w₁) (m₂ , w₂) =
-  (positionInList w₂ (getPreferenceList m₁ men)) > (positionInList w₁ (getPreferenceList m₁ men)) ×
-  (positionInList m₁ (getPreferenceList w₂ women)) > (positionInList m₂ (getPreferenceList w₂ women)) ×
-  (positionInList w₁ (getPreferenceList m₂ men)) > (positionInList w₂ (getPreferenceList m₂ men)) ×
-  (positionInList m₂ (getPreferenceList w₁ women)) > (positionInList m₁ (getPreferenceList w₁ women))
+  positionInList w₂ (getPreferenceList m₁ men)   >just positionInList  w₁ (getPreferenceList m₁ men) ×
+  positionInList m₁ (getPreferenceList w₂ women) >just positionInList  m₂ (getPreferenceList w₂ women) ×
+  positionInList w₁ (getPreferenceList m₂ men)   >just positionInList w₂ (getPreferenceList m₂ men) ×
+  positionInList m₂ (getPreferenceList w₁ women) >just positionInList m₁ (getPreferenceList w₁ women)
 
-is-stable-matching' : MatchingState → Set
-is-stable-matching' (mkState men freeMen engagedMen women couples) = (freeMen ≡ []) × ((c₁ c₂ : ℕ × ℕ) → c₁ ∈ couples → c₂ ∈ couples → conditionOfStabilitySatisfied men women c₁ c₂)
+is-stable-matching : MatchingState → Set
+is-stable-matching (mkState men freeMen engagedMen women couples) = (freeMen ≡ []) × ((c₁ c₂ : ℕ × ℕ) → c₁ ∈ couples → c₂ ∈ couples → conditionOfStabilitySatisfied men women c₁ c₂)
 
-is-stable-matching : List (ℕ × List ℕ) → List (ℕ × List ℕ) → List (ℕ × ℕ) → Bool
+is-stable-matching' : List (ℕ × List ℕ) → List (ℕ × List ℕ) → List (ℕ × ℕ) → Bool
 -- Dummy cases
-is-stable-matching [] women couples = false
-is-stable-matching (m ∷ men) [] couples = false
-is-stable-matching (m ∷ men) (w ∷ women) [] = false
+is-stable-matching' [] women couples = false
+is-stable-matching' (m ∷ men) [] couples = false
+is-stable-matching' (m ∷ men) (w ∷ women) [] = false
 -- Serious things!
-is-stable-matching (m ∷ men) (w ∷ women) (c ∷ couples) = {!!}
+is-stable-matching' (m ∷ men) (w ∷ women) (c ∷ couples) = {!!}
+
+-- implement lots of examples!
+
+exStart exEnd exEndExpected : MatchingState
+exStart = mkState listMen listMen [] listWomen []
+-- Gale and Shapley tell us that, for the first simple example, each men gets his
+exEndExpected   = mkState listMen [] ((3 , (1 ∷ 2 ∷ [])) ∷ ((2 , 3 ∷ 1 ∷ []) ∷ (1 , 2 ∷ 3 ∷ []) ∷ [] )) listWomen ((2 , 2) ∷ (3 , 3) ∷ (1 , 1) ∷ [])
+exEnd = step (step (step (step exStart)))
+
+resultIsWhatWeExpected : exEnd ≡ exEndExpected
+resultIsWhatWeExpected = refl
+
+exMatch : is-stable-matching exEnd
+exMatch = {!!}
