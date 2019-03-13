@@ -114,7 +114,7 @@ sumPrefLists (mkState men [] ((man , prefs) ∷ engagedMen) women couples) = len
 sumPrefLists (mkState men ((man , prefs) ∷ freeMen) engagedMen women couples) = length prefs + sumPrefLists (mkState men freeMen engagedMen women couples)
 
 stepDec : (m : MatchingState) → sumPrefLists m > sumPrefLists (step m)
-stepDec (mkState men [] engagedMen women couples) = {!!}
+stepDec (mkState men [] engagedMen women couples)            = {!!}
 stepDec (mkState men (x ∷ freeMen) engagedMen women couples) = {!!}
 
 {-# TERMINATING #-}
@@ -143,20 +143,25 @@ listDifficultWomen = (1 , ( 4 ∷ 3 ∷ 1 ∷ 2 ∷ []) ) ∷ (2 , ( 2 ∷ 4 ∷
 
 -- Proofs! :D
 
+-- The type of elements that belong to a list.
 data _∈_ {A : Set}(a : A) : List A → Set where
   now   : (as : List A) → a ∈ (a ∷ as)
   later : {a' : A}{as : List A} → a ∈ as → a ∈ (a' ∷ as)
 
+-- Bigger than comparison for Maybe ℕ-typed elements. 
 data _>just_ : Maybe ℕ → Maybe ℕ → Set where
   _from>_ : (m n : ℕ) → just m >just just n
 
+-- Given a list of men and women and their preferences, the condition of stability is satisfied for a
+-- certain pair of couples (m₁ , w₁) , (m₂ , w₂) iff these four conditions are satisfied
 conditionOfStabilitySatisfied : (men : List (ℕ × List ℕ))(women : List (ℕ × List ℕ)) → ℕ × ℕ → ℕ × ℕ → Set
 conditionOfStabilitySatisfied men women (m₁ , w₁) (m₂ , w₂) =
   positionInList w₂ (getPreferenceList m₁ men)   >just positionInList  w₁ (getPreferenceList m₁ men) ×
   positionInList m₁ (getPreferenceList w₂ women) >just positionInList  m₂ (getPreferenceList w₂ women) ×
-  positionInList w₁ (getPreferenceList m₂ men)   >just positionInList w₂ (getPreferenceList m₂ men) ×
-  positionInList m₂ (getPreferenceList w₁ women) >just positionInList m₁ (getPreferenceList w₁ women)
+  positionInList w₁ (getPreferenceList m₂ men)   >just positionInList  w₂ (getPreferenceList m₂ men) ×
+  positionInList m₂ (getPreferenceList w₁ women) >just positionInList  m₁ (getPreferenceList w₁ women)
 
+-- A matching is stable iff the condition of stability is satisfied for every pair of couples formed.
 is-stable-matching : MatchingState → Set
 is-stable-matching (mkState men freeMen engagedMen women couples) = (freeMen ≡ []) × ((c₁ c₂ : ℕ × ℕ) → c₁ ∈ couples → c₂ ∈ couples → conditionOfStabilitySatisfied men women c₁ c₂)
 
@@ -168,16 +173,23 @@ is-stable-matching' (m ∷ men) (w ∷ women) [] = false
 -- Serious things!
 is-stable-matching' (m ∷ men) (w ∷ women) (c ∷ couples) = {!!}
 
--- implement lots of examples!
-
 exStart exEnd exEndExpected : MatchingState
-exStart = mkState listMen listMen [] listWomen []
--- Gale and Shapley tell us that, for the first simple example, each men gets his
-exEndExpected   = mkState listMen [] ((3 , (1 ∷ 2 ∷ [])) ∷ ((2 , 3 ∷ 1 ∷ []) ∷ (1 , 2 ∷ 3 ∷ []) ∷ [] )) listWomen ((2 , 2) ∷ (3 , 3) ∷ (1 , 1) ∷ [])
-exEnd = step (step (step (step exStart)))
+exStart       = mkState listMen listMen [] listWomen []
+-- Gale and Shapley tell us that, for the first simple example, each men gets his first woman from the list as a wife
+-- and there are no conflicts among them. So we expect the following end state:
+exEndExpected = mkState listMen [] ((3 , (1 ∷ 2 ∷ [])) ∷ ((2 , 3 ∷ 1 ∷ []) ∷ (1 , 2 ∷ 3 ∷ []) ∷ [] )) listWomen ((2 , 2) ∷ (3 , 3) ∷ (1 , 1) ∷ [])
+exEnd         = step (step (step (step exStart)))
 
 resultIsWhatWeExpected : exEnd ≡ exEndExpected
 resultIsWhatWeExpected = refl
+
+ex2Start ex2End ex2EndExpected : MatchingState
+ex2Start         = mkState listDifficultMen listDifficultMen [] listDifficultWomen []
+ex2EndExpected   = mkState listDifficultMen [] (({!!} ∷ [])) listDifficultWomen {!!}
+ex2End           = step (step (step (step ex2Start)))
+
+result2IsWhatWeExpected : ex2End ≡ ex2EndExpected
+result2IsWhatWeExpected = {!!}
 
 exMatch : is-stable-matching exEnd
 exMatch = {!!}
