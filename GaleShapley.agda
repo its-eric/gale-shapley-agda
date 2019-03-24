@@ -109,22 +109,21 @@ step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples) with
 step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples) | nothing  = mkState men freeMen ((n , prefs) ∷ engagedMen) women (safeAddNewCouple (n , w) couples)
 
 sumPrefLists : (m : MatchingState) → ℕ
-sumPrefLists (mkState men [] [] women couples) = 0
-sumPrefLists (mkState men [] ((man , prefs) ∷ engagedMen) women couples) = length prefs + sumPrefLists (mkState men [] engagedMen women couples)
+sumPrefLists (mkState men [] _ women couples) = 0
+-- sumPrefLists (mkState men [] ((man , prefs) ∷ engagedMen) women couples) = length prefs + sumPrefLists (mkState men [] engagedMen women couples)
 sumPrefLists (mkState men ((man , prefs) ∷ freeMen) engagedMen women couples) = length prefs + sumPrefLists (mkState men freeMen engagedMen women couples)
 
-stepDec : (m : MatchingState) → sumPrefLists m > sumPrefLists (step m)
-stepDec (mkState men [] engagedMen women couples)            = {!!}
-stepDec (mkState men (x ∷ freeMen) engagedMen women couples) = {!!}
+stepDec : (m : MatchingState) → sumPrefLists m ≥ sumPrefLists (step m)
+stepDec (mkState men []             engagedMen women couples) = z≤n
+stepDec m with sumPrefLists (step m) ≤? sumPrefLists m
+... | yes p = p
+... | no p  = {!!}
 
 {-# TERMINATING #-}
 allSteps : (m : MatchingState)(k : ℕ) → sumPrefLists m ≡ k → MatchingState
 allSteps m k p with step m
 ... | mkState men [] engagedMen women couples = mkState men [] engagedMen women couples
 ... | m' = allSteps m' (sumPrefLists m') refl
-
--- this is for correctness:
--- stepInv : (m : MatchingState) → Inv m → Inv (step m)
 
 -- List of preferences of men and women from the Gale-Shapley canonical example
 listMen : List (ℕ × List ℕ)
@@ -165,14 +164,6 @@ conditionOfStabilitySatisfied men women (m₁ , w₁) (m₂ , w₂) =
 is-stable-matching : MatchingState → Set
 is-stable-matching (mkState men freeMen engagedMen women couples) = (freeMen ≡ []) × ((c₁ c₂ : ℕ × ℕ) → c₁ ∈ couples → c₂ ∈ couples → conditionOfStabilitySatisfied men women c₁ c₂)
 
-is-stable-matching' : List (ℕ × List ℕ) → List (ℕ × List ℕ) → List (ℕ × ℕ) → Bool
--- Dummy cases
-is-stable-matching' [] women couples = false
-is-stable-matching' (m ∷ men) [] couples = false
-is-stable-matching' (m ∷ men) (w ∷ women) [] = false
--- Serious things!
-is-stable-matching' (m ∷ men) (w ∷ women) (c ∷ couples) = {!!}
-
 exStart exEnd exEndExpected : MatchingState
 exStart       = mkState listMen listMen [] listWomen []
 -- Gale and Shapley tell us that, for the first simple example, each men gets his first woman from the list as a wife
@@ -185,11 +176,40 @@ resultIsWhatWeExpected = refl
 
 ex2Start ex2End ex2EndExpected : MatchingState
 ex2Start         = mkState listDifficultMen listDifficultMen [] listDifficultWomen []
-ex2EndExpected   = mkState listDifficultMen [] (({!!} ∷ [])) listDifficultWomen {!!}
-ex2End           = step (step (step (step ex2Start)))
+-- A second, harder example is given where there is only one possible stable set of marriages.
+ex2EndExpected   = mkState listDifficultMen [] ((1 , ( 4 ∷ [] )) ∷ (4 , (3 ∷ 1 ∷ [])) ∷ (2 , ( 3 ∷ 2 ∷ [] )) ∷ (3 , ( 3 ∷ 4 ∷ [])) ∷ []) listDifficultWomen (((2 , 4) ∷ (4 , 2) ∷ (1 , 3) ∷ (3 , 1) ∷ []))
+ex2End           = step (step (step (step (step (step (step (step (step ex2Start))))))))
 
 result2IsWhatWeExpected : ex2End ≡ ex2EndExpected
-result2IsWhatWeExpected = {!!}
+result2IsWhatWeExpected = refl
 
-exMatch : is-stable-matching exEnd
-exMatch = {!!}
+matchIsStable : is-stable-matching exEnd
+matchIsStable = {!!}
+
+-- In order to define that a matching m₁ is better than a matching m₂,
+-- we take into consideration that every man gets a better (earlier in his list) wife
+-- in m₁ than in m₂; this can be seen from the size of his preference list in the final
+-- state of the matching. 
+is-better-matching : (m₁ m₂ : MatchingState) → Set
+is-better-matching (mkState men freeMen engagedMen women couples) (mkState men₁ freeMen₁ engagedMen₁ women₁ couples₁) =
+  is-stable-matching (mkState men freeMen engagedMen women couples) × is-stable-matching (mkState men₁ freeMen₁ engagedMen₁ women₁ couples₁) ×
+   ((m₁ m₂ : ℕ × List ℕ) → m₁ ∈ engagedMen →  m₂ ∈ engagedMen₁ → proj₁ m₁ ≡ proj₁ m₂ → length (proj₂ m₁) ≤ length (proj₂ m₂))
+
+-- Let us demonstrate with the first canonical example. Gale and Shapley tell us
+-- that another possible stable marriage (not return by their algorithm) is obtained
+-- by giving every woman her first choice:
+anotherPossibleStableMatching : MatchingState
+anotherPossibleStableMatching = mkState listMen [] _ listWomen ((3 , 1) ∷ (1 , 2) ∷ (2 , 3) ∷ [])
+
+matchIsBetter : is-better-matching exEnd anotherPossibleStableMatching
+matchIsBetter = {!!}
+
+
+{-- this is for correctness:
+-- stepInv : (m : MatchingState) → Inv m → Inv (step m)
+
+Something like:
+
+data GaleShapleyInv : (m : MatchingState) → Set where
+  inv : m ∈ m.listMen → w ∈ m.listWomen → b ∉ l(a) → (∃ a′ ∈ m : a′ ≻_{b} a ∨ p(a) = b
+-}
