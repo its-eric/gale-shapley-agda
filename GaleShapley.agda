@@ -68,6 +68,15 @@ getHusband woman ((m , w) ∷ (c ∷ cs)) with compare woman w
 ... | equal _ = just m --found your husband!
 ... | _       = getHusband woman (c ∷ cs) --keep searching
 
+getWife : ℕ → List (ℕ × ℕ) → Maybe ℕ
+getWife man [] = nothing
+getWife man ((m , w) ∷ []) with compare man m
+... | equal _ = just w --found your wife!
+... | _       = nothing --not married yet
+getWife man ((m , w) ∷ (c ∷ cs)) with compare man m
+... | equal _ = just w --found your wife!
+... | _       = getHusband man (c ∷ cs) --keep searching
+
 -- Simply extract a preference list from the scheme of indexed lists.
 getPreferenceList : ℕ → List (ℕ × List ℕ) → List ℕ
 getPreferenceList person [] = [] --dummy case
@@ -204,33 +213,25 @@ data _∈_ {A : Set}(a : A) : List A → Set where
 data _>just_ : Maybe ℕ → Maybe ℕ → Set where
   _from>_ : {m n : ℕ} → m > n → just m >just just n
 
--- Helper for the condition of stability:
--- an elem is worse than another one in a preference list
--- if it appears later in it.
-_≺[_]_ : ℕ → List ℕ → ℕ → Set
-elem ≺[ list ] elem₂ = positionInList elem₂ list >just positionInList elem list
+-- Helper for the condition of stability: a person is better than another one
+-- in a preference list if it appears earlier in it.
+_≻[_]_ : ℕ → List ℕ → Maybe ℕ → Set
+person ≻[ list ] just person₂ = positionInList person₂ list >just positionInList person list
+person ≻[ list ] nothing = ⊥
 
--- Given a list of men and women and their preferences, the condition of stability is satisfied for a
--- certain pair of couples (m₁ , w₁) , (m₂ , w₂) iff these four conditions are satisfied
-conditionOfStabilitySatisfied : (man : ℕ × List ℕ)(woman : ℕ × List ℕ)(man' : ℕ)(woman' : ℕ) → Set
-conditionOfStabilitySatisfied (man , prefsM) (woman , prefsW) m' w' =  ¬ ( ( woman ≺[ prefsM ] w' ) × ( man ≺[ prefsW ] m' ))
+-- Given a man and a woman and their preferences, the condition of stability is satisfied if
+-- another m' and w' are better positioned in their preference lists than each other AT THE SAME TIME.
+conditionOfStabilitySatisfied : (man : ℕ × List ℕ)(woman : ℕ × List ℕ)(m' w' : Maybe ℕ) → Set
+conditionOfStabilitySatisfied (man , prefsM) (woman , prefsW) m' w' = ¬ ( ( woman ≻[ prefsM ] w' ) × ( man ≻[ prefsW ] m' ))
 
-{--
-  (positionInList w₂ (getPreferenceList m₂ men)   >just positionInList  w₁ (getPreferenceList m₂ men) ⊎
-   positionInList w₁ (getPreferenceList m₁ men)   >just positionInList  w₂ (getPreferenceList m₁ men)) ×
-  (positionInList m₁ (getPreferenceList w₁ women) >just positionInList  m₂ (getPreferenceList w₁ women) ⊎ 
-   positionInList m₂ (getPreferenceList w₂ women) >just positionInList  m₁ (getPreferenceList w₂ women))
--}
-
-areMarried : (man : ℕ) → (woman : ℕ) → (couples : List ℕ × ℕ) → Bool
-areMarried = {!!}
-
--- a × b × c × d |-> (a + c) × (b + d)
--- A matching is stable iff the condition of stability is satisfied for every pair of couples formed.
+-- A matching is stable if the condition of stability is satisfied for every pair of man and woman not married.
 is-stable-matching : MatchingState → Set
 is-stable-matching (mkState men freeMen engagedMen women couples) =
-  (freeMen ≡ []) × ((m w m' w' : ℕ) → ¬ ((m , w) ∈ couples) → conditionOfStabilitySatisfied (m , {!!}) (w , {!!}) m' w')
-
+  (freeMen ≡ []) × (
+      (m w : ℕ)(m' w' : Maybe ℕ) → ¬ ((m , w) ∈ couples) → ¬ (getHusband w couples ≡ nothing) → ¬ (getWife m couples ≡ nothing) →
+        (m' ≡ getHusband w couples) → (w' ≡ getWife m couples) →
+          conditionOfStabilitySatisfied (m , getPreferenceList m men) (w , getPreferenceList w women) m' w')
+  
 exStart exEnd exEndExpected : MatchingState
 exStart       = mkState listMen listMen [] listWomen []
 -- Gale and Shapley tell us that, for the first simple example, each men gets his first woman from the list as a wife
@@ -251,11 +252,18 @@ result2IsWhatWeExpected : ex2End ≡ ex2EndExpected
 result2IsWhatWeExpected = refl
 
 {--
-matchIsStableHelper : (c₁ c₂ : ℕ × ℕ) → ¬ (c₁ ≡ c₂) →
-      c₁ ∈ MatchingState.couples exEnd →
-      c₂ ∈ MatchingState.couples exEnd →
-      conditionOfStabilitySatisfied (MatchingState.men exEnd)
-      (MatchingState.women exEnd) c₁ c₂
+matchIsStableHelper :  (m w : ℕ)(prefsM prefsW : List ℕ) →
+      ¬ ((m , w) ∈ MatchingState.couples exEnd) →
+      conditionOfStabilitySatisfied
+      (m ,
+       (getPreferenceList m
+        (MatchingState.men exEnd)))
+      (w ,
+       (getPreferenceList w
+        (MatchingState.women exEnd)))
+      (MatchingState.couples exEnd)
+matchIsStableHelper m w prefsM prefsW p = {!!}
+
 matchIsStableHelper _ _ p (now .((3 , 3) ∷ (1 , 1) ∷ [])) (now .((3 , 3) ∷ (1 , 1) ∷ [])) = ⊥-elim (p refl)
 matchIsStableHelper _ _ p (now .((3 , 3) ∷ (1 , 1) ∷ [])) (later (now .((1 , 1) ∷ []))) = {!!} , {!!}
 matchIsStableHelper _ _ p (now .((3 , 3) ∷ (1 , 1) ∷ [])) (later (later (now .[]))) = {!!}
