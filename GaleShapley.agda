@@ -113,24 +113,64 @@ step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples) with
 step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples) | nothing  = mkState men freeMen ((n , prefs) ∷ engagedMen) women (safeAddNewCouple (n , w) couples)
 
 sumPrefLists : (m : MatchingState) → ℕ
-sumPrefLists (mkState men [] _ women couples) = 0
--- sumPrefLists (mkState men [] ((man , prefs) ∷ engagedMen) women couples) = length prefs + sumPrefLists (mkState men [] engagedMen women couples)
-sumPrefLists (mkState men ((man , prefs) ∷ freeMen) engagedMen women couples) = length prefs + sumPrefLists (mkState men freeMen engagedMen women couples)
+sumPrefLists (mkState men [] [] women couples) = 0
+sumPrefLists (mkState men [] ((man , []) ∷ engagedMen) women couples) = 0 + sumPrefLists (mkState men [] engagedMen women couples)
+sumPrefLists (mkState men [] ((man , p ∷ prefs) ∷ engagedMen) women couples) = length (p ∷ prefs) + sumPrefLists (mkState men [] engagedMen women couples)
+sumPrefLists (mkState men ((man , []) ∷ freeMen) [] women couples) = 0 + sumPrefLists (mkState men freeMen [] women couples)
+sumPrefLists (mkState men ((man , p ∷ prefs) ∷ freeMen) [] women couples) = length (p ∷ prefs) + sumPrefLists (mkState men freeMen [] women couples)
+sumPrefLists (mkState men ((man₁ , []) ∷ freeMen) ((man₂ , []) ∷ engagedMen) women couples) = 0 + sumPrefLists (mkState men freeMen engagedMen women couples)
+sumPrefLists (mkState men ((man₁ , []) ∷ freeMen) ((man₂ , p₂ ∷ prefs₂) ∷ engagedMen) women couples) = 0 + length (p₂ ∷ prefs₂) + sumPrefLists (mkState men freeMen engagedMen women couples)
+sumPrefLists (mkState men ((man₁ , p₁ ∷ prefs₁) ∷ freeMen) ((man₂ , []) ∷ engagedMen) women couples) = length (p₁ ∷ prefs₁) + 0 + sumPrefLists (mkState men freeMen engagedMen women couples)
+sumPrefLists (mkState men ((man₁ , p₁ ∷ prefs₁) ∷ freeMen) ((man₂ , p₂ ∷ prefs₂) ∷ engagedMen) women couples) = length (p₁ ∷ prefs₁) + length (p₂ ∷ prefs₂) + sumPrefLists (mkState men freeMen engagedMen women couples)
 
 -- cong : (f : A → B) → a ≡ a' → f a ≡ f a'
-sumPrefLemma : ∀ men freeMen engMen women couples men' engMen' women' couples' → 
-  sumPrefLists (mkState men freeMen engMen women couples) ≡ sumPrefLists (mkState men' freeMen engMen' women' couples')
-sumPrefLemma men [] engMen women couples men' engMen' women' couples' = refl
-sumPrefLemma men (x ∷ freeMen) engMen women couples men' engMen' women' couples' = cong (length (proj₂ x) +_) (sumPrefLemma men freeMen engMen women couples men' engMen' women' couples')
+sumPrefLemma : ∀ men freeMen engagedMen women couples men' women' couples' → 
+  sumPrefLists (mkState men freeMen engagedMen women couples) ≡ sumPrefLists (mkState men' freeMen engagedMen women' couples')
+sumPrefLemma men [] [] women couples men' women' couples' = refl
+sumPrefLemma men [] ((man , []) ∷ engagedMen) women couples men' women' couples' = {!!}
+sumPrefLemma men [] ((man , p ∷ prefs) ∷ engagedMen) women couples men' women' couples' = {!!}
+sumPrefLemma men ((man , []) ∷ freeMen) [] women couples men' women' couples' = {!!}
+sumPrefLemma men ((man , p ∷ prefs) ∷ freeMen) [] women couples men' women' couples' = {!!}
+sumPrefLemma men ((man₁ , []) ∷ freeMen) ((man₂ , []) ∷ engagedMen) women couples men' women' couples' = {!!}
+sumPrefLemma men ((man₁ , []) ∷ freeMen) ((man₂ , p₂ ∷ prefs₂) ∷ engagedMen) women couples men' women' couples' = {!!}
+sumPrefLemma men ((man₁ , p₁ ∷ prefs₁) ∷ freeMen) ((man₂ , []) ∷ engagedMen) women couples men' women' couples' = {!!}
+sumPrefLemma men ((man₁ , p₁ ∷ prefs₁) ∷ freeMen) ((man₂ , p₂ ∷ prefs₂) ∷ engagedMen) women couples men' women' couples' = {!!}
+
+{--
+sumPrefLemma men [] ((man , prefs) ∷ engagedMen) women couples men' women' couples' = sumPrefLemma men [] engagedMen women couples men' women' couples' -- (length prefs +_) (sumPrefLemma men [] engagedMen women couples men' women' couples')
+sumPrefLemma men ((man , prefs) ∷ freeMen) [] women couples men' women' couples' = {!!} --cong (length prefs +_) (sumPrefLemma men freeMen [] women couples men' women' couples')
+sumPrefLemma men ((man₁ , prefs₁) ∷ freeMen) ((man₂ , prefs₂) ∷ engagedMen) women couples men' women' couples' = {!!} --cong (length prefs₁ + length prefs₂ +_) (sumPrefLemma men freeMen engagedMen women couples men' women' couples')
+-}
+
+decompLemma : ∀ men freeMen engagedMen (prefs : List ℕ) women couples → ¬ (freeMen ≡ []) → ¬ (engagedMen ≡ []) → ¬ (prefs ≡ []) →
+  length prefs + sumPrefLists (mkState men freeMen engagedMen women couples) ≥ sumPrefLists (step (mkState men freeMen engagedMen women couples))
+decompLemma men [] [] [] women couples p₁ p₂ p₃ = z≤n
+decompLemma men [] [] (p ∷ prefs) women couples p₁ p₂ p₃ = ⊥-elim (p₁ refl)
+decompLemma men [] (man ∷ engagedMen) [] women couples p₁ p₂ p₃ = ≤-refl
+decompLemma men [] (man ∷ engagedMen) (x₁ ∷ prefs) women couples p₁ p₂ p₃ = ⊥-elim (p₁ refl)
+decompLemma men (man ∷ freeMen) [] [] women couples p₁ p₂ p₃ =  ⊥-elim (p₂ refl)
+decompLemma men (man ∷ freeMen) [] (p ∷ prefs) women couples p₁ p₂ p₃ = ⊥-elim (p₂ refl)
+decompLemma men (man₁ ∷ freeMen) (man₂ ∷ engagedMen) [] women couples p₁ p₂ p₃ = ⊥-elim (p₃ refl)
+decompLemma men (man₁ ∷ freeMen) (man₂ ∷ engagedMen) (p ∷ prefs) women couples p₁ p₂ p₃ = {!!}
 
 stepDec : (m : MatchingState) → sumPrefLists m ≥ sumPrefLists (step m)
-stepDec (mkState men []             engagedMen women couples) = z≤n
+stepDec (mkState men [] [] women couples) = z≤n
+stepDec (mkState men [] ((man , prefs) ∷ engagedMen) women couples) = ≤-refl
+stepDec (mkState men ((man , w ∷ prefs) ∷ freeMen) engagedMen women couples) with getHusband w couples
+...             | just h with propose man h (getPreferenceList w women)
+...             | true = {!!}
+...             | false = {!!} -- n≤1+n _
+stepDec (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples) | nothing = {!!}
+
+{--
+stepDec (mkState men []             engagedMen women couples) = {!!} -- z≤n
 stepDec (mkState men ((n , []) ∷ freeMen) engagedMen women couples) = ≤-refl
 stepDec (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples) with getHusband w couples
 ...             | just h with propose n h (getPreferenceList w women)
 ...             | true = {!!}
-...             | false = n≤1+n _
+...             | false = {!!} -- n≤1+n _
 stepDec (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples) | nothing = {!!}
+-}
 
 {-# TERMINATING #-}
 allSteps : (m : MatchingState)(k : ℕ) → sumPrefLists m ≡ k → MatchingState
@@ -164,21 +204,32 @@ data _∈_ {A : Set}(a : A) : List A → Set where
 data _>just_ : Maybe ℕ → Maybe ℕ → Set where
   _from>_ : {m n : ℕ} → m > n → just m >just just n
 
+-- Helper for the condition of stability:
+-- an elem is worse than another one in a preference list
+-- if it appears later in it.
+_≺[_]_ : ℕ → List ℕ → ℕ → Set
+elem ≺[ list ] elem₂ = positionInList elem₂ list >just positionInList elem list
+
 -- Given a list of men and women and their preferences, the condition of stability is satisfied for a
 -- certain pair of couples (m₁ , w₁) , (m₂ , w₂) iff these four conditions are satisfied
-conditionOfStabilitySatisfied : (men : List (ℕ × List ℕ))(women : List (ℕ × List ℕ)) → ℕ × ℕ → ℕ × ℕ → Set
-conditionOfStabilitySatisfied men women (m₁ , w₁) (m₂ , w₂) =
+conditionOfStabilitySatisfied : (man : ℕ × List ℕ)(woman : ℕ × List ℕ)(man' : ℕ)(woman' : ℕ) → Set
+conditionOfStabilitySatisfied (man , prefsM) (woman , prefsW) m' w' =  ¬ ( ( woman ≺[ prefsM ] w' ) × ( man ≺[ prefsW ] m' ))
+
+{--
   (positionInList w₂ (getPreferenceList m₂ men)   >just positionInList  w₁ (getPreferenceList m₂ men) ⊎
    positionInList w₁ (getPreferenceList m₁ men)   >just positionInList  w₂ (getPreferenceList m₁ men)) ×
   (positionInList m₁ (getPreferenceList w₁ women) >just positionInList  m₂ (getPreferenceList w₁ women) ⊎ 
    positionInList m₂ (getPreferenceList w₂ women) >just positionInList  m₁ (getPreferenceList w₂ women))
+-}
+
+areMarried : (man : ℕ) → (woman : ℕ) → (couples : List ℕ × ℕ) → Bool
+areMarried = {!!}
 
 -- a × b × c × d |-> (a + c) × (b + d)
-
 -- A matching is stable iff the condition of stability is satisfied for every pair of couples formed.
 is-stable-matching : MatchingState → Set
 is-stable-matching (mkState men freeMen engagedMen women couples) =
-  (freeMen ≡ []) × ((c₁ c₂ : ℕ × ℕ) → ¬ (c₁ ≡ c₂) → c₁ ∈ couples → c₂ ∈ couples → conditionOfStabilitySatisfied men women c₁ c₂)
+  (freeMen ≡ []) × ((m w m' w' : ℕ) → ¬ ((m , w) ∈ couples) → conditionOfStabilitySatisfied (m , {!!}) (w , {!!}) m' w')
 
 exStart exEnd exEndExpected : MatchingState
 exStart       = mkState listMen listMen [] listWomen []
@@ -199,6 +250,7 @@ ex2End           = step (step (step (step (step (step (step (step (step ex2Start
 result2IsWhatWeExpected : ex2End ≡ ex2EndExpected
 result2IsWhatWeExpected = refl
 
+{--
 matchIsStableHelper : (c₁ c₂ : ℕ × ℕ) → ¬ (c₁ ≡ c₂) →
       c₁ ∈ MatchingState.couples exEnd →
       c₂ ∈ MatchingState.couples exEnd →
@@ -220,9 +272,10 @@ matchIsStableHelper _ _ p (later (later (now .[]))) (later (later (now .[]))) = 
 matchIsStableHelper _ _ p (later (later (now .[]))) (later (later (later ())))
 matchIsStableHelper _ _ p (later (later (later ()))) (later (later (now .[])))
 matchIsStableHelper _ _ p (later (later (later ()))) (later (later (later p₂)))
+-}
 
 matchIsStable : is-stable-matching exEnd
-matchIsStable = refl , matchIsStableHelper
+matchIsStable = refl , {!!} --matchIsStableHelper
 
 -- In order to define that a matching m₁ is better than a matching m₂,
 -- we take into consideration that every man gets a better (earlier in his list) wife
