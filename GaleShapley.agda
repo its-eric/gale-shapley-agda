@@ -2,13 +2,17 @@ module GaleShapley where
 
 open import Agda.Builtin.String
 open import Agda.Builtin.Equality
+open import Data.Empty
 open import Data.Maybe
 open import Data.Nat
+open import Data.Nat.Properties
 open import Data.Product
 open import Data.Bool
 open import Data.List
+open import Data.Sum
 open import Relation.Nullary
 open import Induction.WellFounded
+open import Relation.Binary.PropositionalEquality
 
 infix 3 _>just_
 infix 4 _from>_
@@ -113,11 +117,20 @@ sumPrefLists (mkState men [] _ women couples) = 0
 -- sumPrefLists (mkState men [] ((man , prefs) ∷ engagedMen) women couples) = length prefs + sumPrefLists (mkState men [] engagedMen women couples)
 sumPrefLists (mkState men ((man , prefs) ∷ freeMen) engagedMen women couples) = length prefs + sumPrefLists (mkState men freeMen engagedMen women couples)
 
+-- cong : (f : A → B) → a ≡ a' → f a ≡ f a'
+sumPrefLemma : ∀ men freeMen engMen women couples men' engMen' women' couples' → 
+  sumPrefLists (mkState men freeMen engMen women couples) ≡ sumPrefLists (mkState men' freeMen engMen' women' couples')
+sumPrefLemma men [] engMen women couples men' engMen' women' couples' = refl
+sumPrefLemma men (x ∷ freeMen) engMen women couples men' engMen' women' couples' = cong (length (proj₂ x) +_) (sumPrefLemma men freeMen engMen women couples men' engMen' women' couples')
+
 stepDec : (m : MatchingState) → sumPrefLists m ≥ sumPrefLists (step m)
 stepDec (mkState men []             engagedMen women couples) = z≤n
-stepDec m with sumPrefLists (step m) ≤? sumPrefLists m
-... | yes p = p
-... | no p  = {!!}
+stepDec (mkState men ((n , []) ∷ freeMen) engagedMen women couples) = ≤-refl
+stepDec (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples) with getHusband w couples
+...             | just h with propose n h (getPreferenceList w women)
+...             | true = {!!}
+...             | false = n≤1+n _
+stepDec (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples) | nothing = {!!}
 
 {-# TERMINATING #-}
 allSteps : (m : MatchingState)(k : ℕ) → sumPrefLists m ≡ k → MatchingState
@@ -149,20 +162,23 @@ data _∈_ {A : Set}(a : A) : List A → Set where
 
 -- Bigger than comparison for Maybe ℕ-typed elements. 
 data _>just_ : Maybe ℕ → Maybe ℕ → Set where
-  _from>_ : (m n : ℕ) → just m >just just n
+  _from>_ : {m n : ℕ} → m > n → just m >just just n
 
 -- Given a list of men and women and their preferences, the condition of stability is satisfied for a
 -- certain pair of couples (m₁ , w₁) , (m₂ , w₂) iff these four conditions are satisfied
 conditionOfStabilitySatisfied : (men : List (ℕ × List ℕ))(women : List (ℕ × List ℕ)) → ℕ × ℕ → ℕ × ℕ → Set
 conditionOfStabilitySatisfied men women (m₁ , w₁) (m₂ , w₂) =
-  positionInList w₂ (getPreferenceList m₁ men)   >just positionInList  w₁ (getPreferenceList m₁ men) ×
-  positionInList m₁ (getPreferenceList w₂ women) >just positionInList  m₂ (getPreferenceList w₂ women) ×
-  positionInList w₁ (getPreferenceList m₂ men)   >just positionInList  w₂ (getPreferenceList m₂ men) ×
-  positionInList m₂ (getPreferenceList w₁ women) >just positionInList  m₁ (getPreferenceList w₁ women)
+  (positionInList w₂ (getPreferenceList m₂ men)   >just positionInList  w₁ (getPreferenceList m₂ men) ⊎
+   positionInList w₁ (getPreferenceList m₁ men)   >just positionInList  w₂ (getPreferenceList m₁ men)) ×
+  (positionInList m₁ (getPreferenceList w₁ women) >just positionInList  m₂ (getPreferenceList w₁ women) ⊎ 
+   positionInList m₂ (getPreferenceList w₂ women) >just positionInList  m₁ (getPreferenceList w₂ women))
+
+-- a × b × c × d |-> (a + c) × (b + d)
 
 -- A matching is stable iff the condition of stability is satisfied for every pair of couples formed.
 is-stable-matching : MatchingState → Set
-is-stable-matching (mkState men freeMen engagedMen women couples) = (freeMen ≡ []) × ((c₁ c₂ : ℕ × ℕ) → c₁ ∈ couples → c₂ ∈ couples → conditionOfStabilitySatisfied men women c₁ c₂)
+is-stable-matching (mkState men freeMen engagedMen women couples) =
+  (freeMen ≡ []) × ((c₁ c₂ : ℕ × ℕ) → ¬ (c₁ ≡ c₂) → c₁ ∈ couples → c₂ ∈ couples → conditionOfStabilitySatisfied men women c₁ c₂)
 
 exStart exEnd exEndExpected : MatchingState
 exStart       = mkState listMen listMen [] listWomen []
@@ -183,8 +199,30 @@ ex2End           = step (step (step (step (step (step (step (step (step ex2Start
 result2IsWhatWeExpected : ex2End ≡ ex2EndExpected
 result2IsWhatWeExpected = refl
 
+matchIsStableHelper : (c₁ c₂ : ℕ × ℕ) → ¬ (c₁ ≡ c₂) →
+      c₁ ∈ MatchingState.couples exEnd →
+      c₂ ∈ MatchingState.couples exEnd →
+      conditionOfStabilitySatisfied (MatchingState.men exEnd)
+      (MatchingState.women exEnd) c₁ c₂
+matchIsStableHelper _ _ p (now .((3 , 3) ∷ (1 , 1) ∷ [])) (now .((3 , 3) ∷ (1 , 1) ∷ [])) = ⊥-elim (p refl)
+matchIsStableHelper _ _ p (now .((3 , 3) ∷ (1 , 1) ∷ [])) (later (now .((1 , 1) ∷ []))) = {!!} , {!!}
+matchIsStableHelper _ _ p (now .((3 , 3) ∷ (1 , 1) ∷ [])) (later (later (now .[]))) = {!!}
+matchIsStableHelper _ _ p (now .((3 , 3) ∷ (1 , 1) ∷ [])) (later (later (later ())))
+matchIsStableHelper _ _ p (later (now .((1 , 1) ∷ []))) (now .((3 , 3) ∷ (1 , 1) ∷ [])) = {!!}
+matchIsStableHelper _ _ p (later (later (now .[]))) (now .((3 , 3) ∷ (1 , 1) ∷ [])) = {!!}
+matchIsStableHelper _ _ p (later (later (later ()))) (now .((3 , 3) ∷ (1 , 1) ∷ []))
+matchIsStableHelper _ _ p (later (now .((1 , 1) ∷ []))) (later (now .((1 , 1) ∷ []))) = ⊥-elim (p refl)
+matchIsStableHelper _ _ p (later (now .((1 , 1) ∷ []))) (later (later (now .[]))) = {!!}
+matchIsStableHelper _ _ p (later (now .((1 , 1) ∷ []))) (later (later (later ())))
+matchIsStableHelper _ _ p (later (later (now .[]))) (later (now .((1 , 1) ∷ []))) = {!!}
+matchIsStableHelper _ _ p (later (later (later ()))) (later (now .((1 , 1) ∷ [])))
+matchIsStableHelper _ _ p (later (later (now .[]))) (later (later (now .[]))) = ⊥-elim (p refl)
+matchIsStableHelper _ _ p (later (later (now .[]))) (later (later (later ())))
+matchIsStableHelper _ _ p (later (later (later ()))) (later (later (now .[])))
+matchIsStableHelper _ _ p (later (later (later ()))) (later (later (later p₂)))
+
 matchIsStable : is-stable-matching exEnd
-matchIsStable = {!!}
+matchIsStable = refl , matchIsStableHelper
 
 -- In order to define that a matching m₁ is better than a matching m₂,
 -- we take into consideration that every man gets a better (earlier in his list) wife
