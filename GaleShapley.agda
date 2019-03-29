@@ -152,17 +152,6 @@ lengthLemma : ∀ men freeMen engagedMen women couples (prefs : List ℕ) → ¬
 lengthLemma men freeMen [] women couples prefs p = {!!}
 lengthLemma men [] (x ∷ engagedMen) women couples prefs p = ⊥-elim (p refl)
 lengthLemma men (man₁ ∷ freeMen) (man₂ ∷ engagedMen) women couples prefs p = {!!}
-
-decompLemma : ∀ men freeMen engagedMen (prefs : List ℕ) women couples → ¬ (freeMen ≡ []) → ¬ (engagedMen ≡ []) → ¬ (prefs ≡ []) →
-  length prefs + sumPrefLists (mkState men freeMen engagedMen women couples) ≥ sumPrefLists (step (mkState men freeMen engagedMen women couples))
-decompLemma men [] [] [] women couples p₁ p₂ p₃ = z≤n
-decompLemma men [] [] (p ∷ prefs) women couples p₁ p₂ p₃ = ⊥-elim (p₁ refl)
-decompLemma men [] (man ∷ engagedMen) [] women couples p₁ p₂ p₃ = ≤-refl
-decompLemma men [] (man ∷ engagedMen) (x₁ ∷ prefs) women couples p₁ p₂ p₃ = ⊥-elim (p₁ refl)
-decompLemma men (man ∷ freeMen) [] [] women couples p₁ p₂ p₃ =  ⊥-elim (p₂ refl)
-decompLemma men (man ∷ freeMen) [] (p ∷ prefs) women couples p₁ p₂ p₃ = ⊥-elim (p₂ refl)
-decompLemma men (man₁ ∷ freeMen) (man₂ ∷ engagedMen) [] women couples p₁ p₂ p₃ = ⊥-elim (p₃ refl)
-decompLemma men (man₁ ∷ freeMen) (man₂ ∷ engagedMen) (p ∷ prefs) women couples p₁ p₂ p₃ = ≤-reflexive {!!}
 -}
 
 lemmaProposeTrue : ∀ (men women freeMen engagedMen : List (ℕ × List ℕ))(formerHusband man woman : ℕ)(formerHusbandPrefList : List ℕ)(prefs : List ℕ)(couples : List (ℕ × ℕ)) →
@@ -191,6 +180,18 @@ allSteps : (m : MatchingState)(k : ℕ) → sumPrefLists m ≡ k → MatchingSta
 allSteps m k p with step m
 ... | mkState men [] engagedMen women couples = mkState men [] engagedMen women couples
 ... | m' = allSteps m' (sumPrefLists m') refl
+
+decompLemma : ∀ men freeMen engagedMen (prefs : List ℕ) women couples (m : ℕ) (xs : List (ℕ × List ℕ)) → ¬ (freeMen ≡ []) → ¬ (engagedMen ≡ []) → ¬ (prefs ≡ []) → freeMen ≡ ((m , prefs) ∷ xs) →
+  length prefs + sumPrefLists (mkState men freeMen engagedMen women couples) ≥ sumPrefLists (step (mkState men freeMen engagedMen women couples))
+decompLemma men [] [] [] women couples m xs p₁ p₂ p₃ p₄ = z≤n
+decompLemma men [] [] (p ∷ prefs) women couples m xs p₁ p₂ p₃ p₄ = z≤n
+decompLemma men [] (man ∷ engagedMen) [] women couples m xs p₁ p₂ p₃ p₄ = ≤-refl -- ≤-refl
+decompLemma men [] (man ∷ engagedMen) (x₁ ∷ prefs) women couples m xs p₁ p₂ p₃ p₄ = {!!} --⊥-elim (p₁ refl)
+decompLemma men (man ∷ freeMen) [] [] women couples m xs p₁ p₂ p₃ p₄ =  stepDec (mkState men (man ∷ freeMen) [] women couples) --⊥-elim (p₂ refl)
+decompLemma men (man ∷ freeMen) [] (p ∷ prefs) women couples m xs p₁ p₂ p₃ p₄ = {!!} -- ⊥-elim (p₂ refl)
+decompLemma men (man₁ ∷ freeMen) (man₂ ∷ engagedMen) [] women couples m xs p₁ p₂ p₃ p₄ = {!!} -- ⊥-elim (p₃ refl)
+decompLemma men (man₁ ∷ freeMen) (man₂ ∷ engagedMen) (p ∷ prefs) women couples m xs p₁ p₂ p₃ p₄ = {!!} -- ≤-reflexive {!!}
+
 
 -- List of preferences of men and women from the Gale-Shapley canonical example
 listMen : List (ℕ × List ℕ)
@@ -265,7 +266,7 @@ matchIsStableHelper : (c₁ c₂ : ℕ × ℕ)  →
       (((proj₁ c₁) , (getPreferenceList (proj₁ c₁) (MatchingState.men exEnd))) , ((proj₂ c₁) , (getPreferenceList (proj₂ c₁) (MatchingState.women exEnd))))
       (((proj₁ c₂) , (getPreferenceList (proj₁ c₂) (MatchingState.men exEnd))) , ((proj₂ c₂) , (getPreferenceList (proj₂ c₂) (MatchingState.women exEnd))))
 matchIsStableHelper _ _ (now .((3 , 3) ∷ (1 , 1) ∷ [])) (now .((3 , 3) ∷ (1 , 1) ∷ [])) p = ⊥-elim (p refl) , ⊥-elim (p refl)
-matchIsStableHelper _ _ (now .((3 , 3) ∷ (1 , 1) ∷ [])) (later (now .((1 , 1) ∷ []))) p =  ⊥-elim (p {!!}) , {!!}
+matchIsStableHelper _ _ (now .((3 , 3) ∷ (1 , 1) ∷ [])) (later (now .((1 , 1) ∷ []))) p =  ⊥-elim (p {!⊥-elim!}) , {!!}
 matchIsStableHelper _ _ (now .((3 , 3) ∷ (1 , 1) ∷ [])) (later (later (now .[]))) p = ⊥-elim (p {!!})
 matchIsStableHelper _ _ (now .((3 , 3) ∷ (1 , 1) ∷ [])) (later (later (later ()))) p
 matchIsStableHelper _ _ (later (now .((1 , 1) ∷ []))) (now .((3 , 3) ∷ (1 , 1) ∷ [])) p = {!!}
@@ -296,7 +297,7 @@ is-better-matching (mkState men freeMen engagedMen women couples) (mkState men�
 -- that another possible stable marriage (not return by their algorithm) is obtained
 -- by giving every woman her first choice:
 anotherPossibleStableMatching : MatchingState
-anotherPossibleStableMatching = mkState listMen [] _ listWomen ((3 , 1) ∷ (1 , 2) ∷ (2 , 3) ∷ [])
+anotherPossibleStableMatching = mkState listMen [] _ listWomen ((3 , 2) ∷ (1 , 3) ∷ (2 , 1) ∷ [])
 
 anotherMatchIsStableHelper : (c₁ c₂ : ℕ × ℕ) →
       c₁ ∈ MatchingState.couples anotherPossibleStableMatching →
@@ -305,9 +306,27 @@ anotherMatchIsStableHelper : (c₁ c₂ : ℕ × ℕ) →
       conditionOfStabilitySatisfied
       (((proj₁ c₁) , (getPreferenceList (proj₁ c₁) (MatchingState.men anotherPossibleStableMatching))) , ((proj₂ c₁) , (getPreferenceList (proj₂ c₁) (MatchingState.women anotherPossibleStableMatching))))
       (((proj₁ c₂) , (getPreferenceList (proj₁ c₂) (MatchingState.men anotherPossibleStableMatching))) , ((proj₂ c₂) , (getPreferenceList (proj₂ c₂) (MatchingState.women anotherPossibleStableMatching))))
+anotherMatchIsStableHelper _ _ (now .((1 , 3) ∷ (2 , 1) ∷ [])) (now .((1 , 3) ∷ (2 , 1) ∷ [])) p = ⊥-elim (p refl)
+anotherMatchIsStableHelper _ _ (now .((1 , 3) ∷ (2 , 1) ∷ [])) (later (now .((2 , 1) ∷ []))) p = ⊥-elim (p {!!}) , {!!}
+anotherMatchIsStableHelper _ _ (now .((1 , 3) ∷ (2 , 1) ∷ [])) (later (later (now .[]))) p = {!!}
+anotherMatchIsStableHelper _ _ (now .((1 , 3) ∷ (2 , 1) ∷ [])) (later (later (later ()))) p
+anotherMatchIsStableHelper _ _ (later (now .((2 , 1) ∷ []))) (now .((1 , 3) ∷ (2 , 1) ∷ [])) p = {!!}
+anotherMatchIsStableHelper _ _ (later (later (now .[]))) (now .((1 , 3) ∷ (2 , 1) ∷ [])) p = {!!}
+anotherMatchIsStableHelper _ _ (later (later (later ()))) (now .((1 , 3) ∷ (2 , 1) ∷ [])) p
+anotherMatchIsStableHelper _ _ (later (now .((2 , 1) ∷ []))) (later (now .((2 , 1) ∷ []))) p = {!!}
+anotherMatchIsStableHelper _ _ (later (now .((2 , 1) ∷ []))) (later (later (now .[]))) p = {!!}
+anotherMatchIsStableHelper _ _ (later (now .((2 , 1) ∷ []))) (later (later (later ()))) p
+anotherMatchIsStableHelper _ _ (later (later (now .[]))) (later (now .((2 , 1) ∷ []))) p = {!!}
+anotherMatchIsStableHelper _ _ (later (later (later ()))) (later (now .((2 , 1) ∷ []))) p
+anotherMatchIsStableHelper _ _ (later (later (now .[]))) (later (later (now .[]))) p = {!!}
+anotherMatchIsStableHelper _ _ (later (later (now .[]))) (later (later (later ()))) p
+anotherMatchIsStableHelper _ _ (later (later (later ()))) (later (later (now .[]))) p
+anotherMatchIsStableHelper _ _ (later (later (later ()))) (later (later (later c₂))) p
+
+{--
 anotherMatchIsStableHelper _ _ (now .((1 , 2) ∷ (2 , 3) ∷ [])) (now .((1 , 2) ∷ (2 , 3) ∷ [])) p = ⊥-elim (p refl) , ⊥-elim (p refl)
-anotherMatchIsStableHelper _ _ (now .((1 , 2) ∷ (2 , 3) ∷ [])) (later (now .((2 , 3) ∷ []))) p = {!!} , {!!}
-anotherMatchIsStableHelper _ _ (now .((1 , 2) ∷ (2 , 3) ∷ [])) (later (later (now .[]))) p = {!!}
+anotherMatchIsStableHelper _ _ (now .((1 , 2) ∷ (2 , 3) ∷ [])) (later (now .((2 , 3) ∷ []))) p = ⊥-elim (p _) , ⊥-elim (p _)
+anotherMatchIsStableHelper _ _ (now .((1 , 2) ∷ (2 , 3) ∷ [])) (later (later (now .[]))) p = ⊥-elim (p {!!})
 anotherMatchIsStableHelper _ _ (now .((1 , 2) ∷ (2 , 3) ∷ [])) (later (later (later ()))) p
 anotherMatchIsStableHelper _ _ (later (now .((2 , 3) ∷ []))) (now .((1 , 2) ∷ (2 , 3) ∷ [])) p = {!!}
 anotherMatchIsStableHelper _ _ (later (later (now .[]))) (now .((1 , 2) ∷ (2 , 3) ∷ [])) p = {!!}
@@ -321,9 +340,10 @@ anotherMatchIsStableHelper _ _ (later (later (now .[]))) (later (later (now .[])
 anotherMatchIsStableHelper _ _ (later (later (now .[]))) (later (later (later ()))) p
 anotherMatchIsStableHelper _ _ (later (later (later ()))) (later (later (now .[]))) p
 anotherMatchIsStableHelper _ _ (later (later (later ()))) (later (later (later c₂))) p
+-}
 
 itIsAlsoStable : is-stable-matching anotherPossibleStableMatching
-itIsAlsoStable = refl , {!!}
+itIsAlsoStable = refl , anotherMatchIsStableHelper
 
 matchIsBetter : is-better-matching exEnd anotherPossibleStableMatching
 matchIsBetter = matchIsStable , {!!} , {!!}
