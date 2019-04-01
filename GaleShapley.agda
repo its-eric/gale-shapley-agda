@@ -145,14 +145,19 @@ sumPrefLemma men ((man₁ , []) ∷ freeMen) ((man₂ , []) ∷ engagedMen) wome
 sumPrefLemma men ((man₁ , []) ∷ freeMen) ((man₂ , p₂ ∷ prefs₂) ∷ engagedMen) women couples men' women' couples' = cong (length (p₂ ∷ prefs₂) +_) (sumPrefLemma men freeMen engagedMen women couples men' women' couples')
 sumPrefLemma men ((man₁ , p₁ ∷ prefs₁) ∷ freeMen) ((man₂ , []) ∷ engagedMen) women couples men' women' couples' = cong (length (p₁ ∷ prefs₁) + 0 +_) (sumPrefLemma men freeMen engagedMen women couples men' women' couples')
 sumPrefLemma men ((man₁ , p₁ ∷ prefs₁) ∷ freeMen) ((man₂ , p₂ ∷ prefs₂) ∷ engagedMen) women couples men' women' couples' = cong (length (p₁ ∷ prefs₁) + length (p₂ ∷ prefs₂) +_) (sumPrefLemma men freeMen engagedMen women couples men' women' couples')
- 
-{--
-lengthLemma : ∀ men freeMen engagedMen women couples (prefs : List ℕ) → ¬ (freeMen ≡ []) → 
-            1 + sumPrefLists (step (mkState men freeMen engagedMen women couples)) ≡ sumPrefLists (mkState men freeMen engagedMen women couples)
-lengthLemma men freeMen [] women couples prefs p = {!!}
-lengthLemma men [] (x ∷ engagedMen) women couples prefs p = ⊥-elim (p refl)
-lengthLemma men (man₁ ∷ freeMen) (man₂ ∷ engagedMen) women couples prefs p = {!!}
--}
+
+-- Lemma 2: Given the same matching state but one woman is removed, the difference of the sums of the preference lists is one.
+lengthLemma : ∀ men freeMen engagedMen women couples m w prefs → (¬ (freeMen ≡ [])) ⊎ (¬ (engagedMen ≡ [])) → -- ¬ (prefs ≡ []) 
+            1 + sumPrefLists (mkState men ((m , (w ∷ prefs)) ∷ freeMen) engagedMen women couples) ≡ sumPrefLists (mkState men ((m , prefs) ∷ freeMen) engagedMen women couples)
+lengthLemma men [] [] women couples m w prefs p₁ = ⊥-elim {!!}
+lengthLemma men [] ((man , []) ∷ engagedMen) women couples m w prefs p₁ = {!!}
+lengthLemma men [] ((man , p ∷ prefs) ∷ engagedMen) women couples m w prefs₁ p₁ = {!!}
+lengthLemma men ((man , []) ∷ freeMen) [] women couples m w prefs p₁ = {!!}
+lengthLemma men ((man , p ∷ prefs) ∷ freeMen) [] women couples m w prefs₁ p₁ = {!!}
+lengthLemma men ((man₁ , []) ∷ freeMen) ((man₂ , []) ∷ engagedMen) women couples m w prefs p₁ = {!!}
+lengthLemma men ((man₁ , []) ∷ freeMen) ((man₂ , p₂ ∷ prefs₂) ∷ engagedMen) women couples m w prefs_ p₁_ = {!!}
+lengthLemma men ((man₁ , p₁ ∷ prefs₁) ∷ freeMen) ((man₂ , []) ∷ engagedMen) women couples m w prefs_ p₁_ = {!!}
+lengthLemma men ((man₁ , p₁ ∷ prefs₁) ∷ freeMen) ((man₂ , p₂ ∷ prefs₂) ∷ engagedMen) women couples m w prefs p₁_ = {!!}
 
 lemmaProposeTrue : ∀ (men women freeMen engagedMen : List (ℕ × List ℕ))(formerHusband man woman : ℕ)(formerHusbandPrefList : List ℕ)(prefs : List ℕ)(couples : List (ℕ × ℕ)) →
       sumPrefLists
@@ -165,33 +170,33 @@ lemmaProposeTrue : ∀ (men women freeMen engagedMen : List (ℕ × List ℕ))(f
        couples)
 lemmaProposeTrue men women freeMen engagedMen formerHusband man woman formerHusbandPrefList prefs couples = {!!}
 
+oneWomanLessLemma : ∀ men man (w : ℕ) prefs freeMen engagedMen women couples →
+    sumPrefLists (mkState men ((man , prefs) ∷ freeMen) engagedMen women couples) ≤ sumPrefLists (mkState men ((man , w ∷ prefs) ∷ freeMen) engagedMen women couples)
+oneWomanLessLemma men man w prefs [] [] women couples = {!!}
+oneWomanLessLemma men man w prefs [] (m ∷ engagedMen) women couples = {!!}
+oneWomanLessLemma men man w prefs (m ∷ freeMen) [] women couples = {!!}
+oneWomanLessLemma men man w prefs (m₁ ∷ freeMen) (m₂ ∷ engagedMen) women couples = {!!}
+
+singleWomanLemma : ∀ men freeMen engagedMen women couples n w prefs → 
+      sumPrefLists (mkState men freeMen ((n , prefs) ∷ engagedMen) women (safeAddNewCouple (n , w) couples)) ≤
+      sumPrefLists (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples)
+singleWomanLemma men freeMen engagedMen women couples n w prefs = ≤-reflexive {!!}
+
 stepDec : (m : MatchingState) → sumPrefLists m ≥ sumPrefLists (step m)
 stepDec (mkState men [] [] women couples) = z≤n
 stepDec (mkState men [] ((man , prefs) ∷ engagedMen) women couples) = ≤-refl
 stepDec (mkState men ((man , []) ∷ freeMen) engagedMen women couples) = ≤-refl
 stepDec (mkState men ((man , w ∷ prefs) ∷ freeMen) engagedMen women couples) with getHusband w couples
 ...             | just h with propose man h (getPreferenceList w women)
-...             | true  = {!!}
-...             | false = {!!} -- n≤1+n _
-stepDec (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples) | nothing = {!!}
+...             | true  = {!!} -- lemmaProposeTrue
+...             | false = {!!} -- oneWomanLessLemma men man w prefs freeMen engagedMen women couples -- n≤1+n _
+stepDec (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples) | nothing = singleWomanLemma men freeMen engagedMen women couples n w prefs
 
 {-# TERMINATING #-}
 allSteps : (m : MatchingState)(k : ℕ) → sumPrefLists m ≡ k → MatchingState
 allSteps m k p with step m
 ... | mkState men [] engagedMen women couples = mkState men [] engagedMen women couples
 ... | m' = allSteps m' (sumPrefLists m') refl
-
-decompLemma : ∀ men freeMen engagedMen (prefs : List ℕ) women couples (m : ℕ) (xs : List (ℕ × List ℕ)) → ¬ (freeMen ≡ []) → ¬ (engagedMen ≡ []) → ¬ (prefs ≡ []) → freeMen ≡ ((m , prefs) ∷ xs) →
-  length prefs + sumPrefLists (mkState men freeMen engagedMen women couples) ≥ sumPrefLists (step (mkState men freeMen engagedMen women couples))
-decompLemma men [] [] [] women couples m xs p₁ p₂ p₃ p₄ = z≤n
-decompLemma men [] [] (p ∷ prefs) women couples m xs p₁ p₂ p₃ p₄ = z≤n
-decompLemma men [] (man ∷ engagedMen) [] women couples m xs p₁ p₂ p₃ p₄ = ≤-refl -- ≤-refl
-decompLemma men [] (man ∷ engagedMen) (x₁ ∷ prefs) women couples m xs p₁ p₂ p₃ p₄ = {!!} --⊥-elim (p₁ refl)
-decompLemma men (man ∷ freeMen) [] [] women couples m xs p₁ p₂ p₃ p₄ =  stepDec (mkState men (man ∷ freeMen) [] women couples) --⊥-elim (p₂ refl)
-decompLemma men (man ∷ freeMen) [] (p ∷ prefs) women couples m xs p₁ p₂ p₃ p₄ = {!!} -- ⊥-elim (p₂ refl)
-decompLemma men (man₁ ∷ freeMen) (man₂ ∷ engagedMen) [] women couples m xs p₁ p₂ p₃ p₄ = {!!} -- ⊥-elim (p₃ refl)
-decompLemma men (man₁ ∷ freeMen) (man₂ ∷ engagedMen) (p ∷ prefs) women couples m xs p₁ p₂ p₃ p₄ = {!!} -- ≤-reflexive {!!}
-
 
 -- List of preferences of men and women from the Gale-Shapley canonical example
 listMen : List (ℕ × List ℕ)
@@ -228,7 +233,7 @@ person ≻[ list ] person₂ = positionInList person₂ list >just positionInLis
 -- another m' and w' are not better positioned in their preference lists than their partners.
 conditionOfStabilitySatisfied : (c₁ : (ℕ × List ℕ) × (ℕ × List ℕ))(c₂ : (ℕ × List ℕ) × (ℕ × List ℕ)) → Set
 conditionOfStabilitySatisfied ((m , prefsM) , w , prefsW) ((m' , prefsM') , w' , prefsW') =
-  (¬ ( ( w' ≻[ prefsM ] w ) ×  ( m ≻[ prefsW' ] m' ))) × (¬ ( (w ≻[ prefsM' ] w') × (m' ≻[ prefsW ] m) ))
+  (¬ ( ( w' ≻[ prefsM ] w ) ×  ( m ≻[ prefsW' ] m' ))) × (¬ ( (w ≻[ prefsM' ] w') × (m' ≻[ prefsW ] m)))
 
 -- A matching is stable if the condition of stability is satisfied for every pair of man and woman not married.
 is-stable-matching : MatchingState → Set
@@ -266,15 +271,15 @@ matchIsStableHelper : (c₁ c₂ : ℕ × ℕ)  →
       (((proj₁ c₁) , (getPreferenceList (proj₁ c₁) (MatchingState.men exEnd))) , ((proj₂ c₁) , (getPreferenceList (proj₂ c₁) (MatchingState.women exEnd))))
       (((proj₁ c₂) , (getPreferenceList (proj₁ c₂) (MatchingState.men exEnd))) , ((proj₂ c₂) , (getPreferenceList (proj₂ c₂) (MatchingState.women exEnd))))
 matchIsStableHelper _ _ (now .((3 , 3) ∷ (1 , 1) ∷ [])) (now .((3 , 3) ∷ (1 , 1) ∷ [])) p = ⊥-elim (p refl) , ⊥-elim (p refl)
-matchIsStableHelper _ _ (now .((3 , 3) ∷ (1 , 1) ∷ [])) (later (now .((1 , 1) ∷ []))) p =  ⊥-elim (p {!⊥-elim!}) , {!!}
+matchIsStableHelper _ _ (now .((3 , 3) ∷ (1 , 1) ∷ [])) (later (now .((1 , 1) ∷ []))) p =  ⊥-elim (p {!!}) , {!!}
 matchIsStableHelper _ _ (now .((3 , 3) ∷ (1 , 1) ∷ [])) (later (later (now .[]))) p = ⊥-elim (p {!!})
 matchIsStableHelper _ _ (now .((3 , 3) ∷ (1 , 1) ∷ [])) (later (later (later ()))) p
 matchIsStableHelper _ _ (later (now .((1 , 1) ∷ []))) (now .((3 , 3) ∷ (1 , 1) ∷ [])) p = {!!}
 matchIsStableHelper _ _ (later (now .((1 , 1) ∷ []))) (later (now .((1 , 1) ∷ []))) p = ⊥-elim (p refl)
-matchIsStableHelper _ _ (later (now .((1 , 1) ∷ []))) (later (later (now .[]))) = {!!}
+matchIsStableHelper _ _ (later (now .((1 , 1) ∷ []))) (later (later (now .[]))) p = {!!}
 matchIsStableHelper _ _ (later (now .((1 , 1) ∷ []))) (later (later (later ())))
-matchIsStableHelper _ _ (later (later (now .[]))) (now .((3 , 3) ∷ (1 , 1) ∷ [])) = {!!}
-matchIsStableHelper _ _ (later (later (now .[]))) (later (now .((1 , 1) ∷ []))) p = {!!}
+matchIsStableHelper _ _ (later (later (now .[]))) (now .((3 , 3) ∷ (1 , 1) ∷ [])) p = {!!}
+matchIsStableHelper _ _ (later (later (now .[]))) (later (now .((1 , 1) ∷ []))) p = {!!} , {!!}
 matchIsStableHelper _ _ (later (later (now .[]))) (later (later (now .[]))) p = ⊥-elim (p refl)
 matchIsStableHelper _ _ (later (later (now .[]))) (later (later (later ())))
 matchIsStableHelper _ _ (later (later (later ())))  _ _
@@ -308,7 +313,7 @@ anotherMatchIsStableHelper : (c₁ c₂ : ℕ × ℕ) →
       (((proj₁ c₂) , (getPreferenceList (proj₁ c₂) (MatchingState.men anotherPossibleStableMatching))) , ((proj₂ c₂) , (getPreferenceList (proj₂ c₂) (MatchingState.women anotherPossibleStableMatching))))
 anotherMatchIsStableHelper _ _ (now .((1 , 3) ∷ (2 , 1) ∷ [])) (now .((1 , 3) ∷ (2 , 1) ∷ [])) p = ⊥-elim (p refl)
 anotherMatchIsStableHelper _ _ (now .((1 , 3) ∷ (2 , 1) ∷ [])) (later (now .((2 , 1) ∷ []))) p = ⊥-elim (p {!!}) , {!!}
-anotherMatchIsStableHelper _ _ (now .((1 , 3) ∷ (2 , 1) ∷ [])) (later (later (now .[]))) p = {!!}
+anotherMatchIsStableHelper _ _ (now .((1 , 3) ∷ (2 , 1) ∷ [])) (later (later (now .[]))) p = ⊥-elim (p {!!}) , {!!}
 anotherMatchIsStableHelper _ _ (now .((1 , 3) ∷ (2 , 1) ∷ [])) (later (later (later ()))) p
 anotherMatchIsStableHelper _ _ (later (now .((2 , 1) ∷ []))) (now .((1 , 3) ∷ (2 , 1) ∷ [])) p = {!!}
 anotherMatchIsStableHelper _ _ (later (later (now .[]))) (now .((1 , 3) ∷ (2 , 1) ∷ [])) p = {!!}
@@ -322,25 +327,6 @@ anotherMatchIsStableHelper _ _ (later (later (now .[]))) (later (later (now .[])
 anotherMatchIsStableHelper _ _ (later (later (now .[]))) (later (later (later ()))) p
 anotherMatchIsStableHelper _ _ (later (later (later ()))) (later (later (now .[]))) p
 anotherMatchIsStableHelper _ _ (later (later (later ()))) (later (later (later c₂))) p
-
-{--
-anotherMatchIsStableHelper _ _ (now .((1 , 2) ∷ (2 , 3) ∷ [])) (now .((1 , 2) ∷ (2 , 3) ∷ [])) p = ⊥-elim (p refl) , ⊥-elim (p refl)
-anotherMatchIsStableHelper _ _ (now .((1 , 2) ∷ (2 , 3) ∷ [])) (later (now .((2 , 3) ∷ []))) p = ⊥-elim (p _) , ⊥-elim (p _)
-anotherMatchIsStableHelper _ _ (now .((1 , 2) ∷ (2 , 3) ∷ [])) (later (later (now .[]))) p = ⊥-elim (p {!!})
-anotherMatchIsStableHelper _ _ (now .((1 , 2) ∷ (2 , 3) ∷ [])) (later (later (later ()))) p
-anotherMatchIsStableHelper _ _ (later (now .((2 , 3) ∷ []))) (now .((1 , 2) ∷ (2 , 3) ∷ [])) p = {!!}
-anotherMatchIsStableHelper _ _ (later (later (now .[]))) (now .((1 , 2) ∷ (2 , 3) ∷ [])) p = {!!}
-anotherMatchIsStableHelper _ _ (later (later (later ()))) (now .((1 , 2) ∷ (2 , 3) ∷ [])) p
-anotherMatchIsStableHelper _ _ (later (now .((2 , 3) ∷ []))) (later (now .((2 , 3) ∷ []))) p = {!!}
-anotherMatchIsStableHelper _ _ (later (now .((2 , 3) ∷ []))) (later (later (now .[]))) p = {!!}
-anotherMatchIsStableHelper _ _ (later (now .((2 , 3) ∷ []))) (later (later (later ()))) p
-anotherMatchIsStableHelper _ _ (later (later (now .[]))) (later (now .((2 , 3) ∷ []))) p = {!!}
-anotherMatchIsStableHelper _ _ (later (later (later ()))) (later (now .((2 , 3) ∷ []))) p
-anotherMatchIsStableHelper _ _ (later (later (now .[]))) (later (later (now .[]))) p = ⊥-elim (p refl)
-anotherMatchIsStableHelper _ _ (later (later (now .[]))) (later (later (later ()))) p
-anotherMatchIsStableHelper _ _ (later (later (later ()))) (later (later (now .[]))) p
-anotherMatchIsStableHelper _ _ (later (later (later ()))) (later (later (later c₂))) p
--}
 
 itIsAlsoStable : is-stable-matching anotherPossibleStableMatching
 itIsAlsoStable = refl , anotherMatchIsStableHelper
