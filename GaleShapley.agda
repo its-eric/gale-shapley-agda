@@ -25,6 +25,8 @@ record MatchingState : Set where
     engagedMen : List (ℕ × List ℕ)
     women : List (ℕ × List ℕ)
     couples : List (ℕ × ℕ)
+    -- sum : ℕ
+    -- sumEq : sum ≡ length freeMen + length engagedMen
 
 -- Code by @yeputons on Stack Overflow :D
 is-≤ : ℕ → ℕ → Bool
@@ -130,6 +132,7 @@ step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples) with
 -- Woman didn't have a husband yet (represented by zero) : must accept proposal
 step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples) | nothing  = mkState men freeMen ((n , prefs) ∷ engagedMen) women (safeAddNewCouple (n , w) couples)
 
+-- TODO: men, women coules could be removed from the args of the function
 sumPrefLists : (m : MatchingState) → ℕ
 sumPrefLists (mkState men [] [] women couples) = 0
 sumPrefLists (mkState men [] ((man , []) ∷ engagedMen) women couples) = sumPrefLists (mkState men [] engagedMen women couples)
@@ -414,3 +417,4 @@ leftinv a = refl
 rightinv : (a : ℕ) → a + zero ≡ a
 rightinv zero = refl
 rightinv (suc a) = cong suc (rightinv a)
+
