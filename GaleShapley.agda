@@ -143,22 +143,35 @@ step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k p) 
 -- Woman didn't have a husband yet (represented by zero) : must accept proposal
 step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k p) | nothing  = mkState men freeMen ((n , prefs) ∷ engagedMen) women (safeAddNewCouple (n , w) couples)
                                                                                                    (compSumPrefLists freeMen ((n , prefs) ∷ engagedMen)) refl
+
 +-zero : ∀ n k → k ≡ n + 0 → k ≡ n
 +-zero zero zero p = p
 +-zero zero (suc k) p = p
 +-zero (suc n) zero ()
 +-zero (suc n) (suc .(n + 0)) refl = cong suc (+-right-identity n)
 
++-move-zero : ∀ n k → k ≡ n + 0 → n ≡ k + 0
++-move-zero zero zero refl = refl
++-move-zero zero (suc k) ()
++-move-zero (suc n) zero ()
++-move-zero (suc n) (suc .(n + 0)) refl = cong suc (+-move-zero n (n + 0) refl)
+
+n≤n+m : ∀ m n → n ≤ n + m
+n≤n+m zero zero = ≤-refl
+n≤n+m zero (suc m) = ≤-reflexive (cong suc (sym (+-right-identity m)))
+n≤n+m (suc n) zero = z≤n
+n≤n+m (suc n) (suc m) = s≤s (n≤n+m (suc n) m)
+
 lengthPrefsOneSide : ∀ (freeMen engagedMen : List (ℕ × List ℕ))(k : ℕ) → k ≡ compSumPrefLists freeMen engagedMen → (lengthPrefs freeMen ≤ k) × (lengthPrefs engagedMen ≤ k)
 lengthPrefsOneSide [] [] k p = z≤n , z≤n
 lengthPrefsOneSide [] ((fst , []) ∷ engagedMen) k p = z≤n , proj₂ (lengthPrefsOneSide [] engagedMen k p)
 lengthPrefsOneSide [] ((fst , x ∷ snd) ∷ engagedMen) k p = z≤n , ≤-reflexive (sym p)
-lengthPrefsOneSide ((fst , []) ∷ freeMen) [] k p = ≤-reflexive (+-zero {!!} {!!} {!!}) , z≤n
-lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen) [] k p = ≤-reflexive {!!} , z≤n
-lengthPrefsOneSide ((fst , []) ∷ freeMen) ((fst₁ , []) ∷ engagedMen) k p = {!!} , {!!}
-lengthPrefsOneSide ((fst , []) ∷ freeMen) ((fst₁ , x ∷ snd₁) ∷ engagedMen) k p = {!!} , {!!}
-lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen) ((fst₁ , []) ∷ engagedMen) k p = {!!} , {!!}
-lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen) ((fst₁ , x₁ ∷ snd₁) ∷ engagedMen) k p = {!!} , {!!}
+lengthPrefsOneSide ((fst , []) ∷ freeMen) [] k p = ≤-reflexive (+-zero k (lengthPrefs freeMen) (+-move-zero (lengthPrefs freeMen) k p)) , z≤n
+lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen) [] k p = ≤-reflexive (+-zero k (lengthPrefs ((fst , x ∷ snd) ∷ freeMen)) (+-move-zero (suc (lengthPrefs ((fst , snd) ∷ freeMen))) k p)) , z≤n
+lengthPrefsOneSide ((fst , []) ∷ freeMen) ((fst₁ , []) ∷ engagedMen) k p = lengthPrefsOneSide freeMen engagedMen k p
+lengthPrefsOneSide ((fst , []) ∷ freeMen) ((fst₁ , x ∷ snd₁) ∷ engagedMen) .(lengthPrefs freeMen + suc (lengthPrefs ((fst₁ , snd₁) ∷ engagedMen))) refl = proj₁ (lengthPrefsOneSide freeMen ((fst₁ , x ∷ snd₁) ∷ engagedMen) (lengthPrefs freeMen + suc (lengthPrefs ((fst₁ , snd₁) ∷ engagedMen))) refl) , n≤m+n (lengthPrefs freeMen) (suc (lengthPrefs ((fst₁ , snd₁) ∷ engagedMen)))
+lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen) ((fst₁ , []) ∷ engagedMen) .(suc (lengthPrefs ((fst , snd) ∷ freeMen) + lengthPrefs engagedMen)) refl = n≤n+m (lengthPrefs engagedMen) (suc (lengthPrefs ((fst , snd) ∷ freeMen))) , proj₂ (lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen) engagedMen ((suc (lengthPrefs ((fst , snd) ∷ freeMen) + lengthPrefs engagedMen))) (cong suc refl))
+lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen) ((fst₁ , x₁ ∷ snd₁) ∷ engagedMen) p refl = n≤n+m (suc (lengthPrefs ((fst₁ , snd₁) ∷ engagedMen))) (suc (lengthPrefs ((fst , snd) ∷ freeMen))) , n≤m+n (lengthPrefs ((fst , x ∷ snd) ∷ freeMen)) (lengthPrefs ((fst₁ , x₁ ∷ snd₁) ∷ engagedMen))
 
 lemmaProposeTrue : ∀ (freeMen engagedMen : List (ℕ × List ℕ))(formerHusband man woman k : ℕ)(formerHusbandPrefList : List ℕ)(prefs : List ℕ)(couples : List (ℕ × ℕ)) →
                    lengthPrefs ((formerHusband , getPreferenceList formerHusband engagedMen) ∷ freeMen) + lengthPrefs (safeAddNewEngagedMan (man , prefs) formerHusband engagedMen)
@@ -173,17 +186,21 @@ n≤1+n-plus-zero : ∀ n → n ≤ suc (n + 0)
 n≤1+n-plus-zero zero = z≤n
 n≤1+n-plus-zero (suc n) = s≤s (n≤1+n-plus-zero n)
 
+decompLemma : ∀ n prefs engagedMen x₁ → lengthPrefs ((n , prefs) ∷ x₁ ∷ engagedMen) ≤ suc (lengthPrefs ((n , prefs) ∷ []) + lengthPrefs (x₁ ∷ engagedMen))
+decompLemma n [] engagedMen x₁ = n≤1+n _
+decompLemma n (x ∷ prefs) engagedMen (fst , []) = {!!}
+decompLemma n (x ∷ prefs) engagedMen (fst , x₁ ∷ snd) = {!!}
+
 singleWomanLemma : ∀ freeMen n prefs engagedMen →  lengthPrefs freeMen + lengthPrefs ((n , prefs) ∷ engagedMen) ≤ suc (lengthPrefs ((n , prefs) ∷ freeMen) + lengthPrefs engagedMen)
 singleWomanLemma [] n [] [] = z≤n
 singleWomanLemma [] n (x ∷ prefs) [] = n≤1+n-plus-zero (lengthPrefs ((n , (x ∷ prefs)) ∷ []))
 singleWomanLemma [] n [] (x ∷ engagedMen) = n≤1+n _
 singleWomanLemma [] n (x ∷ prefs) (x₁ ∷ engagedMen) = {!!}
-singleWomanLemma (x ∷ freeMen) n [] [] = {!!}
+singleWomanLemma (x ∷ freeMen) n [] [] = n≤1+n _
 singleWomanLemma (x ∷ freeMen) n (x₁ ∷ prefs) [] = {!!}
-singleWomanLemma (x ∷ freeMen) n [] (x₁ ∷ engagedMen) = {!!}
+singleWomanLemma (x ∷ freeMen) n [] (x₁ ∷ engagedMen) = n≤1+n _
 singleWomanLemma (x ∷ freeMen) n (x₁ ∷ prefs) (x₂ ∷ engagedMen) = {!!}
 
--- With lemmas 1-5 we can prove termination!
 stepDec : (m : MatchingState) → compSumPrefLists (MatchingState.freeMen m) (MatchingState.engagedMen m) ≥ compSumPrefLists (MatchingState.freeMen (step m)) (MatchingState.engagedMen (step m))
 stepDec (mkState men [] [] women couples k p) = ≤-refl
 stepDec (mkState men [] ((man , prefs) ∷ engagedMen) women couples k p) = ≤-refl
