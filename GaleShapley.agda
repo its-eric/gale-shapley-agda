@@ -173,29 +173,61 @@ lengthPrefsOneSide ((fst , []) ∷ freeMen) ((fst₁ , x ∷ snd₁) ∷ engaged
 lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen) ((fst₁ , []) ∷ engagedMen) .(suc (lengthPrefs ((fst , snd) ∷ freeMen) + lengthPrefs engagedMen)) refl = n≤n+m (lengthPrefs engagedMen) (suc (lengthPrefs ((fst , snd) ∷ freeMen))) , proj₂ (lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen) engagedMen ((suc (lengthPrefs ((fst , snd) ∷ freeMen) + lengthPrefs engagedMen))) (cong suc refl))
 lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen) ((fst₁ , x₁ ∷ snd₁) ∷ engagedMen) p refl = n≤n+m (suc (lengthPrefs ((fst₁ , snd₁) ∷ engagedMen))) (suc (lengthPrefs ((fst , snd) ∷ freeMen))) , n≤m+n (lengthPrefs ((fst , x ∷ snd) ∷ freeMen)) (lengthPrefs ((fst₁ , x₁ ∷ snd₁) ∷ engagedMen))
 
-lemmaProposeTrue : ∀ (freeMen engagedMen : List (ℕ × List ℕ))(formerHusband man woman k : ℕ)(formerHusbandPrefList : List ℕ)(prefs : List ℕ)(couples : List (ℕ × ℕ)) →
-                   lengthPrefs ((formerHusband , getPreferenceList formerHusband engagedMen) ∷ freeMen) + lengthPrefs (safeAddNewEngagedMan (man , prefs) formerHusband engagedMen)
-                   ≤ suc (lengthPrefs ((man , prefs) ∷ freeMen) + lengthPrefs  engagedMen)
-lemmaProposeTrue freeMen engagedMen formerHusband man woman k formerHusbandPrefList prefs couples with getPreferenceList formerHusband engagedMen
-lemmaProposeTrue freeMen engagedMen formerHusband man woman k formerHusbandPrefList prefs couples | [] with safeAddNewEngagedMan (man , prefs) formerHusband engagedMen
-lemmaProposeTrue freeMen engagedMen formerHusband man woman k formerHusbandPrefList prefs couples | [] | [] = {!!}
-lemmaProposeTrue freeMen engagedMen formerHusband man woman k formerHusbandPrefList prefs couples | [] | x ∷ rs = {!!}
-lemmaProposeTrue freeMen engagedMen formerHusband man woman k formerHusbandPrefList prefs couples | x ∷ ls = {!!}
+stepsWithPrefs : ∀ m n → m ≤ n → m ≤ 1 + n
+stepsWithPrefs zero zero z≤n = z≤n
+stepsWithPrefs zero (suc n) z≤n = z≤n
+stepsWithPrefs (suc m) zero ()
+stepsWithPrefs (suc m) (suc n) (s≤s p₁) = s≤s (stepsWithPrefs m n p₁)
+
+lengthPrefsExtLemma : ∀ (x : ℕ × List ℕ)(xs : List (ℕ × List ℕ))(n : ℕ) → lengthPrefs xs ≤ n + lengthPrefs (x ∷ xs)
+lengthPrefsExtLemma (man , prefs) [] n = z≤n
+lengthPrefsExtLemma (man , []) ((fst , []) ∷ ms) n = n≤m+n n (lengthPrefs ms)
+lengthPrefsExtLemma (man , x ∷ prefs) ((fst , []) ∷ ms) n = {!!}
+lengthPrefsExtLemma (man , []) ((fst , w ∷ ws) ∷ ms) n = n≤m+n n (suc (lengthPrefs ((fst , ws) ∷ ms)))
+lengthPrefsExtLemma (man , x ∷ prefs) ((fst , w ∷ ws) ∷ ms) n = {!!}
 
 n≤1+n-plus-zero : ∀ n → n ≤ suc (n + 0)
 n≤1+n-plus-zero zero = z≤n
 n≤1+n-plus-zero (suc n) = s≤s (n≤1+n-plus-zero n)
 
+n-plus-zero≤1+n+m : ∀ m n → n + 0 ≤ suc (n + m)
+n-plus-zero≤1+n+m zero zero = z≤n
+n-plus-zero≤1+n+m zero (suc n) = s≤s (n-plus-zero≤1+n+m zero n)
+n-plus-zero≤1+n+m (suc m) zero = z≤n
+n-plus-zero≤1+n+m (suc m) (suc n) = s≤s (n-plus-zero≤1+n+m (suc m) n)
+
+freeMen+nLemma : ∀ man prefs freeMen engagedMen → lengthPrefs freeMen + 0 ≤ suc (lengthPrefs ((man , prefs) ∷ freeMen) + lengthPrefs engagedMen)
+freeMen+nLemma man prefs [] [] = z≤n
+freeMen+nLemma man prefs [] (x ∷ engagedMen) = z≤n
+freeMen+nLemma man [] (x ∷ freeMen) [] = n≤1+n _
+freeMen+nLemma man (x₁ ∷ prefs) (x ∷ freeMen) [] = {!!} -- lengthPrefsExtLemma {!!} {!!} {!!}
+freeMen+nLemma man [] (x ∷ freeMen) (x₁ ∷ engagedMen) = n-plus-zero≤1+n+m (lengthPrefs (x₁ ∷ engagedMen)) (lengthPrefs (x ∷ freeMen))
+freeMen+nLemma man (x₂ ∷ prefs) ((fst , []) ∷ freeMen) ((fst₁ , []) ∷ engagedMen) = {!!}
+freeMen+nLemma man (x₂ ∷ prefs) ((fst , []) ∷ freeMen) ((fst₁ , x ∷ snd₁) ∷ engagedMen) = {!!}
+freeMen+nLemma man (x₂ ∷ prefs) ((fst , x ∷ snd) ∷ freeMen) ((fst₁ , []) ∷ engagedMen) = {!!}
+freeMen+nLemma man (x₂ ∷ prefs) ((fst , x ∷ snd) ∷ freeMen) ((fst₁ , x₁ ∷ snd₁) ∷ engagedMen) = {!!}
+
+lemmaProposeTrue : ∀ (freeMen engagedMen : List (ℕ × List ℕ))(formerHusband man woman k : ℕ)(formerHusbandPrefList : List ℕ)(prefs : List ℕ)(couples : List (ℕ × ℕ)) →
+                   lengthPrefs ((formerHusband , getPreferenceList formerHusband engagedMen) ∷ freeMen) + lengthPrefs (safeAddNewEngagedMan (man , prefs) formerHusband engagedMen)
+                   ≤ suc (lengthPrefs ((man , prefs) ∷ freeMen) + lengthPrefs  engagedMen)
+lemmaProposeTrue freeMen engagedMen formerHusband man woman k formerHusbandPrefList prefs couples with getPreferenceList formerHusband engagedMen
+lemmaProposeTrue freeMen engagedMen formerHusband man woman k formerHusbandPrefList prefs couples | [] with safeAddNewEngagedMan (man , prefs) formerHusband engagedMen
+lemmaProposeTrue freeMen engagedMen formerHusband man woman k formerHusbandPrefList prefs couples | [] | [] = freeMen+nLemma man prefs freeMen engagedMen
+lemmaProposeTrue freeMen engagedMen formerHusband man woman k formerHusbandPrefList prefs couples | [] | x ∷ rs = {!!}
+lemmaProposeTrue freeMen engagedMen formerHusband man woman k formerHusbandPrefList prefs couples | x ∷ ls with safeAddNewEngagedMan (man , prefs) formerHusband engagedMen
+lemmaProposeTrue freeMen engagedMen formerHusband man woman k formerHusbandPrefList prefs couples | x ∷ ls | [] = {!!}
+lemmaProposeTrue freeMen engagedMen formerHusband man woman k formerHusbandPrefList prefs couples | x ∷ ls | x₁ ∷ rs = {!!}
+
 decompLemma : ∀ n prefs engagedMen x₁ → lengthPrefs ((n , prefs) ∷ x₁ ∷ engagedMen) ≤ suc (lengthPrefs ((n , prefs) ∷ []) + lengthPrefs (x₁ ∷ engagedMen))
 decompLemma n [] engagedMen x₁ = n≤1+n _
-decompLemma n (x ∷ prefs) engagedMen (fst , []) = {!!}
-decompLemma n (x ∷ prefs) engagedMen (fst , x₁ ∷ snd) = {!!}
+decompLemma n (x ∷ prefs) engagedMen (fst , []) = s≤s (decompLemma n prefs engagedMen (fst , []))
+decompLemma n (x ∷ prefs) engagedMen (fst , x₁ ∷ snd) = s≤s (decompLemma n prefs engagedMen (fst , x₁ ∷ snd))
 
 singleWomanLemma : ∀ freeMen n prefs engagedMen →  lengthPrefs freeMen + lengthPrefs ((n , prefs) ∷ engagedMen) ≤ suc (lengthPrefs ((n , prefs) ∷ freeMen) + lengthPrefs engagedMen)
 singleWomanLemma [] n [] [] = z≤n
 singleWomanLemma [] n (x ∷ prefs) [] = n≤1+n-plus-zero (lengthPrefs ((n , (x ∷ prefs)) ∷ []))
 singleWomanLemma [] n [] (x ∷ engagedMen) = n≤1+n _
-singleWomanLemma [] n (x ∷ prefs) (x₁ ∷ engagedMen) = {!!}
+singleWomanLemma [] n (x ∷ prefs) (x₁ ∷ engagedMen) = decompLemma n (x ∷ prefs) engagedMen x₁
 singleWomanLemma (x ∷ freeMen) n [] [] = n≤1+n _
 singleWomanLemma (x ∷ freeMen) n (x₁ ∷ prefs) [] = {!!}
 singleWomanLemma (x ∷ freeMen) n [] (x₁ ∷ engagedMen) = n≤1+n _
@@ -364,7 +396,6 @@ matchIsBetterHelper m₁ m₂ p₁ p₂ p₃ p₄ = {!!}
 
 matchIsBetter : is-better-matching exEnd anotherPossibleStableMatching
 matchIsBetter = matchIsStable , itIsAlsoStable , matchIsBetterHelper
-
 
 {-- this is for correctness:
 -- stepInv : (m : MatchingState) → Inv m → Inv (step m)
