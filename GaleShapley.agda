@@ -13,14 +13,25 @@ open import Data.Sum
 open import Relation.Nullary
 open import Induction.WellFounded
 open import Relation.Binary.PropositionalEquality
+open import Relation.Binary.Core using (_≡_; refl)
+import Data.Nat.Solver
+open Data.Nat.Solver.+-*-Solver
+  using (prove; solve; _:=_; con; var; _:+_; _:*_; :-_; _:-_)
 
+-- lem2 : (4 + 6 ≡ 10)
+-- lem2 = solve 0 (con 4 :+ con 6 := con 10) refl
+
+lem3 : (x : ℕ) → (2 * (x + 4) ≡ 8 + 2 * x)
+lem3 = solve 1 (λ x' → con 2 :* (x' :+ con 4) := con 8 :+ con 2 :* x') refl
+  
 infix 3 _>just_
 infix 4 _from>_
 
 lengthPrefs : List (ℕ × List ℕ) → ℕ
 lengthPrefs [] = 0
-lengthPrefs ((fst , []) ∷ x₁) = lengthPrefs x₁
-lengthPrefs ((fst , x ∷ snd) ∷ x₁) = 1 + lengthPrefs ((fst , snd) ∷ x₁)
+lengthPrefs ((_ , l) ∷ xs) = length l + lengthPrefs xs
+-- lengthPrefs ((fst , []) ∷ x₁) = lengthPrefs x₁
+-- lengthPrefs ((fst , x ∷ snd) ∷ x₁) = 1 + lengthPrefs ((fst , snd) ∷ x₁)
 
 compSumPrefLists : (freeMen engagedMen : List (ℕ × List ℕ) ) → ℕ
 compSumPrefLists freeMen engagedMen = lengthPrefs freeMen + lengthPrefs engagedMen
@@ -115,7 +126,7 @@ p (x ∷ l) zero ()
 p (x ∷ l) (suc .2) refl = refl
 
 -- Safely adding new engaged men to the list : dumped man is removed
-safeAddNewEngagedMan : (newEngagedMan : (ℕ × List ℕ))(prevFiance : ℕ)(prevEngagedMen : List (ℕ × List ℕ)) → List (ℕ × List ℕ)
+safeAddNewEngagedMan : (newEngagedMan : (ℕ × List ℕ))(prevFiance : ℕ)(prevEngagedMen : List (ℕ × List ℕ)) → List (ℕ × List ℕ) -- × (ℕ × List ℕ)
 safeAddNewEngagedMan (newFiance , prefs) prevFiance [] = (newFiance , prefs) ∷ []
 safeAddNewEngagedMan (newFiance , prefs) prevFiance ((m , prefsM) ∷ []) with compare prevFiance m
 ... | equal _ = (newFiance , prefs) ∷ [] --kick him out!
@@ -139,6 +150,7 @@ step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k p) 
                            where
                              freeMenUpdated = ((h , getPreferenceList h engagedMen) ∷ freeMen)
                              engagedMenUpdated = (safeAddNewEngagedMan (n , prefs) h engagedMen)
+--                           (engagedMenUpdated , freeMenUpdated) = safeAddNewEngagedMan (n , prefs) h engagedMen
 ...               | false = mkState men ((n , prefs) ∷ freeMen) engagedMen women couples (compSumPrefLists ((n , prefs) ∷ freeMen) engagedMen) refl
 -- Woman didn't have a husband yet (represented by zero) : must accept proposal
 step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k p) | nothing  = mkState men freeMen ((n , prefs) ∷ engagedMen) women (safeAddNewCouple (n , w) couples)
@@ -208,7 +220,8 @@ freeMen+nLemma man (x₂ ∷ prefs) ((fst , x ∷ snd) ∷ freeMen) ((fst₁ , [
 freeMen+nLemma man (x₂ ∷ prefs) ((fst , x ∷ snd) ∷ freeMen) ((fst₁ , x₁ ∷ snd₁) ∷ engagedMen) = {!!}
 
 lemmaProposeTrue : ∀ (freeMen engagedMen : List (ℕ × List ℕ))(formerHusband man woman k : ℕ)(formerHusbandPrefList : List ℕ)(prefs : List ℕ)(couples : List (ℕ × ℕ)) →
-                   lengthPrefs ((formerHusband , getPreferenceList formerHusband engagedMen) ∷ freeMen) + lengthPrefs (safeAddNewEngagedMan (man , prefs) formerHusband engagedMen)
+                   lengthPrefs ((formerHusband , getPreferenceList formerHusband engagedMen) ∷ freeMen) +
+                   lengthPrefs (safeAddNewEngagedMan (man , prefs) formerHusband engagedMen)
                    ≤ suc (lengthPrefs ((man , prefs) ∷ freeMen) + lengthPrefs  engagedMen)
 lemmaProposeTrue freeMen engagedMen formerHusband man woman k formerHusbandPrefList prefs couples with getPreferenceList formerHusband engagedMen
 lemmaProposeTrue freeMen engagedMen formerHusband man woman k formerHusbandPrefList prefs couples | [] with safeAddNewEngagedMan (man , prefs) formerHusband engagedMen
@@ -223,15 +236,12 @@ decompLemma n [] engagedMen x₁ = n≤1+n _
 decompLemma n (x ∷ prefs) engagedMen (fst , []) = s≤s (decompLemma n prefs engagedMen (fst , []))
 decompLemma n (x ∷ prefs) engagedMen (fst , x₁ ∷ snd) = s≤s (decompLemma n prefs engagedMen (fst , x₁ ∷ snd))
 
-singleWomanLemma : ∀ freeMen n prefs engagedMen →  lengthPrefs freeMen + lengthPrefs ((n , prefs) ∷ engagedMen) ≤ suc (lengthPrefs ((n , prefs) ∷ freeMen) + lengthPrefs engagedMen)
-singleWomanLemma [] n [] [] = z≤n
-singleWomanLemma [] n (x ∷ prefs) [] = n≤1+n-plus-zero (lengthPrefs ((n , (x ∷ prefs)) ∷ []))
-singleWomanLemma [] n [] (x ∷ engagedMen) = n≤1+n _
-singleWomanLemma [] n (x ∷ prefs) (x₁ ∷ engagedMen) = decompLemma n (x ∷ prefs) engagedMen x₁
-singleWomanLemma (x ∷ freeMen) n [] [] = n≤1+n _
-singleWomanLemma (x ∷ freeMen) n (x₁ ∷ prefs) [] = {!!}
-singleWomanLemma (x ∷ freeMen) n [] (x₁ ∷ engagedMen) = n≤1+n _
-singleWomanLemma (x ∷ freeMen) n (x₁ ∷ prefs) (x₂ ∷ engagedMen) = {!!}
+singleWomanLemma : ∀ freeMen n prefs engagedMen →
+  lengthPrefs freeMen + lengthPrefs ((n , prefs) ∷ engagedMen) ≤
+  suc (lengthPrefs ((n , prefs) ∷ freeMen) + lengthPrefs engagedMen)
+singleWomanLemma freemen n prefs engMen = subst (λ x → lengthPrefs freemen + lengthPrefs ((n , prefs) ∷ engMen) ≤ suc x)
+                                                (solve 3 (λ x y z → x :+ (y :+ z) := y :+ x :+ z) refl (lengthPrefs freemen) (length prefs) (lengthPrefs engMen))
+                                                (n≤1+n _)
 
 stepDec : (m : MatchingState) → compSumPrefLists (MatchingState.freeMen m) (MatchingState.engagedMen m) ≥ compSumPrefLists (MatchingState.freeMen (step m)) (MatchingState.engagedMen (step m))
 stepDec (mkState men [] [] women couples k p) = ≤-refl
@@ -239,7 +249,7 @@ stepDec (mkState men [] ((man , prefs) ∷ engagedMen) women couples k p) = ≤-
 stepDec (mkState men ((man , []) ∷ freeMen) engagedMen women couples k p) = ≤-refl
 stepDec (mkState men ((man , w ∷ prefs) ∷ freeMen) engagedMen women couples k p) with getHusband w couples
 ...             | just h with propose man h (getPreferenceList w women)
-...             | true  = lemmaProposeTrue freeMen engagedMen h man w k (getPreferenceList h engagedMen) prefs couples 
+...             | true  = {!!} -- lemmaProposeTrue freeMen engagedMen h man w k (getPreferenceList h engagedMen) prefs couples 
 ...             | false = n≤1+n _
 stepDec (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k p) | nothing = singleWomanLemma freeMen n prefs engagedMen
 
