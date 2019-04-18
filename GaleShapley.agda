@@ -374,7 +374,7 @@ matchIsStable : is-stable-matching exEnd
 matchIsStable = refl , matchIsStableHelper
 
 -- In order to define that a matching m₁ is better than a matching m₂,
--- we take into consideration that at least one man gets a better (earlier in his list) wife
+-- we take into consideration that for all men they get a better (earlier in their list) wife
 -- in m₁ than in m₂; this can be seen from the size of his preference list in the final
 -- state of the matching. 
 is-better-matching : (m₁ m₂ : MatchingState) → Set
@@ -382,14 +382,14 @@ is-better-matching (mkState men freeMen engagedMen women couples k p) (mkState m
   is-stable-matching (mkState men freeMen engagedMen women couples k p) × is-stable-matching (mkState men₁ freeMen₁ engagedMen₁ women₁ couples₁ k₁ p₁) ×
    ((m₁ m₂ : ℕ × List ℕ) → m₁ ∈ engagedMen →  m₂ ∈ engagedMen₁  → proj₁ m₁ ≡ proj₁ m₂ →
     getPreferenceList (proj₁ m₁) men ≡ getPreferenceList (proj₁ m₂) men₁ →
-    length (proj₂ m₁) ≤ length (proj₂ m₂))
+    length (proj₂ m₁) ≥ length (proj₂ m₂))
 
 
 -- Let us demonstrate with the first canonical example. Gale and Shapley tell us
--- that another possible stable marriage (not return by their algorithm) is obtained
+-- that another possible stable marriage (not returned by their algorithm) is obtained
 -- by giving every woman her first choice:
 anotherPossibleStableMatching : MatchingState
-anotherPossibleStableMatching = mkState listMen [] ((3 , 2 ∷ 3 ∷ []) ∷ (2 , 1 ∷ 2 ∷ []) ∷ (1 , 3 ∷ 1 ∷ []) ∷ []) listWomen ((3 , 2) ∷ (1 , 3) ∷ (2 , 1) ∷ []) _ refl
+anotherPossibleStableMatching = mkState listMen [] ((3 , []) ∷ (1 , []) ∷ (2 , []) ∷ []) listWomen ((3 , 2) ∷ (1 , 3) ∷ (2 , 1) ∷ []) _ refl
 
 anotherMatchIsStableHelper : (c₁ c₂ : ℕ × ℕ) →
       c₁ ∈ MatchingState.couples anotherPossibleStableMatching →
@@ -423,20 +423,23 @@ matchIsBetterHelper : (m₁ m₂ : Σ ℕ (λ x → List ℕ)) → m₁ ∈ Matc
       ≡
       getPreferenceList (proj₁ m₂) listMen)
       →
-      length (proj₂ m₁) ≤ length (proj₂ m₂)
-matchIsBetterHelper .(3 , 1 ∷ 2 ∷ []) .(3 , 2 ∷ 3 ∷ []) (now .((2 , 3 ∷ 1 ∷ []) ∷ (1 , 2 ∷ 3 ∷ []) ∷ [])) (now .((2 , 1 ∷ 2 ∷ []) ∷ (1 , 3 ∷ 1 ∷ []) ∷ [])) p₃ p₄ = ≤-refl
-matchIsBetterHelper .(3 , 1 ∷ 2 ∷ []) .(2 , 1 ∷ 2 ∷ []) (now .((2 , 3 ∷ 1 ∷ []) ∷ (1 , 2 ∷ 3 ∷ []) ∷ [])) (later (now .((1 , 3 ∷ 1 ∷ []) ∷ []))) p₃ p₄ = ≤-refl
-matchIsBetterHelper .(3 , 1 ∷ 2 ∷ []) .(1 , 3 ∷ 1 ∷ []) (now .((2 , 3 ∷ 1 ∷ []) ∷ (1 , 2 ∷ 3 ∷ []) ∷ [])) (later (later (now .[]))) p₃ p₄ = ≤-refl
+      length (proj₂ m₁) ≥ length (proj₂ m₂)
+matchIsBetterHelper .(3 , 1 ∷ 2 ∷ []) .(3 , []) (now .((2 , 3 ∷ 1 ∷ []) ∷ (1 , 2 ∷ 3 ∷ []) ∷ [])) (now .((1 , []) ∷ (2 , []) ∷ [])) p₃ p₄ = z≤n
+matchIsBetterHelper .(3 , 1 ∷ 2 ∷ []) .(1 , []) (now .((2 , 3 ∷ 1 ∷ []) ∷ (1 , 2 ∷ 3 ∷ []) ∷ [])) (later (now .((2 , []) ∷ []))) p₃ p₄ = z≤n
+matchIsBetterHelper .(3 , 1 ∷ 2 ∷ []) .(2 , []) (now .((2 , 3 ∷ 1 ∷ []) ∷ (1 , 2 ∷ 3 ∷ []) ∷ [])) (later (later (now .[]))) p₃ p₄ = z≤n
 matchIsBetterHelper .(3 , 1 ∷ 2 ∷ []) m₂ (now .((2 , 3 ∷ 1 ∷ []) ∷ (1 , 2 ∷ 3 ∷ []) ∷ [])) (later (later (later ()))) p₃ p₄
-matchIsBetterHelper .(2 , 3 ∷ 1 ∷ []) .(3 , 2 ∷ 3 ∷ []) (later (now .((1 , 2 ∷ 3 ∷ []) ∷ []))) (now .((2 , 1 ∷ 2 ∷ []) ∷ (1 , 3 ∷ 1 ∷ []) ∷ [])) p₃ p₄ = ≤-refl
-matchIsBetterHelper .(2 , 3 ∷ 1 ∷ []) .(2 , 1 ∷ 2 ∷ []) (later (now .((1 , 2 ∷ 3 ∷ []) ∷ []))) (later (now .((1 , 3 ∷ 1 ∷ []) ∷ []))) p₃ p₄ = ≤-refl
-matchIsBetterHelper .(2 , 3 ∷ 1 ∷ []) .(1 , 3 ∷ 1 ∷ []) (later (now .((1 , 2 ∷ 3 ∷ []) ∷ []))) (later (later (now .[]))) p₃ p₄ = ≤-refl
+matchIsBetterHelper .(2 , 3 ∷ 1 ∷ []) .(3 , []) (later (now .((1 , 2 ∷ 3 ∷ []) ∷ []))) (now .((1 , []) ∷ (2 , []) ∷ [])) p₃ p₄ = z≤n
+matchIsBetterHelper .(1 , 2 ∷ 3 ∷ []) .(3 , []) (later (later (now .[]))) (now .((1 , []) ∷ (2 , []) ∷ [])) p₃ p₄ = z≤n
+matchIsBetterHelper m₁ .(3 , []) (later (later (later ()))) (now .((1 , []) ∷ (2 , []) ∷ [])) p₃ p₄
+matchIsBetterHelper .(2 , 3 ∷ 1 ∷ []) .(1 , []) (later (now .((1 , 2 ∷ 3 ∷ []) ∷ []))) (later (now .((2 , []) ∷ []))) p₃ p₄ = z≤n
+matchIsBetterHelper .(2 , 3 ∷ 1 ∷ []) .(2 , []) (later (now .((1 , 2 ∷ 3 ∷ []) ∷ []))) (later (later (now .[]))) p₃ p₄ = z≤n
 matchIsBetterHelper .(2 , 3 ∷ 1 ∷ []) m₂ (later (now .((1 , 2 ∷ 3 ∷ []) ∷ []))) (later (later (later ()))) p₃ p₄
-matchIsBetterHelper .(1 , 2 ∷ 3 ∷ []) .(3 , 2 ∷ 3 ∷ []) (later (later (now .[]))) (now .((2 , 1 ∷ 2 ∷ []) ∷ (1 , 3 ∷ 1 ∷ []) ∷ [])) p₃ p₄ = ≤-refl
-matchIsBetterHelper .(1 , 2 ∷ 3 ∷ []) .(2 , 1 ∷ 2 ∷ []) (later (later (now .[]))) (later (now .((1 , 3 ∷ 1 ∷ []) ∷ []))) p₃ p₄ = ≤-refl
-matchIsBetterHelper .(1 , 2 ∷ 3 ∷ []) .(1 , 3 ∷ 1 ∷ []) (later (later (now .[]))) (later (later (now .[]))) p₃ p₄ = ≤-refl
+matchIsBetterHelper .(1 , 2 ∷ 3 ∷ []) .(1 , []) (later (later (now .[]))) (later (now .((2 , []) ∷ []))) p₃ p₄ = z≤n
+matchIsBetterHelper m₁ .(1 , []) (later (later (later ()))) (later (now .((2 , []) ∷ []))) p₃ p₄
+matchIsBetterHelper .(1 , 2 ∷ 3 ∷ []) .(2 , []) (later (later (now .[]))) (later (later (now .[]))) p₃ p₄ = z≤n
 matchIsBetterHelper .(1 , 2 ∷ 3 ∷ []) m₂ (later (later (now .[]))) (later (later (later ()))) p₃ p₄
-matchIsBetterHelper m₁ m₂ (later (later (later ()))) p₂ p₃ p₄
+matchIsBetterHelper m₁ .(2 , []) (later (later (later ()))) (later (later (now .[]))) p₃ p₄
+matchIsBetterHelper m₁ m₂ (later (later (later ()))) (later (later (later p₂))) p₃ p₄
 
 matchIsBetter : is-better-matching exEnd anotherPossibleStableMatching
 matchIsBetter = matchIsStable , itIsAlsoStable , matchIsBetterHelper
