@@ -127,7 +127,6 @@ safeAddNewEngagedMan : (newEngagedMan : (ℕ × List ℕ))(prevFiance : ℕ)(pre
 -- Dummy case: this function is only invoked if a woman is already married, so the list of engaged men can not possibly be empty...
 safeAddNewEngagedMan (newFiance , prefs) prevFiance [] = ((newFiance , prefs) ∷ [] , (0 , []))
 
--- 
 safeAddNewEngagedMan (newFiance , prefs) prevFiance ((m , prefsM) ∷ []) with compare prevFiance m
 ... | equal _ = ((newFiance , prefs) ∷ [] , (m , prefsM)) --kick him out!
 ... | _       = (((newFiance , prefs) ∷ (m , prefsM) ∷ []) , (0 , [])) --safe to keep after all
@@ -190,12 +189,22 @@ stepsWithPrefs zero (suc n) z≤n = z≤n
 stepsWithPrefs (suc m) zero ()
 stepsWithPrefs (suc m) (suc n) (s≤s p₁) = s≤s (stepsWithPrefs m n p₁)
 
+m≤n+r+m : ∀ m n r → m ≤ n + suc (r + m)
+m≤n+r+m zero zero zero = z≤n
+m≤n+r+m zero zero (suc r) = z≤n
+m≤n+r+m zero (suc n) zero = z≤n
+m≤n+r+m zero (suc n) (suc r) = z≤n
+m≤n+r+m (suc m) zero zero = s≤s (m≤n+r+m m zero zero)
+m≤n+r+m (suc m) zero (suc r) = m≤n+r+m (suc m) 1 r
+m≤n+r+m (suc m) (suc n) zero = s≤s (m≤n+r+m m n 1)
+m≤n+r+m (suc m) (suc n) (suc r) = {!!}
+
 lengthPrefsExtLemma : ∀ (x : ℕ × List ℕ)(xs : List (ℕ × List ℕ))(n : ℕ) → lengthPrefs xs ≤ n + lengthPrefs (x ∷ xs)
 lengthPrefsExtLemma (man , prefs) [] n = z≤n
 lengthPrefsExtLemma (man , []) ((fst , []) ∷ ms) n = n≤m+n n (lengthPrefs ms)
-lengthPrefsExtLemma (man , x ∷ prefs) ((fst , []) ∷ ms) n = subst {!!} {!!} {!!}
+lengthPrefsExtLemma (man , x ∷ prefs) ((fst , []) ∷ ms) n = lengthPrefsExtLemma (man , x ∷ prefs) ms n
 lengthPrefsExtLemma (man , []) ((fst , w ∷ ws) ∷ ms) n = n≤m+n n (suc (lengthPrefs ((fst , ws) ∷ ms)))
-lengthPrefsExtLemma (man , x ∷ prefs) ((fst , w ∷ ws) ∷ ms) n = {!!}
+lengthPrefsExtLemma (man , x ∷ prefs) ((fst , w ∷ ws) ∷ ms) n = m≤n+r+m (suc (length ws + lengthPrefs ms)) n (length prefs)
 
 n≤1+n-plus-zero : ∀ n → n ≤ suc (n + 0)
 n≤1+n-plus-zero zero = z≤n
@@ -235,12 +244,14 @@ lemmaProposeTrue freeMen ((m , prefsM) ∷ []) .(suc (m + k)) man prefs | greate
                                                                                               (solve 3 (λ x y z → x :+ (y :+ (z :+ con 0)) := y :+ x :+ (z :+ con 0)) refl (lengthPrefs freeMen) (length prefs) (length prefsM))
                                                                                               (n≤1+n _)
 lemmaProposeTrue freeMen ((m , prefsM) ∷ ms ∷ engagedMen) formerHusband man prefs with compare formerHusband m
-lemmaProposeTrue freeMen ((.(suc (formerHusband + k)) , prefsM) ∷ ms ∷ engagedMen) formerHusband man prefs | less .formerHusband k = {!!}
+lemmaProposeTrue freeMen ((.(suc (formerHusband + k)) , prefsM) ∷ ms ∷ engagedMen) formerHusband man prefs | less .formerHusband k with safeAddNewEngagedMan (man , prefs) formerHusband (ms ∷ engagedMen)
+lemmaProposeTrue freeMen ((.(suc (formerHusband + k)) , prefsM) ∷ ms ∷ engagedMen) formerHusband man prefs | less .formerHusband k | updatedEngagedMen , extraInfo = {!!}
 lemmaProposeTrue freeMen ((m , prefsM) ∷ ms ∷ engagedMen) .m man prefs | equal .m = subst (λ x → length prefsM + lengthPrefs freeMen + (length prefs + (length (proj₂ ms) + lengthPrefs engagedMen)) ≤ suc x)
                                                                                            (solve 5 (λ u v w y z → u :+ v :+ (w :+ (y :+ z)) := w :+ v :+ (u :+ (y :+ z))) refl
                                                                                                   (length prefsM) (lengthPrefs freeMen) (length prefs) (length (proj₂ ms)) (lengthPrefs engagedMen))
                                                                                            (n≤1+n _)
-lemmaProposeTrue freeMen ((m , prefsM) ∷ ms ∷ engagedMen) .(suc (m + k)) man prefs | greater .m k = {!!}
+lemmaProposeTrue freeMen ((m , prefsM) ∷ ms ∷ engagedMen) .(suc (m + k)) man prefs | greater .m k with safeAddNewEngagedMan (man , prefs) (suc (m + k)) (ms ∷ engagedMen)
+lemmaProposeTrue freeMen ((m , prefsM) ∷ ms ∷ engagedMen) .(suc (m + k)) man prefs | greater .m k | updatedEngagedMen , extraInfo = {!!}
 
 decompLemma : ∀ n prefs engagedMen x₁ → lengthPrefs ((n , prefs) ∷ x₁ ∷ engagedMen) ≤ suc (lengthPrefs ((n , prefs) ∷ []) + lengthPrefs (x₁ ∷ engagedMen))
 decompLemma n [] engagedMen x₁ = n≤1+n _
@@ -378,7 +389,7 @@ is-better-matching (mkState men freeMen engagedMen women couples k p) (mkState m
 -- that another possible stable marriage (not return by their algorithm) is obtained
 -- by giving every woman her first choice:
 anotherPossibleStableMatching : MatchingState
-anotherPossibleStableMatching = mkState listMen [] _ listWomen ((3 , 2) ∷ (1 , 3) ∷ (2 , 1) ∷ []) _ refl
+anotherPossibleStableMatching = mkState listMen [] ((3 , 2 ∷ 3 ∷ []) ∷ (2 , 1 ∷ 2 ∷ []) ∷ (1 , 3 ∷ 1 ∷ []) ∷ []) listWomen ((3 , 2) ∷ (1 , 3) ∷ (2 , 1) ∷ []) _ refl
 
 anotherMatchIsStableHelper : (c₁ c₂ : ℕ × ℕ) →
       c₁ ∈ MatchingState.couples anotherPossibleStableMatching →
@@ -413,7 +424,19 @@ matchIsBetterHelper : (m₁ m₂ : Σ ℕ (λ x → List ℕ)) → m₁ ∈ Matc
       getPreferenceList (proj₁ m₂) listMen)
       →
       length (proj₂ m₁) ≤ length (proj₂ m₂)
-matchIsBetterHelper m₁ m₂ p₁ p₂ p₃ p₄ = {!!}
+matchIsBetterHelper .(3 , 1 ∷ 2 ∷ []) .(3 , 2 ∷ 3 ∷ []) (now .((2 , 3 ∷ 1 ∷ []) ∷ (1 , 2 ∷ 3 ∷ []) ∷ [])) (now .((2 , 1 ∷ 2 ∷ []) ∷ (1 , 3 ∷ 1 ∷ []) ∷ [])) p₃ p₄ = ≤-refl
+matchIsBetterHelper .(3 , 1 ∷ 2 ∷ []) .(2 , 1 ∷ 2 ∷ []) (now .((2 , 3 ∷ 1 ∷ []) ∷ (1 , 2 ∷ 3 ∷ []) ∷ [])) (later (now .((1 , 3 ∷ 1 ∷ []) ∷ []))) p₃ p₄ = ≤-refl
+matchIsBetterHelper .(3 , 1 ∷ 2 ∷ []) .(1 , 3 ∷ 1 ∷ []) (now .((2 , 3 ∷ 1 ∷ []) ∷ (1 , 2 ∷ 3 ∷ []) ∷ [])) (later (later (now .[]))) p₃ p₄ = ≤-refl
+matchIsBetterHelper .(3 , 1 ∷ 2 ∷ []) m₂ (now .((2 , 3 ∷ 1 ∷ []) ∷ (1 , 2 ∷ 3 ∷ []) ∷ [])) (later (later (later ()))) p₃ p₄
+matchIsBetterHelper .(2 , 3 ∷ 1 ∷ []) .(3 , 2 ∷ 3 ∷ []) (later (now .((1 , 2 ∷ 3 ∷ []) ∷ []))) (now .((2 , 1 ∷ 2 ∷ []) ∷ (1 , 3 ∷ 1 ∷ []) ∷ [])) p₃ p₄ = ≤-refl
+matchIsBetterHelper .(2 , 3 ∷ 1 ∷ []) .(2 , 1 ∷ 2 ∷ []) (later (now .((1 , 2 ∷ 3 ∷ []) ∷ []))) (later (now .((1 , 3 ∷ 1 ∷ []) ∷ []))) p₃ p₄ = ≤-refl
+matchIsBetterHelper .(2 , 3 ∷ 1 ∷ []) .(1 , 3 ∷ 1 ∷ []) (later (now .((1 , 2 ∷ 3 ∷ []) ∷ []))) (later (later (now .[]))) p₃ p₄ = ≤-refl
+matchIsBetterHelper .(2 , 3 ∷ 1 ∷ []) m₂ (later (now .((1 , 2 ∷ 3 ∷ []) ∷ []))) (later (later (later ()))) p₃ p₄
+matchIsBetterHelper .(1 , 2 ∷ 3 ∷ []) .(3 , 2 ∷ 3 ∷ []) (later (later (now .[]))) (now .((2 , 1 ∷ 2 ∷ []) ∷ (1 , 3 ∷ 1 ∷ []) ∷ [])) p₃ p₄ = ≤-refl
+matchIsBetterHelper .(1 , 2 ∷ 3 ∷ []) .(2 , 1 ∷ 2 ∷ []) (later (later (now .[]))) (later (now .((1 , 3 ∷ 1 ∷ []) ∷ []))) p₃ p₄ = ≤-refl
+matchIsBetterHelper .(1 , 2 ∷ 3 ∷ []) .(1 , 3 ∷ 1 ∷ []) (later (later (now .[]))) (later (later (now .[]))) p₃ p₄ = ≤-refl
+matchIsBetterHelper .(1 , 2 ∷ 3 ∷ []) m₂ (later (later (now .[]))) (later (later (later ()))) p₃ p₄
+matchIsBetterHelper m₁ m₂ (later (later (later ()))) p₂ p₃ p₄
 
 matchIsBetter : is-better-matching exEnd anotherPossibleStableMatching
 matchIsBetter = matchIsStable , itIsAlsoStable , matchIsBetterHelper
