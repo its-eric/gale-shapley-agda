@@ -1,0 +1,2310 @@
+\documentclass{article}
+\usepackage{agda}
+
+\usepackage{unicode-math}
+\setmathfont{XITS Math}
+
+
+\usepackage{newunicodechar}
+\newunicodechar{λ}{\ensuremath{\mathnormal\lambda}}
+\newunicodechar{₂}{\ensuremath{\mathnormal\_2}}
+
+\begin{document}
+
+\begin{code}%
+\>[0]\<%
+\\
+\>[0]\AgdaKeyword{module}\AgdaSpace{}%
+\AgdaModule{GaleShapley}\AgdaSpace{}%
+\AgdaKeyword{where}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Agda.Builtin.String}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Agda.Builtin.Equality}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Data.Empty}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Data.Maybe}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Data.Nat}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Data.Nat.Properties}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Data.Product}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Data.Bool}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Data.List}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Data.Sum}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Relation.Nullary}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Induction.WellFounded}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Relation.Binary.PropositionalEquality}\<%
+\\
+\>[0]\AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Data.Nat.Solver}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaModule{Data.Nat.Solver.+-*-Solver}\<%
+\\
+\>[0][@{}l@{\AgdaIndent{0}}]%
+\>[2]\AgdaKeyword{using}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{prove}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaFunction{solve}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}:=\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaInductiveConstructor{con}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaInductiveConstructor{var}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}:+\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}:*\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{:-\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}:-\AgdaUnderscore{}}}\AgdaSymbol{)}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaComment{-- lem2 : (4 + 6 ≡ 10)}\<%
+\\
+\>[0]\AgdaComment{-- lem2 = solve 0 (con 4 :+ con 6 := con 10) refl}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaFunction{lem3}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{x}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaNumber{2}\AgdaSpace{}%
+\AgdaOperator{\AgdaPrimitive{*}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
+\AgdaNumber{4}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{≡}}\AgdaSpace{}%
+\AgdaNumber{8}\AgdaSpace{}%
+\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
+\AgdaNumber{2}\AgdaSpace{}%
+\AgdaOperator{\AgdaPrimitive{*}}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaFunction{lem3}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{solve}\AgdaSpace{}%
+\AgdaNumber{1}\AgdaSpace{}%
+\AgdaSymbol{(λ}\AgdaSpace{}%
+\AgdaBound{x'}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaInductiveConstructor{con}\AgdaSpace{}%
+\AgdaNumber{2}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{:*}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{x'}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{:+}}\AgdaSpace{}%
+\AgdaInductiveConstructor{con}\AgdaSpace{}%
+\AgdaNumber{4}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{:=}}\AgdaSpace{}%
+\AgdaInductiveConstructor{con}\AgdaSpace{}%
+\AgdaNumber{8}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{:+}}\AgdaSpace{}%
+\AgdaInductiveConstructor{con}\AgdaSpace{}%
+\AgdaNumber{2}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{:*}}\AgdaSpace{}%
+\AgdaBound{x'}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\<%
+\\
+\>[0]\<%
+\\
+\>[0]\AgdaKeyword{infix}\AgdaSpace{}%
+\AgdaNumber{3}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{\AgdaUnderscore{}>just\AgdaUnderscore{}}}\<%
+\\
+\>[0]\AgdaKeyword{infix}\AgdaSpace{}%
+\AgdaNumber{4}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}from>\AgdaUnderscore{}}}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\<%
+\\
+\>[0]\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaNumber{0}\<%
+\\
+\>[0]\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaSymbol{((\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{l}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{xs}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{length}\AgdaSpace{}%
+\AgdaBound{l}\AgdaSpace{}%
+\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
+\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaBound{xs}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaFunction{compSumPrefLists}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{freeMen}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\<%
+\\
+\>[0]\AgdaFunction{compSumPrefLists}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSpace{}%
+\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
+\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaBound{engagedMen}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaKeyword{record}\AgdaSpace{}%
+\AgdaRecord{MatchingState}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\AgdaSpace{}%
+\AgdaKeyword{where}\<%
+\\
+\>[0][@{}l@{\AgdaIndent{0}}]%
+\>[2]\AgdaKeyword{constructor}\AgdaSpace{}%
+\AgdaInductiveConstructor{mkState}\<%
+\\
+%
+\>[2]\AgdaKeyword{field}\<%
+\\
+\>[2][@{}l@{\AgdaIndent{0}}]%
+\>[4]\AgdaField{men}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)}\<%
+\\
+%
+\>[4]\AgdaField{freeMen}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)}\<%
+\\
+%
+\>[4]\AgdaField{engagedMen}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)}\<%
+\\
+%
+\>[4]\AgdaField{women}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)}\<%
+\\
+%
+\>[4]\AgdaField{couples}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)}\<%
+\\
+%
+\>[4]\AgdaField{sumPrefLists}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\<%
+\\
+%
+\>[4]\AgdaField{sumEq}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaField{sumPrefLists}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{≡}}\AgdaSpace{}%
+\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaField{freeMen}\AgdaSpace{}%
+\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
+\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaField{engagedMen}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaComment{-- Code by @yeputons on Stack Overflow :D}\<%
+\\
+\>[0]\AgdaFunction{is-≤}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Bool}\<%
+\\
+\>[0]\AgdaFunction{is-≤}\AgdaSpace{}%
+\AgdaBound{a}\AgdaSpace{}%
+\AgdaBound{b}\AgdaSpace{}%
+\AgdaKeyword{with}\AgdaSpace{}%
+\AgdaBound{a}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{≤?}}\AgdaSpace{}%
+\AgdaBound{b}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{Dec.yes}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{true}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{Dec.no}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{false}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaComment{-- Helper function to search for an element in a list of natural numbers.}\<%
+\\
+\>[0]\AgdaFunction{positionInListHelper}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Maybe}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\<%
+\\
+\>[0]\AgdaFunction{positionInListHelper}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{nothing}\AgdaSpace{}%
+\AgdaComment{--searched everywhere but couldn't find it!}\<%
+\\
+\>[0]\AgdaFunction{positionInListHelper}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{xs}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{xss}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaKeyword{with}\AgdaSpace{}%
+\AgdaFunction{compare}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaBound{xs}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{equal}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}%
+\>[15]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{just}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaComment{--found man at the tip of the list!}\<%
+\\
+\>[0]\AgdaCatchallClause{\AgdaSymbol{...}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{|}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}%
+\>[15]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{positionInListHelper}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaBound{xss}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaComment{--accumulate and keep searching...}\<%
+\\
+\>[0]\AgdaFunction{positionInListHelper}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{xs}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{xss}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaKeyword{with}\AgdaSpace{}%
+\AgdaFunction{compare}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaBound{xs}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{equal}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}%
+\>[15]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{just}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaComment{--found man somewhere in the list}\<%
+\\
+\>[0]\AgdaCatchallClause{\AgdaSymbol{...}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{|}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}%
+\>[15]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{positionInListHelper}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaBound{xss}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSymbol{))}\AgdaSpace{}%
+\AgdaComment{--accumulate and keep searching}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaFunction{positionInList}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Maybe}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\<%
+\\
+\>[0]\AgdaFunction{positionInList}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSpace{}%
+\AgdaBound{ns}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{positionInListHelper}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSpace{}%
+\AgdaBound{ns}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaComment{-- m is the proposing man}\<%
+\\
+\>[0]\AgdaComment{-- h is the current husband of the woman}\<%
+\\
+\>[0]\AgdaComment{-- prefs is the preference list of the woman}\<%
+\\
+\>[0]\AgdaComment{-- returns true if the woman prefers m over h}\<%
+\\
+\>[0]\AgdaFunction{propose}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)(}\AgdaBound{h}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)(}\AgdaBound{prefs}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Bool}\<%
+\\
+\>[0]\AgdaComment{-- Woman compares}\<%
+\\
+\>[0]\AgdaFunction{propose}\AgdaSpace{}%
+\AgdaBound{man}\AgdaSpace{}%
+\AgdaBound{h}\AgdaSpace{}%
+\AgdaBound{preferenceList}\AgdaSpace{}%
+\AgdaKeyword{with}\AgdaSpace{}%
+\AgdaFunction{positionInList}\AgdaSpace{}%
+\AgdaBound{man}\AgdaSpace{}%
+\AgdaBound{preferenceList}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaFunction{positionInList}\AgdaSpace{}%
+\AgdaBound{h}\AgdaSpace{}%
+\AgdaBound{preferenceList}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{just}\AgdaSpace{}%
+\AgdaBound{p}%
+\>[14]\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{just}\AgdaSpace{}%
+\AgdaBound{q}%
+\>[24]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{is-≤}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSpace{}%
+\AgdaBound{q}\AgdaSpace{}%
+\AgdaComment{--does she prefer the new guy to the current one?}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{just}\AgdaSpace{}%
+\AgdaBound{p}%
+\>[14]\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{nothing}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{false}%
+\>[35]\AgdaComment{--shouldn't happen in an ideal world : woman received a proposal from an unknown man??}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{nothing}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{just}\AgdaSpace{}%
+\AgdaBound{q}%
+\>[24]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{false}%
+\>[35]\AgdaComment{--shouldn't happen in an ideal world : woman married an unknown man previously??}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{nothing}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{nothing}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{false}%
+\>[35]\AgdaComment{--shouldn't happen in an ideal world : who are these men??}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaComment{-- We assume the "husbands" to be the proposing side,}\<%
+\\
+\>[0]\AgdaComment{-- therefore if women propose the pair looks like (wife, husband)}\<%
+\\
+\>[0]\AgdaFunction{getHusband}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Maybe}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\<%
+\\
+\>[0]\AgdaFunction{getHusband}\AgdaSpace{}%
+\AgdaBound{woman}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{nothing}\AgdaSpace{}%
+\AgdaComment{--not married yet and this is the first proposal in the algorithm!}\<%
+\\
+\>[0]\AgdaFunction{getHusband}\AgdaSpace{}%
+\AgdaBound{woman}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{w}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaKeyword{with}\AgdaSpace{}%
+\AgdaFunction{compare}\AgdaSpace{}%
+\AgdaBound{woman}\AgdaSpace{}%
+\AgdaBound{w}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{equal}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{just}\AgdaSpace{}%
+\AgdaBound{m}\AgdaSpace{}%
+\AgdaComment{--found your husband!}\<%
+\\
+\>[0]\AgdaCatchallClause{\AgdaSymbol{...}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{|}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}%
+\>[14]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{nothing}\AgdaSpace{}%
+\AgdaComment{--not married yet}\<%
+\\
+\>[0]\AgdaFunction{getHusband}\AgdaSpace{}%
+\AgdaBound{woman}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{w}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{c}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{cs}\AgdaSymbol{))}\AgdaSpace{}%
+\AgdaKeyword{with}\AgdaSpace{}%
+\AgdaFunction{compare}\AgdaSpace{}%
+\AgdaBound{woman}\AgdaSpace{}%
+\AgdaBound{w}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{equal}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{just}\AgdaSpace{}%
+\AgdaBound{m}\AgdaSpace{}%
+\AgdaComment{--found your husband!}\<%
+\\
+\>[0]\AgdaCatchallClause{\AgdaSymbol{...}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{|}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}%
+\>[14]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{getHusband}\AgdaSpace{}%
+\AgdaBound{woman}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{c}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{cs}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaComment{--keep searching}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaFunction{getWife}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Maybe}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\<%
+\\
+\>[0]\AgdaFunction{getWife}\AgdaSpace{}%
+\AgdaBound{man}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{nothing}\<%
+\\
+\>[0]\AgdaFunction{getWife}\AgdaSpace{}%
+\AgdaBound{man}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{w}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaKeyword{with}\AgdaSpace{}%
+\AgdaFunction{compare}\AgdaSpace{}%
+\AgdaBound{man}\AgdaSpace{}%
+\AgdaBound{m}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{equal}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{just}\AgdaSpace{}%
+\AgdaBound{w}\AgdaSpace{}%
+\AgdaComment{--found your wife!}\<%
+\\
+\>[0]\AgdaCatchallClause{\AgdaSymbol{...}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{|}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}%
+\>[14]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{nothing}\AgdaSpace{}%
+\AgdaComment{--not married yet}\<%
+\\
+\>[0]\AgdaFunction{getWife}\AgdaSpace{}%
+\AgdaBound{man}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{w}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{c}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{cs}\AgdaSymbol{))}\AgdaSpace{}%
+\AgdaKeyword{with}\AgdaSpace{}%
+\AgdaFunction{compare}\AgdaSpace{}%
+\AgdaBound{man}\AgdaSpace{}%
+\AgdaBound{m}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{equal}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{just}\AgdaSpace{}%
+\AgdaBound{w}\AgdaSpace{}%
+\AgdaComment{--found your wife!}\<%
+\\
+\>[0]\AgdaCatchallClause{\AgdaSymbol{...}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{|}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}%
+\>[14]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{getHusband}\AgdaSpace{}%
+\AgdaBound{man}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{c}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{cs}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaComment{--keep searching}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaComment{-- Simply extract a preference list from the scheme of indexed lists.}\<%
+\\
+\>[0]\AgdaFunction{getPreferenceList}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\<%
+\\
+\>[0]\AgdaFunction{getPreferenceList}\AgdaSpace{}%
+\AgdaBound{person}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaComment{--dummy case}\<%
+\\
+\>[0]\AgdaFunction{getPreferenceList}\AgdaSpace{}%
+\AgdaBound{person}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{p}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{preferences}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{ps}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaKeyword{with}\AgdaSpace{}%
+\AgdaFunction{compare}\AgdaSpace{}%
+\AgdaBound{person}\AgdaSpace{}%
+\AgdaBound{p}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{equal}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{preferences}\<%
+\\
+\>[0]\AgdaCatchallClause{\AgdaSymbol{...}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{|}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}%
+\>[14]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{getPreferenceList}\AgdaSpace{}%
+\AgdaBound{person}\AgdaSpace{}%
+\AgdaBound{ps}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaComment{-- Safely adding couples : previous marriages are unmade}\<%
+\\
+\>[0]\AgdaFunction{safeAddNewCouple}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{newCouple}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)(}\AgdaBound{previousCouples}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{))}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaFunction{safeAddNewCouple}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{w}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{w}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\<%
+\\
+\>[0]\AgdaFunction{safeAddNewCouple}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{w}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{a}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{b}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaKeyword{with}\AgdaSpace{}%
+\AgdaFunction{compare}\AgdaSpace{}%
+\AgdaBound{w}\AgdaSpace{}%
+\AgdaBound{b}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{equal}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{w}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\<%
+\\
+\>[0]\AgdaCatchallClause{\AgdaSymbol{...}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{|}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}%
+\>[14]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{w}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{a}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{b}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\<%
+\\
+\>[0]\AgdaFunction{safeAddNewCouple}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{w}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{a}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{b}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{c}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{cs}\AgdaSymbol{))}\AgdaSpace{}%
+\AgdaKeyword{with}\AgdaSpace{}%
+\AgdaFunction{compare}\AgdaSpace{}%
+\AgdaBound{w}\AgdaSpace{}%
+\AgdaBound{b}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{equal}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{w}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{c}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{cs}\<%
+\\
+\>[0]\AgdaCatchallClause{\AgdaSymbol{...}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{|}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}%
+\>[14]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{a}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{b}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaFunction{safeAddNewCouple}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{w}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{c}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{cs}\AgdaSymbol{)}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaFunction{p}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{l}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{))(}\AgdaBound{a}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaBound{a}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{≡}}\AgdaSpace{}%
+\AgdaNumber{3}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaFunction{safeAddNewCouple}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaNumber{2}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaNumber{3}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaNumber{1}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{a}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{l}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{≡}}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaNumber{2}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{a}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{l}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaFunction{p}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaBound{a}\AgdaSpace{}%
+\AgdaBound{e}\AgdaSpace{}%
+\AgdaKeyword{with}\AgdaSpace{}%
+\AgdaFunction{compare}\AgdaSpace{}%
+\AgdaNumber{3}\AgdaSpace{}%
+\AgdaBound{a}\<%
+\\
+\>[0]\AgdaFunction{p}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaSymbol{()}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaBound{w}\<%
+\\
+\>[0]\AgdaFunction{p}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{()}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaBound{w}\<%
+\\
+\>[0]\AgdaFunction{p}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSymbol{))}\AgdaSpace{}%
+\AgdaSymbol{()}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaBound{w}\<%
+\\
+\>[0]\AgdaFunction{p}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSymbol{)))}\AgdaSpace{}%
+\AgdaBound{e}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{equal}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaSymbol{.}}\AgdaDottedPattern{\AgdaNumber{3}}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\<%
+\\
+\>[0]\AgdaFunction{p}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{a}\AgdaSymbol{))))}\AgdaSpace{}%
+\AgdaSymbol{()}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaBound{w}\<%
+\\
+\>[0]\AgdaFunction{p}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{l}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaSymbol{()}\<%
+\\
+\>[0]\AgdaFunction{p}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{l}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaSymbol{.}}\AgdaDottedPattern{\AgdaNumber{2}}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaComment{-- Safely adding new engaged men to the list : dumped man is removed}\<%
+\\
+\>[0]\AgdaFunction{safeAddNewEngagedMan}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{newEngagedMan}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{))(}\AgdaBound{prevFiance}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)(}\AgdaBound{prevEngagedMen}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{))}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaComment{-- Dummy case: this function is only invoked if a woman is already married, so the list of engaged men can not possibly be empty...}\<%
+\\
+\>[0]\AgdaFunction{safeAddNewEngagedMan}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{newFiance}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{prevFiance}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{newFiance}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaNumber{0}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSymbol{))}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaFunction{safeAddNewEngagedMan}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{newFiance}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{prevFiance}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{prefsM}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaKeyword{with}\AgdaSpace{}%
+\AgdaFunction{compare}\AgdaSpace{}%
+\AgdaBound{prevFiance}\AgdaSpace{}%
+\AgdaBound{m}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{equal}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{newFiance}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{prefsM}\AgdaSymbol{))}\AgdaSpace{}%
+\AgdaComment{--kick him out!}\<%
+\\
+\>[0]\AgdaCatchallClause{\AgdaSymbol{...}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{|}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}%
+\>[14]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaSymbol{(((}\AgdaBound{newFiance}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{prefsM}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaNumber{0}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSymbol{))}\AgdaSpace{}%
+\AgdaComment{--safe to keep after all}\<%
+\\
+\>[0]\AgdaFunction{safeAddNewEngagedMan}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{newFiance}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{prevFiance}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{prefsM}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{ms}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaKeyword{with}\AgdaSpace{}%
+\AgdaFunction{compare}\AgdaSpace{}%
+\AgdaBound{prevFiance}\AgdaSpace{}%
+\AgdaBound{m}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{equal}\AgdaSpace{}%
+\AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{newFiance}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{ms}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{prefsM}\AgdaSymbol{))}\AgdaSpace{}%
+\AgdaComment{--kick him out!}\<%
+\\
+\>[0]\AgdaCatchallClause{\AgdaSymbol{...}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{|}}\AgdaSpace{}%
+\AgdaCatchallClause{\AgdaSymbol{\AgdaUnderscore{}}}%
+\>[14]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{prefsM}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{proj₁}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{safeAddNewEngagedMan}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{newFiance}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{prevFiance}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{ms}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSymbol{)))}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaField{proj₂}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{safeAddNewEngagedMan}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{newFiance}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{prevFiance}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{ms}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSymbol{))}\AgdaSpace{}%
+\AgdaComment{--safe to keep... for now}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaFunction{step}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaRecord{MatchingState}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaRecord{MatchingState}\<%
+\\
+\>[0]\AgdaComment{-- When there are no more free men, the matching is stable and this is the last step.}\<%
+\\
+\>[0]\AgdaFunction{step}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
+\AgdaBound{men}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSpace{}%
+\AgdaBound{women}\AgdaSpace{}%
+\AgdaBound{couples}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
+\AgdaBound{men}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSpace{}%
+\AgdaBound{women}\AgdaSpace{}%
+\AgdaBound{couples}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaBound{p}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaComment{-- Dummy case : the function shouldn't really be invoked with a man with empty preferences.}\<%
+\\
+\>[0]\AgdaComment{-- But otherwise Agda would question the completeness of our pattern matching.}\<%
+\\
+\>[0]\AgdaFunction{step}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
+\AgdaBound{men}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{n}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSpace{}%
+\AgdaBound{women}\AgdaSpace{}%
+\AgdaBound{couples}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
+\AgdaBound{men}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{n}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSpace{}%
+\AgdaBound{women}\AgdaSpace{}%
+\AgdaBound{couples}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaBound{p}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaComment{-- Proposal step}\<%
+\\
+\>[0]\AgdaFunction{step}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
+\AgdaBound{men}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{n}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{w}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSpace{}%
+\AgdaBound{women}\AgdaSpace{}%
+\AgdaBound{couples}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaKeyword{with}\AgdaSpace{}%
+\AgdaFunction{getHusband}\AgdaSpace{}%
+\AgdaBound{w}\AgdaSpace{}%
+\AgdaBound{couples}\<%
+\\
+\>[0]\AgdaSymbol{...}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{just}\AgdaSpace{}%
+\AgdaBound{h}\AgdaSpace{}%
+\AgdaKeyword{with}\AgdaSpace{}%
+\AgdaFunction{propose}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSpace{}%
+\AgdaBound{h}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{getPreferenceList}\AgdaSpace{}%
+\AgdaBound{w}\AgdaSpace{}%
+\AgdaBound{women}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaComment{--Woman has a husband, represented by his literal number}\<%
+\\
+\>[0]\AgdaSymbol{...}%
+\>[18]\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{true}%
+\>[26]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
+\AgdaBound{men}\AgdaSpace{}%
+\AgdaFunction{freeMenUpdated}\AgdaSpace{}%
+\AgdaFunction{engagedMenUpdated}\AgdaSpace{}%
+\AgdaBound{women}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{safeAddNewCouple}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{n}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{w}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{couples}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{compSumPrefLists}\AgdaSpace{}%
+\AgdaFunction{freeMenUpdated}\AgdaSpace{}%
+\AgdaFunction{engagedMenUpdated}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\<%
+\\
+\>[26][@{}l@{\AgdaIndent{0}}]%
+\>[27]\AgdaKeyword{where}\<%
+\\
+\>[27][@{}l@{\AgdaIndent{0}}]%
+\>[31]\AgdaFunction{freeMenUpdated}%
+\>[49]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaField{proj₂}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{safeAddNewEngagedMan}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{n}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{h}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSpace{}%
+\AgdaComment{--(h , getPreferenceList h engagedMen) ∷ freeMen}\<%
+\\
+%
+\>[31]\AgdaFunction{engagedMenUpdated}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaField{proj₁}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{safeAddNewEngagedMan}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{n}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{h}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaSymbol{...}%
+\>[18]\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{false}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
+\AgdaBound{men}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{n}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSpace{}%
+\AgdaBound{women}\AgdaSpace{}%
+\AgdaBound{couples}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{compSumPrefLists}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{n}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\<%
+\\
+\>[0]\AgdaComment{-- Woman didn't have a husband yet (represented by zero) : must accept proposal}\<%
+\\
+\>[0]\AgdaFunction{step}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
+\AgdaBound{men}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{n}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{w}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSpace{}%
+\AgdaBound{women}\AgdaSpace{}%
+\AgdaBound{couples}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{|}\AgdaSpace{}%
+\AgdaInductiveConstructor{nothing}%
+\>[87]\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{mkState}%
+\>[948I]\AgdaBound{men}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{n}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{women}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{safeAddNewCouple}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{n}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{w}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{couples}\AgdaSymbol{)}\<%
+\\
+\>[948I][@{}l@{\AgdaIndent{0}}]%
+\>[99]\AgdaSymbol{(}\AgdaFunction{compSumPrefLists}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{n}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSymbol{))}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaFunction{+-zero}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{∀}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{≡}}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSpace{}%
+\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
+\AgdaNumber{0}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{≡}}\AgdaSpace{}%
+\AgdaBound{n}\<%
+\\
+\>[0]\AgdaFunction{+-zero}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{p}\<%
+\\
+\>[0]\AgdaFunction{+-zero}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{p}\<%
+\\
+\>[0]\AgdaFunction{+-zero}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaSymbol{()}\<%
+\\
+\>[0]\AgdaFunction{+-zero}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaBound{n}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaOperator{\AgdaPrimitive{+}}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaNumber{0}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{cong}\AgdaSpace{}%
+\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{+-right-identity}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSymbol{)}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaFunction{+-move-zero}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{∀}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{≡}}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSpace{}%
+\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
+\AgdaNumber{0}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{≡}}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
+\AgdaNumber{0}\<%
+\\
+\>[0]\AgdaFunction{+-move-zero}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\<%
+\\
+\>[0]\AgdaFunction{+-move-zero}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{()}\<%
+\\
+\>[0]\AgdaFunction{+-move-zero}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaSymbol{()}\<%
+\\
+\>[0]\AgdaFunction{+-move-zero}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaBound{n}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaOperator{\AgdaPrimitive{+}}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaNumber{0}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{cong}\AgdaSpace{}%
+\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{+-move-zero}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{n}\AgdaSpace{}%
+\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
+\AgdaNumber{0}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\AgdaSymbol{)}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaFunction{n≤n+m}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{∀}\AgdaSpace{}%
+\AgdaBound{m}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{≤}}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSpace{}%
+\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
+\AgdaBound{m}\<%
+\\
+\>[0]\AgdaFunction{n≤n+m}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{≤-refl}\<%
+\\
+\>[0]\AgdaFunction{n≤n+m}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{m}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{≤-reflexive}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{cong}\AgdaSpace{}%
+\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{sym}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{+-right-identity}\AgdaSpace{}%
+\AgdaBound{m}\AgdaSymbol{)))}\<%
+\\
+\>[0]\AgdaFunction{n≤n+m}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{z≤n}\<%
+\\
+\>[0]\AgdaFunction{n≤n+m}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{m}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{s≤s}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{n≤n+m}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{m}\AgdaSymbol{)}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaFunction{lengthPrefsOneSide}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{∀}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{freeMen}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{))(}\AgdaBound{k}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{≡}}\AgdaSpace{}%
+\AgdaFunction{compSumPrefLists}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{≤}}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{≤}}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaFunction{lengthPrefsOneSide}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{z≤n}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaInductiveConstructor{z≤n}\<%
+\\
+\>[0]\AgdaFunction{lengthPrefsOneSide}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{z≤n}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaField{proj₂}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{lengthPrefsOneSide}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaFunction{lengthPrefsOneSide}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{snd}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{z≤n}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaFunction{≤-reflexive}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{sym}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSymbol{)}\<%
+\\
+\>[0]\AgdaFunction{lengthPrefsOneSide}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{≤-reflexive}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{+-zero}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{+-move-zero}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSymbol{))}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaInductiveConstructor{z≤n}\<%
+\\
+\>[0]\AgdaFunction{lengthPrefsOneSide}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{snd}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{≤-reflexive}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{+-zero}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{snd}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSymbol{))}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{+-move-zero}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{snd}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSymbol{)))}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSymbol{))}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaInductiveConstructor{z≤n}\<%
+\\
+\>[0]\AgdaFunction{lengthPrefsOneSide}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst₁}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{lengthPrefsOneSide}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSpace{}%
+\AgdaBound{k}\AgdaSpace{}%
+\AgdaBound{p}\<%
+\\
+\>[0]\AgdaFunction{lengthPrefsOneSide}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst₁}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{snd₁}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaFunction{lengthPrefs}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaBound{freeMen}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaOperator{\AgdaPrimitive{+}}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaInductiveConstructor{suc}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaSymbol{(}}\AgdaDottedPattern{\AgdaFunction{lengthPrefs}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaSymbol{((}}\AgdaDottedPattern{\AgdaBound{fst₁}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaBound{snd₁}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaBound{engagedMen}}\AgdaDottedPattern{\AgdaSymbol{)))}}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaField{proj₁}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{lengthPrefsOneSide}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst₁}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{snd₁}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSpace{}%
+\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
+\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst₁}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{snd₁}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSymbol{)))}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaFunction{n≤m+n}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst₁}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{snd₁}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSymbol{)))}\<%
+\\
+\>[0]\AgdaFunction{lengthPrefsOneSide}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{snd}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst₁}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaInductiveConstructor{suc}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaSymbol{(}}\AgdaDottedPattern{\AgdaFunction{lengthPrefs}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaSymbol{((}}\AgdaDottedPattern{\AgdaBound{fst}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaBound{snd}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaBound{freeMen}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaOperator{\AgdaPrimitive{+}}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaFunction{lengthPrefs}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaBound{engagedMen}}\AgdaDottedPattern{\AgdaSymbol{))}}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{n≤n+m}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{snd}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSymbol{)))}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaField{proj₂}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{lengthPrefsOneSide}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{snd}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{snd}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
+\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSymbol{)))}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{cong}\AgdaSpace{}%
+\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\AgdaSymbol{))}\<%
+\\
+\>[0]\AgdaFunction{lengthPrefsOneSide}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{snd}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst₁}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{x₁}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{snd₁}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaBound{p}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{n≤n+m}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst₁}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{snd₁}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSymbol{)))}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{snd}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSymbol{)))}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaFunction{n≤m+n}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{snd}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{freeMen}\AgdaSymbol{))}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\AgdaSymbol{((}\AgdaBound{fst₁}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
+\AgdaBound{x₁}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{snd₁}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{engagedMen}\AgdaSymbol{))}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaFunction{stepsWithPrefs}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{∀}\AgdaSpace{}%
+\AgdaBound{m}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{≤}}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{≤}}\AgdaSpace{}%
+\AgdaNumber{1}\AgdaSpace{}%
+\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
+\AgdaBound{n}\<%
+\\
+\>[0]\AgdaFunction{stepsWithPrefs}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaInductiveConstructor{z≤n}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{z≤n}\<%
+\\
+\>[0]\AgdaFunction{stepsWithPrefs}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaInductiveConstructor{z≤n}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{z≤n}\<%
+\\
+\>[0]\AgdaFunction{stepsWithPrefs}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{m}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaSymbol{()}\<%
+\\
+\>[0]\AgdaFunction{stepsWithPrefs}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{m}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{s≤s}\AgdaSpace{}%
+\AgdaBound{p₁}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{s≤s}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{stepsWithPrefs}\AgdaSpace{}%
+\AgdaBound{m}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSpace{}%
+\AgdaBound{p₁}\AgdaSymbol{)}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaComment{\{-
+m≤n+r+m : ∀ m n r → m ≤ n + suc (r + m)
+m≤n+r+m zero zero zero = z≤n
+m≤n+r+m zero zero (suc r) = z≤n
+m≤n+r+m zero (suc n) zero = z≤n
+m≤n+r+m zero (suc n) (suc r) = z≤n
+m≤n+r+m (suc m) zero zero = s≤s (m≤n+r+m m zero zero)
+m≤n+r+m (suc m) zero (suc r) = m≤n+r+m (suc m) 1 r
+m≤n+r+m (suc m) (suc n) zero = s≤s (m≤n+r+m m n 1)
+m≤n+r+m (suc m) (suc n) (suc r) = s≤s \{!!\}
+
+lengthPrefsExtLemma : ∀ (x : ℕ × List ℕ)(xs : List (ℕ × List ℕ))(n : ℕ) → lengthPrefs xs ≤ n + lengthPrefs (x ∷ xs)
+lengthPrefsExtLemma (man , prefs) [] n = z≤n
+lengthPrefsExtLemma (man , []) ((fst , []) ∷ ms) n = n≤m+n n (lengthPrefs ms)
+lengthPrefsExtLemma (man , x ∷ prefs) ((fst , []) ∷ ms) n = lengthPrefsExtLemma (man , x ∷ prefs) ms n
+lengthPrefsExtLemma (man , []) ((fst , w ∷ ws) ∷ ms) n = n≤m+n n (suc (lengthPrefs ((fst , ws) ∷ ms)))
+lengthPrefsExtLemma (man , x ∷ prefs) ((fst , w ∷ ws) ∷ ms) n = m≤n+r+m (suc (length ws + lengthPrefs ms)) n (length prefs)
+
+n≤1+n-plus-zero : ∀ n → n ≤ suc (n + 0)
+n≤1+n-plus-zero zero = z≤n
+n≤1+n-plus-zero (suc n) = s≤s (n≤1+n-plus-zero n)
+
+n-plus-zero≤1+n+m : ∀ m n → n + 0 ≤ suc (n + m)
+n-plus-zero≤1+n+m zero zero = z≤n
+n-plus-zero≤1+n+m zero (suc n) = s≤s (n-plus-zero≤1+n+m zero n)
+n-plus-zero≤1+n+m (suc m) zero = z≤n
+n-plus-zero≤1+n+m (suc m) (suc n) = s≤s (n-plus-zero≤1+n+m (suc m) n)
+
+n≤itself-trans : ∀ m n → m ≤ n + m → m ≤ n + (suc m)
+n≤itself-trans zero zero = λ \AgdaUnderscore{} → z≤n
+n≤itself-trans zero (suc n) = λ \AgdaUnderscore{} → z≤n
+n≤itself-trans (suc m) zero (s≤s p₁) = s≤s (n≤itself-trans m zero p₁)
+n≤itself-trans (suc m) (suc n) (s≤s p₁) = \{!!\}
+
+n≤2+m+n : ∀ m n → n ≤ suc (suc (m + n))
+n≤2+m+n zero zero = z≤n
+n≤2+m+n zero (suc n) = s≤s (n≤2+m+n zero n)
+n≤2+m+n (suc m) zero = z≤n
+n≤2+m+n (suc m) (suc n) = s≤s \{!!\}
+
+freeMen+nLemma : ∀ man prefs freeMen engagedMen → lengthPrefs freeMen + 0 ≤ suc (lengthPrefs ((man , prefs) ∷ freeMen) + lengthPrefs engagedMen)
+freeMen+nLemma man prefs [] [] = z≤n
+freeMen+nLemma man prefs [] (x ∷ engagedMen) = z≤n
+freeMen+nLemma man [] (x ∷ freeMen) [] = n≤1+n \AgdaUnderscore{}
+freeMen+nLemma man (x₁ ∷ prefs) (x ∷ freeMen) [] = \{!n-plus-zero≤1+n+m (length (proj₂ x) + lengthPrefs freeMen) ? !\}
+freeMen+nLemma man [] (x ∷ freeMen) (x₁ ∷ engagedMen) = n-plus-zero≤1+n+m (lengthPrefs (x₁ ∷ engagedMen)) (lengthPrefs (x ∷ freeMen))
+freeMen+nLemma man (x₂ ∷ prefs) ((fst , []) ∷ freeMen) ((fst₁ , []) ∷ engagedMen) = \{!!\}
+freeMen+nLemma man (x₂ ∷ prefs) ((fst , []) ∷ freeMen) ((fst₁ , x ∷ snd₁) ∷ engagedMen) = \{!!\}
+freeMen+nLemma man (x₂ ∷ prefs) ((fst , x ∷ snd) ∷ freeMen) ((fst₁ , []) ∷ engagedMen) = \{!!\}
+freeMen+nLemma man (x₂ ∷ prefs) ((fst , x ∷ snd) ∷ freeMen) ((fst₁ , x₁ ∷ snd₁) ∷ engagedMen) = \{!!\}
+
+\{--
+foldr (λ \AgdaUnderscore{} → suc) 0 (proj₂ extraInfo) + lengthPrefs freeMen +
+      (foldr (λ \AgdaUnderscore{} → suc) 0 prefsM + lengthPrefs updatedEngagedMen)
+      ≤
+      suc
+      (foldr (λ \AgdaUnderscore{} → suc) 0 prefs + lengthPrefs freeMen +
+       (foldr (λ \AgdaUnderscore{} → suc) 0 prefsM +
+        (foldr (λ \AgdaUnderscore{} → suc) 0 (proj₂ ms) + lengthPrefs engagedMen)))
+-\}
+
+lemmaProposeTrue : ∀ (freeMen engagedMen : List (ℕ × List ℕ))(formerHusband man : ℕ)(prefs : List ℕ) →
+                   length (proj₂ (proj₂ (safeAddNewEngagedMan (man , prefs) formerHusband engagedMen))) + lengthPrefs freeMen + lengthPrefs (proj₁ (safeAddNewEngagedMan (man , prefs) formerHusband engagedMen))
+                   ≤ suc (length prefs + lengthPrefs freeMen + lengthPrefs engagedMen)
+lemmaProposeTrue freeMen [] formerHusband man prefs = subst (λ x → lengthPrefs freeMen + (length prefs + 0) ≤ suc x)
+                                                             (solve 2 (λ x y → x :+ (y :+ con 0) := (y :+ x :+ con 0)) refl (lengthPrefs freeMen) (length prefs))
+                                                             (n≤1+n \AgdaUnderscore{})
+lemmaProposeTrue freeMen ((m , prefsM) ∷ []) formerHusband man prefs with compare formerHusband m
+lemmaProposeTrue freeMen ((.(suc (formerHusband + k)) , prefsM) ∷ []) formerHusband man prefs | less .formerHusband k = subst (λ x → lengthPrefs freeMen + (length prefs + (length prefsM + 0)) ≤ suc x)
+                                                                                                                               (solve 3 (λ x y z → x :+ (y :+ (z :+ con 0)) := y :+ x :+ (z :+ con 0)) refl (lengthPrefs freeMen) (length prefs) (length prefsM))
+                                                                                                                               (n≤1+n \AgdaUnderscore{})
+lemmaProposeTrue freeMen ((m , prefsM) ∷ []) .m man prefs | equal .m = subst (λ x → length prefsM + lengthPrefs freeMen + (length prefs + 0) ≤ suc x)
+                                                                              (solve 3 (λ x y z → x :+ y :+ (z :+ con 0) := z :+ y :+ (x :+ con 0)) refl (length prefsM) (lengthPrefs freeMen) (length prefs))
+                                                                              (n≤1+n \AgdaUnderscore{})
+lemmaProposeTrue freeMen ((m , prefsM) ∷ []) .(suc (m + k)) man prefs | greater .m k = subst (λ x → lengthPrefs freeMen + (length prefs + (length prefsM + 0)) ≤ suc x)
+                                                                                              (solve 3 (λ x y z → x :+ (y :+ (z :+ con 0)) := y :+ x :+ (z :+ con 0)) refl (lengthPrefs freeMen) (length prefs) (length prefsM))
+                                                                                              (n≤1+n \AgdaUnderscore{})
+lemmaProposeTrue freeMen ((m , prefsM) ∷ ms ∷ engagedMen) formerHusband man prefs with compare formerHusband m
+lemmaProposeTrue freeMen ((.(suc (formerHusband + k)) , prefsM) ∷ ms ∷ engagedMen) formerHusband man prefs | less .formerHusband k with safeAddNewEngagedMan (man , prefs) formerHusband (ms ∷ engagedMen)
+lemmaProposeTrue freeMen ((.(suc (formerHusband + k)) , prefsM) ∷ ms ∷ engagedMen) formerHusband man prefs | less .formerHusband k | [] , m , [] = \{!!\}
+lemmaProposeTrue freeMen ((.(suc (formerHusband + k)) , prefsM) ∷ ms ∷ engagedMen) formerHusband man prefs | less .formerHusband k | [] , m , w ∷ ws = \{!!\}
+lemmaProposeTrue freeMen ((.(suc (formerHusband + k)) , prefsM) ∷ ms ∷ engagedMen) formerHusband man prefs | less .formerHusband k | u ∷ updatedEngagedMen , extraInfo = \{!!\}
+lemmaProposeTrue freeMen ((m , prefsM) ∷ ms ∷ engagedMen) .m man prefs | equal .m = subst (λ x → length prefsM + lengthPrefs freeMen + (length prefs + (length (proj₂ ms) + lengthPrefs engagedMen)) ≤ suc x)
+                                                                                           (solve 5 (λ u v w y z → u :+ v :+ (w :+ (y :+ z)) := w :+ v :+ (u :+ (y :+ z))) refl
+                                                                                                  (length prefsM) (lengthPrefs freeMen) (length prefs) (length (proj₂ ms)) (lengthPrefs engagedMen))
+                                                                                           (n≤1+n \AgdaUnderscore{})
+lemmaProposeTrue freeMen ((m , prefsM) ∷ ms ∷ engagedMen) .(suc (m + k)) man prefs | greater .m k with safeAddNewEngagedMan (man , prefs) (suc (m + k)) (ms ∷ engagedMen)
+lemmaProposeTrue freeMen ((m , prefsM) ∷ ms ∷ engagedMen) .(suc (m + k)) man prefs | greater .m k | updatedEngagedMen , extraInfo = \{!lemmaProposeTrueHelper !\}
+
+decompLemma : ∀ n prefs engagedMen x₁ → lengthPrefs ((n , prefs) ∷ x₁ ∷ engagedMen) ≤ suc (lengthPrefs ((n , prefs) ∷ []) + lengthPrefs (x₁ ∷ engagedMen))
+decompLemma n [] engagedMen x₁ = n≤1+n \AgdaUnderscore{}
+decompLemma n (x ∷ prefs) engagedMen (fst , []) = s≤s (decompLemma n prefs engagedMen (fst , []))
+decompLemma n (x ∷ prefs) engagedMen (fst , x₁ ∷ snd) = s≤s (decompLemma n prefs engagedMen (fst , x₁ ∷ snd))
+
+singleWomanLemma : ∀ freeMen n prefs engagedMen →
+  lengthPrefs freeMen + lengthPrefs ((n , prefs) ∷ engagedMen) ≤
+  suc (lengthPrefs ((n , prefs) ∷ freeMen) + lengthPrefs engagedMen)
+singleWomanLemma freeMen n prefs engagedMen = subst (λ x → lengthPrefs freeMen + lengthPrefs ((n , prefs) ∷ engagedMen) ≤ suc x)
+                                                (solve 3 (λ x y z → x :+ (y :+ z) := y :+ x :+ z) refl (lengthPrefs freeMen) (length prefs) (lengthPrefs engagedMen))
+                                                (n≤1+n \AgdaUnderscore{})
+
+stepDec : (m : MatchingState) → compSumPrefLists (MatchingState.freeMen m) (MatchingState.engagedMen m) ≥ compSumPrefLists (MatchingState.freeMen (step m)) (MatchingState.engagedMen (step m))
+stepDec (mkState men [] [] women couples k p) = ≤-refl
+stepDec (mkState men [] ((man , prefs) ∷ engagedMen) women couples k p) = ≤-refl
+stepDec (mkState men ((man , []) ∷ freeMen) engagedMen women couples k p) = ≤-refl
+stepDec (mkState men ((man , w ∷ prefs) ∷ freeMen) engagedMen women couples k p) with getHusband w couples
+...             | just h with propose man h (getPreferenceList w women)
+...             | true  = lemmaProposeTrue freeMen engagedMen h man prefs 
+...             | false = n≤1+n \AgdaUnderscore{}
+stepDec (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k p) | nothing = singleWomanLemma freeMen n prefs engagedMen
+
+\{-\# TERMINATING \#-\}
+allSteps : (m : MatchingState)(k : ℕ) → k ≡ compSumPrefLists (MatchingState.freeMen m) (MatchingState.engagedMen m) → MatchingState
+allSteps m k p with step m
+... | mkState men [] engagedMen women couples k₁ p₁ = mkState men [] engagedMen women couples k₁ p₁
+... | m' = allSteps m' (compSumPrefLists (MatchingState.freeMen m') (MatchingState.engagedMen m')) refl
+
+-- List of preferences of men and women from the Gale-Shapley canonical example
+listMen : List (ℕ × List ℕ)
+listMen = (1 , ( 1 ∷ 2 ∷ 3 ∷ [] )) ∷ (2 , ( 2 ∷ 3 ∷ 1 ∷ [])) ∷ (3 , ( 3 ∷ 1 ∷ 2 ∷ [])) ∷ []
+
+listWomen : List (ℕ × List ℕ)
+listWomen = (1 , ( 2 ∷ 3 ∷ 1 ∷ [] )) ∷ (2 , ( 3 ∷ 1 ∷ 2 ∷ [])) ∷ ((3 , ( 1 ∷ 2 ∷ 3 ∷ []))) ∷ []
+
+-- Extra example : men and women have only one possible stable set of marriages! What could happen...?
+
+listDifficultMen : List (ℕ × List ℕ)
+listDifficultMen = (1 , ( 1 ∷ 2 ∷ 3 ∷ 4 ∷ [] )) ∷ (2 , ( 1 ∷ 4 ∷ 3 ∷ 2 ∷ [] )) ∷ (3 , ( 2 ∷ 1 ∷ 3 ∷ 4 ∷ [])) ∷ ((4 , ( 4 ∷ 2 ∷ 3 ∷ 1 ∷ []))) ∷ []
+
+listDifficultWomen : List (ℕ × List ℕ)
+listDifficultWomen = (1 , ( 4 ∷ 3 ∷ 1 ∷ 2 ∷ []) ) ∷ (2 , ( 2 ∷ 4 ∷ 1 ∷ 3 ∷ [])) ∷ (3 , ( 4 ∷ 1 ∷ 2 ∷ 3 ∷ [])) ∷ (4 , (3 ∷ 2 ∷ 1 ∷ 4 ∷ [])) ∷ []
+-\}}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaComment{-- Proofs! :D}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaComment{-- The type of elements that belong to a list.}\<%
+\\
+\>[0]\AgdaKeyword{data}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{\AgdaUnderscore{}∈\AgdaUnderscore{}}}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{A}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\AgdaSymbol{\}(}\AgdaBound{a}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\AgdaSpace{}%
+\AgdaKeyword{where}\<%
+\\
+\>[0][@{}l@{\AgdaIndent{0}}]%
+\>[2]\AgdaInductiveConstructor{now}%
+\>[8]\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{as}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaBound{a}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{∈}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{a}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{as}\AgdaSymbol{)}\<%
+\\
+%
+\>[2]\AgdaInductiveConstructor{later}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{a'}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSymbol{\}\{}\AgdaBound{as}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{List}\AgdaSpace{}%
+\AgdaBound{A}\AgdaSymbol{\}}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaBound{a}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{∈}}\AgdaSpace{}%
+\AgdaBound{as}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaBound{a}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{∈}}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{a'}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
+\AgdaBound{as}\AgdaSymbol{)}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaComment{-- Bigger than comparison for Maybe ℕ-typed elements. }\<%
+\\
+\>[0]\AgdaKeyword{data}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{\AgdaUnderscore{}>just\AgdaUnderscore{}}}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{Maybe}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaDatatype{Maybe}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaPrimitiveType{Set}\AgdaSpace{}%
+\AgdaKeyword{where}\<%
+\\
+\>[0][@{}l@{\AgdaIndent{0}}]%
+\>[2]\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}from>\AgdaUnderscore{}}}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{\{}\AgdaBound{m}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{\}}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaFunction{>}}\AgdaSpace{}%
+\AgdaBound{n}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaInductiveConstructor{just}\AgdaSpace{}%
+\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{>just}}\AgdaSpace{}%
+\AgdaInductiveConstructor{just}\AgdaSpace{}%
+\AgdaBound{n}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaComment{\{-
+-- Helper for the condition of stability: a person is better than another one
+-- in a preference list if it appears earlier in it.
+\AgdaUnderscore{}≻[\AgdaUnderscore{}]\AgdaUnderscore{} : ℕ → List ℕ → ℕ → Set
+person ≻[ list ] person₂ = positionInList person₂ list >just positionInList person list
+
+-- Given a man and a woman and their preferences, the condition of stability is satisfied if
+-- another m' and w' are not better positioned in their preference lists than their partners.
+conditionOfStabilitySatisfied : (c₁ : (ℕ × List ℕ) × (ℕ × List ℕ))(c₂ : (ℕ × List ℕ) × (ℕ × List ℕ)) → Set
+conditionOfStabilitySatisfied ((m , prefsM) , w , prefsW) ((m' , prefsM') , w' , prefsW') =
+  (¬ ( ( w' ≻[ prefsM ] w ) ×  ( m ≻[ prefsW' ] m' ))) × (¬ ( (w ≻[ prefsM' ] w') × (m' ≻[ prefsW ] m)))
+
+-- A matching is stable if the condition of stability is satisfied for every pair of man and woman not married.
+is-stable-matching : MatchingState → Set
+is-stable-matching (mkState men freeMen engagedMen women couples k p) =
+  (freeMen ≡ []) × (
+      (c₁ c₂ : ℕ × ℕ) → c₁ ∈ couples → c₂ ∈ couples → ¬ (c₁ ≡ c₂) → 
+          conditionOfStabilitySatisfied 
+            ( ( (proj₁ c₁) , getPreferenceList (proj₁ c₁) men) , ( (proj₂ c₁) , getPreferenceList (proj₂ c₁) women))
+            ( ( (proj₁ c₂) , getPreferenceList (proj₁ c₂) men) , ( (proj₂ c₂) , getPreferenceList (proj₂ c₂) women)))
+
+exStart exEnd exEndExpected : MatchingState
+exStart       = mkState listMen listMen [] listWomen [] 9 refl
+-- Gale and Shapley tell us that, for the first simple example, each men gets his first woman from the list as a wife
+-- and there are no conflicts among them. So we expect the following end state:
+exEndExpected = mkState listMen [] ((3 , (1 ∷ 2 ∷ [])) ∷ ((2 , 3 ∷ 1 ∷ []) ∷ (1 , 2 ∷ 3 ∷ []) ∷ [] )) listWomen ((2 , 2) ∷ (3 , 3) ∷ (1 , 1) ∷ []) 6 refl
+exEnd         = step (step (step (step exStart)))
+
+resultIsWhatWeExpected : exEnd ≡ exEndExpected
+resultIsWhatWeExpected = refl
+
+ex2Start ex2End ex2EndExpected : MatchingState
+ex2Start         = mkState listDifficultMen listDifficultMen [] listDifficultWomen [] 16 refl
+-- A second, harder example is given where there is only one possible stable set of marriages.
+ex2EndExpected   = mkState listDifficultMen [] ((1 , ( 4 ∷ [] )) ∷ (4 , (3 ∷ 1 ∷ [])) ∷ (2 , ( 3 ∷ 2 ∷ [] )) ∷ (3 , ( 3 ∷ 4 ∷ [])) ∷ []) listDifficultWomen (((2 , 4) ∷ (4 , 2) ∷ (1 , 3) ∷ (3 , 1) ∷ [])) 7 refl
+ex2End           = step (step (step (step (step (step (step (step (step ex2Start))))))))
+
+result2IsWhatWeExpected : ex2End ≡ ex2EndExpected
+result2IsWhatWeExpected = refl
+
+-- f : just 0 >just just 1 → ⊥
+-- f (\AgdaUnderscore{}from>\AgdaUnderscore{} ())
+
+matchIsStableHelper : (c₁ c₂ : ℕ × ℕ)  →
+      c₁ ∈ MatchingState.couples exEnd →
+      c₂ ∈ MatchingState.couples exEnd →
+      ¬ (c₁ ≡ c₂) →
+       conditionOfStabilitySatisfied
+      (((proj₁ c₁) , (getPreferenceList (proj₁ c₁) (MatchingState.men exEnd))) , ((proj₂ c₁) , (getPreferenceList (proj₂ c₁) (MatchingState.women exEnd))))
+      (((proj₁ c₂) , (getPreferenceList (proj₁ c₂) (MatchingState.men exEnd))) , ((proj₂ c₂) , (getPreferenceList (proj₂ c₂) (MatchingState.women exEnd))))
+matchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (now .((3 , 3) ∷ (1 , 1) ∷ [])) (now .((3 , 3) ∷ (1 , 1) ∷ [])) p = ⊥-elim (p refl) , ⊥-elim (p refl)
+matchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (now .((3 , 3) ∷ (1 , 1) ∷ [])) (later (now .((1 , 1) ∷ []))) p = (λ \{ (\AgdaUnderscore{}from>\AgdaUnderscore{} () , \AgdaUnderscore{}) \}) , λ \{ (\AgdaUnderscore{}from>\AgdaUnderscore{} () , \AgdaUnderscore{}) \}
+matchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (now .((3 , 3) ∷ (1 , 1) ∷ [])) (later (later (now .[]))) p = (λ \{ (\AgdaUnderscore{}from>\AgdaUnderscore{} () , \AgdaUnderscore{}) \}) , λ \{ (\AgdaUnderscore{}from>\AgdaUnderscore{} () , \AgdaUnderscore{}) \}
+matchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (now .((3 , 3) ∷ (1 , 1) ∷ [])) (later (later (later ()))) p
+matchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (later (now .((1 , 1) ∷ []))) (now .((3 , 3) ∷ (1 , 1) ∷ [])) p = (λ \{ (\AgdaUnderscore{}from>\AgdaUnderscore{} () , \AgdaUnderscore{}) \}) , λ \{ (\AgdaUnderscore{}from>\AgdaUnderscore{} () , \AgdaUnderscore{}) \}
+matchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (later (now .((1 , 1) ∷ []))) (later (now .((1 , 1) ∷ []))) p = ⊥-elim (p refl)
+matchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (later (now .((1 , 1) ∷ []))) (later (later (now .[]))) p = (λ \{ (\AgdaUnderscore{}from>\AgdaUnderscore{} () , \AgdaUnderscore{}) \}) , λ \{ (\AgdaUnderscore{}from>\AgdaUnderscore{} () , \AgdaUnderscore{}) \}
+matchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (later (now .((1 , 1) ∷ []))) (later (later (later ())))
+matchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (later (later (now .[]))) (now .((3 , 3) ∷ (1 , 1) ∷ [])) p = (λ \{ (\AgdaUnderscore{}from>\AgdaUnderscore{} () , \AgdaUnderscore{}) \}) , λ \{ (\AgdaUnderscore{}from>\AgdaUnderscore{} () , \AgdaUnderscore{}) \}
+matchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (later (later (now .[]))) (later (now .((1 , 1) ∷ []))) p = (λ \{ (\AgdaUnderscore{}from>\AgdaUnderscore{} () , \AgdaUnderscore{}) \}) , λ \{ (\AgdaUnderscore{}from>\AgdaUnderscore{} () , \AgdaUnderscore{}) \}
+matchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (later (later (now .[]))) (later (later (now .[]))) p = ⊥-elim (p refl)
+matchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (later (later (now .[]))) (later (later (later ())))
+matchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (later (later (later ())))  \AgdaUnderscore{} \AgdaUnderscore{}
+
+matchIsStable : is-stable-matching exEnd
+matchIsStable = refl , matchIsStableHelper
+
+-- In order to define that a matching m₁ is better than a matching m₂,
+-- we take into consideration that for all men they get a better (earlier in their list) wife
+-- in m₁ than in m₂; this can be seen from the size of his preference list in the final
+-- state of the matching. 
+is-better-matching : (m₁ m₂ : MatchingState) → Set
+is-better-matching (mkState men freeMen engagedMen women couples k p) (mkState men₁ freeMen₁ engagedMen₁ women₁ couples₁ k₁ p₁) =
+  is-stable-matching (mkState men freeMen engagedMen women couples k p) × is-stable-matching (mkState men₁ freeMen₁ engagedMen₁ women₁ couples₁ k₁ p₁) ×
+   ((m₁ m₂ : ℕ × List ℕ) → m₁ ∈ engagedMen →  m₂ ∈ engagedMen₁  → proj₁ m₁ ≡ proj₁ m₂ →
+    getPreferenceList (proj₁ m₁) men ≡ getPreferenceList (proj₁ m₂) men₁ →
+    length (proj₂ m₁) ≥ length (proj₂ m₂))
+
+
+-- Let us demonstrate with the first canonical example. Gale and Shapley tell us
+-- that another possible stable marriage (not returned by their algorithm) is obtained
+-- by giving every woman her first choice:
+anotherPossibleStableMatching : MatchingState
+anotherPossibleStableMatching = mkState listMen [] ((3 , []) ∷ (1 , []) ∷ (2 , []) ∷ []) listWomen ((3 , 2) ∷ (1 , 3) ∷ (2 , 1) ∷ []) \AgdaUnderscore{} refl
+
+anotherMatchIsStableHelper : (c₁ c₂ : ℕ × ℕ) →
+      c₁ ∈ MatchingState.couples anotherPossibleStableMatching →
+      c₂ ∈ MatchingState.couples anotherPossibleStableMatching →
+      ¬ c₁ ≡ c₂ →
+      conditionOfStabilitySatisfied
+      (((proj₁ c₁) , (getPreferenceList (proj₁ c₁) (MatchingState.men anotherPossibleStableMatching))) , ((proj₂ c₁) , (getPreferenceList (proj₂ c₁) (MatchingState.women anotherPossibleStableMatching))))
+      (((proj₁ c₂) , (getPreferenceList (proj₁ c₂) (MatchingState.men anotherPossibleStableMatching))) , ((proj₂ c₂) , (getPreferenceList (proj₂ c₂) (MatchingState.women anotherPossibleStableMatching))))
+anotherMatchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (now .((1 , 3) ∷ (2 , 1) ∷ [])) (now .((1 , 3) ∷ (2 , 1) ∷ [])) p = ⊥-elim (p refl)
+anotherMatchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (now .((1 , 3) ∷ (2 , 1) ∷ [])) (later (now .((2 , 1) ∷ []))) p = (λ \{ (\AgdaUnderscore{} , \AgdaUnderscore{}from>\AgdaUnderscore{} ()) \}) , λ \{ (\AgdaUnderscore{} , \AgdaUnderscore{}from>\AgdaUnderscore{} ()) \}
+anotherMatchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (now .((1 , 3) ∷ (2 , 1) ∷ [])) (later (later (now .[]))) p = (λ \{ (\AgdaUnderscore{} , \AgdaUnderscore{}from>\AgdaUnderscore{} ()) \}) , λ \{ (\AgdaUnderscore{} , \AgdaUnderscore{}from>\AgdaUnderscore{} ()) \}
+anotherMatchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (now .((1 , 3) ∷ (2 , 1) ∷ [])) (later (later (later ()))) p
+anotherMatchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (later (now .((2 , 1) ∷ []))) (now .((1 , 3) ∷ (2 , 1) ∷ [])) p = (λ \{ (\AgdaUnderscore{} , \AgdaUnderscore{}from>\AgdaUnderscore{} ()) \}) , λ \{ (\AgdaUnderscore{} , \AgdaUnderscore{}from>\AgdaUnderscore{} ()) \} 
+anotherMatchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (later (later (now .[]))) (now .((1 , 3) ∷ (2 , 1) ∷ [])) p = (λ \{ (\AgdaUnderscore{} , \AgdaUnderscore{}from>\AgdaUnderscore{} ()) \}) , λ \{ (\AgdaUnderscore{} , \AgdaUnderscore{}from>\AgdaUnderscore{} ()) \}
+anotherMatchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (later (later (later ()))) (now .((1 , 3) ∷ (2 , 1) ∷ [])) p
+anotherMatchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (later (now .((2 , 1) ∷ []))) (later (now .((2 , 1) ∷ []))) p = ⊥-elim (p refl)
+anotherMatchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (later (now .((2 , 1) ∷ []))) (later (later (now .[]))) p = (λ \{ (\AgdaUnderscore{} , \AgdaUnderscore{}from>\AgdaUnderscore{} ()) \}) , λ \{ (\AgdaUnderscore{} , \AgdaUnderscore{}from>\AgdaUnderscore{} ()) \}
+anotherMatchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (later (now .((2 , 1) ∷ []))) (later (later (later ()))) p
+anotherMatchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (later (later (now .[]))) (later (now .((2 , 1) ∷ []))) p = (λ \{ (\AgdaUnderscore{} , \AgdaUnderscore{}from>\AgdaUnderscore{} ()) \}) , λ \{ (\AgdaUnderscore{} , \AgdaUnderscore{}from>\AgdaUnderscore{} ()) \}
+anotherMatchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (later (later (later ()))) (later (now .((2 , 1) ∷ []))) p
+anotherMatchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (later (later (now .[]))) (later (later (now .[]))) p = ⊥-elim (p refl)
+anotherMatchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (later (later (now .[]))) (later (later (later ()))) p
+anotherMatchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (later (later (later ()))) (later (later (now .[]))) p
+anotherMatchIsStableHelper \AgdaUnderscore{} \AgdaUnderscore{} (later (later (later ()))) (later (later (later c₂))) p
+
+itIsAlsoStable : is-stable-matching anotherPossibleStableMatching
+itIsAlsoStable = refl , anotherMatchIsStableHelper
+
+matchIsBetterHelper : (m₁ m₂ : Σ ℕ (λ x → List ℕ)) → m₁ ∈ MatchingState.engagedMen exEnd → m₂ ∈ MatchingState.engagedMen anotherPossibleStableMatching → proj₁ m₁ ≡ proj₁ m₂ →
+      (getPreferenceList (proj₁ m₁) listMen
+      ≡
+      getPreferenceList (proj₁ m₂) listMen)
+      →
+      length (proj₂ m₁) ≥ length (proj₂ m₂)
+matchIsBetterHelper .(3 , 1 ∷ 2 ∷ []) .(3 , []) (now .((2 , 3 ∷ 1 ∷ []) ∷ (1 , 2 ∷ 3 ∷ []) ∷ [])) (now .((1 , []) ∷ (2 , []) ∷ [])) p₃ p₄ = z≤n
+matchIsBetterHelper .(3 , 1 ∷ 2 ∷ []) .(1 , []) (now .((2 , 3 ∷ 1 ∷ []) ∷ (1 , 2 ∷ 3 ∷ []) ∷ [])) (later (now .((2 , []) ∷ []))) p₃ p₄ = z≤n
+matchIsBetterHelper .(3 , 1 ∷ 2 ∷ []) .(2 , []) (now .((2 , 3 ∷ 1 ∷ []) ∷ (1 , 2 ∷ 3 ∷ []) ∷ [])) (later (later (now .[]))) p₃ p₄ = z≤n
+matchIsBetterHelper .(3 , 1 ∷ 2 ∷ []) m₂ (now .((2 , 3 ∷ 1 ∷ []) ∷ (1 , 2 ∷ 3 ∷ []) ∷ [])) (later (later (later ()))) p₃ p₄
+matchIsBetterHelper .(2 , 3 ∷ 1 ∷ []) .(3 , []) (later (now .((1 , 2 ∷ 3 ∷ []) ∷ []))) (now .((1 , []) ∷ (2 , []) ∷ [])) p₃ p₄ = z≤n
+matchIsBetterHelper .(1 , 2 ∷ 3 ∷ []) .(3 , []) (later (later (now .[]))) (now .((1 , []) ∷ (2 , []) ∷ [])) p₃ p₄ = z≤n
+matchIsBetterHelper m₁ .(3 , []) (later (later (later ()))) (now .((1 , []) ∷ (2 , []) ∷ [])) p₃ p₄
+matchIsBetterHelper .(2 , 3 ∷ 1 ∷ []) .(1 , []) (later (now .((1 , 2 ∷ 3 ∷ []) ∷ []))) (later (now .((2 , []) ∷ []))) p₃ p₄ = z≤n
+matchIsBetterHelper .(2 , 3 ∷ 1 ∷ []) .(2 , []) (later (now .((1 , 2 ∷ 3 ∷ []) ∷ []))) (later (later (now .[]))) p₃ p₄ = z≤n
+matchIsBetterHelper .(2 , 3 ∷ 1 ∷ []) m₂ (later (now .((1 , 2 ∷ 3 ∷ []) ∷ []))) (later (later (later ()))) p₃ p₄
+matchIsBetterHelper .(1 , 2 ∷ 3 ∷ []) .(1 , []) (later (later (now .[]))) (later (now .((2 , []) ∷ []))) p₃ p₄ = z≤n
+matchIsBetterHelper m₁ .(1 , []) (later (later (later ()))) (later (now .((2 , []) ∷ []))) p₃ p₄
+matchIsBetterHelper .(1 , 2 ∷ 3 ∷ []) .(2 , []) (later (later (now .[]))) (later (later (now .[]))) p₃ p₄ = z≤n
+matchIsBetterHelper .(1 , 2 ∷ 3 ∷ []) m₂ (later (later (now .[]))) (later (later (later ()))) p₃ p₄
+matchIsBetterHelper m₁ .(2 , []) (later (later (later ()))) (later (later (now .[]))) p₃ p₄
+matchIsBetterHelper m₁ m₂ (later (later (later ()))) (later (later (later p₂))) p₃ p₄
+
+matchIsBetter : is-better-matching exEnd anotherPossibleStableMatching
+matchIsBetter = matchIsStable , itIsAlsoStable , matchIsBetterHelper
+
+-- Given two stable matchings m₁ , m₂ where m₁ is the result of the computation of the Gale-Shapley algorithm,
+-- 
+anyMatchIsBetter : ∀ (m m₁ m₂ : MatchingState) → allSteps m (compSumPrefLists (MatchingState.freeMen m) (MatchingState.engagedMen m)) refl ≡ m₁ →
+                     is-better-matching m₁ m₂
+anyMatchIsBetter m m₁ m₂ p = \{!!\}
+
+\{-- this is for correctness:
+-- stepInv : (m : MatchingState) → Inv m → Inv (step m)
+
+Something like:
+
+data GaleShapleyInv : (m : MatchingState) → Set where
+  inv : m ∈ m.listMen → w ∈ m.listWomen → b ∉ l(a) → (∃ a′ ∈ m : a′ ≻\AgdaUnderscore{}\{b\} a ∨ p(a) = b
+-\}
+
+-\}}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaFunction{leftinv}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{a}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
+\AgdaBound{a}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{≡}}\AgdaSpace{}%
+\AgdaBound{a}\<%
+\\
+\>[0]\AgdaFunction{leftinv}\AgdaSpace{}%
+\AgdaBound{a}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaFunction{rightinv}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{a}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaDatatype{ℕ}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaBound{a}\AgdaSpace{}%
+\AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{≡}}\AgdaSpace{}%
+\AgdaBound{a}\<%
+\\
+\>[0]\AgdaFunction{rightinv}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{refl}\<%
+\\
+\>[0]\AgdaFunction{rightinv}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{a}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{cong}\AgdaSpace{}%
+\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{rightinv}\AgdaSpace{}%
+\AgdaBound{a}\AgdaSymbol{)}\<%
+\\
+\>[0]\<%
+\end{code}
+
+\end{document}
