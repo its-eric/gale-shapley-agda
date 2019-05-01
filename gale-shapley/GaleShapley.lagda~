@@ -1,9 +1,12 @@
 \newcommand{\GaleShapley}{%
 
-To define the Gale-Shapley algorithm in Agda, we need a data structure which captures the state of the procedure in its various elements, in order to reason about its properties in an expressive enough manner that proofs can be written in the same manner as we have reasoned logically about the properties of the algorithm in chapter \ref{Chapter3}. We make use here of Agda's record types in the following manner:
-In Agda syntax, a $record$ defines a type that groups some values, in our case, the details of the group of men and women and their preference lists for the "matching ritual". Men are preference lists indexed over a representative natural number as well as women, giving a similar "state space" to the problem as the one defined in the previous mathematical specification. This type can be constructed with the $mkState$ keyword, and its elements are accessible at all times through (pattern matching and) projection functions defined automatically by Agda as such:
+To define the Gale-Shapley algorithm in Agda, we need a data structure which captures the state of the procedure in its various elements, in order to reason about its properties in an expressive enough manner that proofs can be written in the same manner as we have reasoned logically about the properties of the algorithm in chapter \ref{Chapter3}. We make use here of Agda's record types.
 
-\begin{code}
+In Agda syntax, a $record$ defines a type that groups some values, in our case, the details of the group of men and women and their preference lists for the "matching ritual". Men are preference lists indexed over a representative natural number as well as women, giving a similar "state space" to the problem as the one defined in the previous mathematical specification. This type can be constructed with the $mkState$ keyword, and its elements are accessible at all times through (pattern matching and) projection functions defined automatically by Agda.
+
+Two extra functions are also defined, $lengthPrefs$ and $compSumPrefLists$ which help us calculate the length of the preference lists of men in a matching state:
+
+\begin{code}[hide]
 
 module GaleShapley where
 
@@ -20,19 +23,12 @@ open import Data.Sum
 open import Relation.Nullary
 open import Induction.WellFounded
 open import Relation.Binary.PropositionalEquality
-import Data.Nat.Solver
-open Data.Nat.Solver.+-*-Solver
-  using (prove; solve; _:=_; con; var; _:+_; _:*_; :-_; _:-_)
-
--- lem2 : (4 + 6 ≡ 10)
--- lem2 = solve 0 (con 4 :+ con 6 := con 10) refl
-
-lem3 : (x : ℕ) → (2 * (x + 4) ≡ 8 + 2 * x)
-lem3 = solve 1 (λ x' → con 2 :* (x' :+ con 4) := con 8 :+ con 2 :* x') refl
   
 infix 3 _>just_
 infix 4 _from>_
+\end{code}
 
+\begin{code}
 lengthPrefs : List (ℕ × List ℕ) → ℕ
 lengthPrefs [] = 0
 lengthPrefs ((_ , l) ∷ xs) = length l + lengthPrefs xs
@@ -55,7 +51,9 @@ record MatchingState : Set where
 
 We expect to start the execution of the algorithm with a copy of all men in the $freeMen$ list, and finish with all of them in $engagedMen$. A list of couples can then be extracted from $couples$. The lists $men$ and $women$ are preserved throughout the execution; the reason behind this particular design decision is to facilitate the writing of predicates in Agda, since, as introduced before, proofs involving the Gale-Shapley algorithm may discuss at the same time the "absolute" preference list of men and women or the \emph{current state} of their preference lists at a certain step of the algorithm. Therefore the current state of a certain man's preference list can be observed either in this or that list given that the man is free or engaged at a certain point during the execution.
 
-Some helper functions are defined as tools to support the algorithm. They are defined always over pattern matching, typed with the help of Agda's case expansions:
+We give two extra implementation-specific components: we keep track of the sum of preference lists of men, and at all times provide a proof that this number is in fact equal to the sum if it is computed.
+
+Some helper functions are defined as tools to support the algorithm. They are defined always over pattern matching, typed with the help of Agda's case expansions. Very similar code can be written, for example, in Haskell to perform these operations over lists:
 
 \begin{code}
 -- Code by @yeputons on Stack Overflow :D
@@ -83,6 +81,26 @@ positionInListHelper x (xs ∷ xss) (suc n) with compare x xs
 positionInList : ℕ → List ℕ → Maybe ℕ
 positionInList n ns = positionInListHelper n ns zero
 
+-- We usually assume the "husbands" to be the proposing side,
+-- therefore if women propose instead the pair will
+-- look like (wife, husband)
+getPartner : (person : ℕ) → (couples : List (ℕ × ℕ)) → Maybe ℕ
+--not married yet and this is the first proposal in the algorithm!
+getPartner person [] = nothing
+getPartner person ((m , w) ∷ []) with compare person w
+... | equal _ = just m --found your husband!
+... | _       = nothing --not married yet
+getPartner person ((m , w) ∷ (c ∷ cs)) with compare person w
+... | equal _ = just m --found your husband!
+... | _       = getPartner person (c ∷ cs) --keep searching
+
+-- Simply extract a preference list from the scheme of indexed lists.
+getPreferenceList : ℕ → List (ℕ × List ℕ) → List ℕ
+getPreferenceList person [] = [] --dummy case
+getPreferenceList person ((p , preferences) ∷ ps) with compare person p
+... | equal _ = preferences
+... | _       = getPreferenceList person ps
+
 \end{code}
 
 Three main "operations" are performed during the execution of the algorithm which deserve special attention. In the beginning of the \emph{proposal} step a woman receives a proposal over which she mulls:
@@ -98,48 +116,22 @@ propose man h preferenceList with
         positionInList man preferenceList | positionInList h preferenceList
 --does she prefer the new guy to the current one?
 ... | just p  | just q  = is-≤ p q
---shouldn't happen in an ideal world : woman received a proposal from an unknown man??
+--shouldn't happen in an ideal world: proposal from an unknown man??
 ... | just p  | nothing = false
---shouldn't happen in an ideal world : woman married an unknown man previously??
+--shouldn't happen in an ideal world: married an unknown man previously??
 ... | nothing | just q  = false
---shouldn't happen in an ideal world : who are these men??
+--shouldn't happen in an ideal world: who are these men??
 ... | nothing | nothing = false
-
--- We assume the "husbands" to be the proposing side,
--- therefore if women propose the pair looks like (wife, husband)
-getHusband : ℕ → List (ℕ × ℕ) → Maybe ℕ
---not married yet and this is the first proposal in the algorithm!
-getHusband woman [] = nothing
-getHusband woman ((m , w) ∷ []) with compare woman w
-... | equal _ = just m --found your husband!
-... | _       = nothing --not married yet
-getHusband woman ((m , w) ∷ (c ∷ cs)) with compare woman w
-... | equal _ = just m --found your husband!
-... | _       = getHusband woman (c ∷ cs) --keep searching
-
-getWife : ℕ → List (ℕ × ℕ) → Maybe ℕ
-getWife man [] = nothing
-getWife man ((m , w) ∷ []) with compare man m
-... | equal _ = just w --found your wife!
-... | _       = nothing --not married yet
-getWife man ((m , w) ∷ (c ∷ cs)) with compare man m
-... | equal _ = just w --found your wife!
-... | _       = getHusband man (c ∷ cs) --keep searching
-
--- Simply extract a preference list from the scheme of indexed lists.
-getPreferenceList : ℕ → List (ℕ × List ℕ) → List ℕ
-getPreferenceList person [] = [] --dummy case
-getPreferenceList person ((p , preferences) ∷ ps) with compare person p
-... | equal _ = preferences
-... | _       = getPreferenceList person ps
 
 \end{code}
 
-In case the woman was previously married, it is important that the new couple "overwrites" the previous couple in which the woman was featured, therefore we simply introduce a "safe" operation for the list update:
+Here it is already possible to notice that, using pattern matching, we are forced to look at every possible case of the execution (since Agda performs termination and pattern matching completeness checkings). But some things just quite don't make sense when examined from the point of view of the Gale-Shapley algorithm: because our implementation must be type-safe, we only \emph{possibly} return a man when we search for him in a woman's preference list. Accordingly, we pattern-match on the possibility that one of the examined men (current fiance or new suitor) doesn't even exist in that woman's list!
+
+In case the woman was previously married and accepts this new proposal, it is important that the new couple "overwrites" the previous couple in which the woman was featured, therefore we simply introduce a "safe" operation for the list update:
 
 \begin{code}
 -- Safely adding couples : previous marriages are unmade
-safeAddNewCouple : (newCouple : ℕ × ℕ)(previousCouples : List (ℕ × ℕ)) → List (ℕ × ℕ)
+safeAddNewCouple : (newCouple : ℕ × ℕ)(couples : List (ℕ × ℕ)) → List (ℕ × ℕ)
 safeAddNewCouple (m , w) [] = (m , w) ∷ []
 safeAddNewCouple (m , w) ((a , b) ∷ []) with compare w b
 ... | equal _ = (m , w) ∷ []
@@ -147,8 +139,21 @@ safeAddNewCouple (m , w) ((a , b) ∷ []) with compare w b
 safeAddNewCouple (m , w) ((a , b) ∷ (c ∷ cs)) with compare w b
 ... | equal _ = (m , w) ∷ c ∷ cs
 ... | _       = (a , b) ∷ safeAddNewCouple (m , w) (c ∷ cs)
+\end{code}
 
-p : (l : List (ℕ × ℕ))(a : ℕ) → a ≡ 3 → safeAddNewCouple (2 , 3) ((1 , a) ∷ l) ≡ ((2 , a) ∷ l)
+It is perhaps worth it to stop here and examine what these implementation decisions mean for our later proofs. Since our proofs will be just functions, type-checked and computed down to normal form, the \emph{consistency} of our pattern matching definitions is key to enjoy Agda's computing power (remember: proof-checking is the same activity as type-checking). Suppose we want to prove a simple property of the $safeNewAddCouple$ operation, for example, that it indeed will work for a particular, very easy case:
+
+\begin{code}
+-- Warm up: let us prove that, if woman 3 is in the list of couples with
+-- husband 1 and should now be married to husband 2, the new couple will
+-- indeed be added.
+p : (l : List (ℕ × ℕ))(a : ℕ) → a ≡ 3 →
+    safeAddNewCouple (2 , 3) ((1 , a) ∷ l) ≡ ((2 , a) ∷ l)
+\end{code}
+
+What are the components of this proof, in other words, the parameters to this function? We provide a list, a natural number $a$, a proof that $a = 3$, and must return a proof that the operation returns a new list of couples where man 2 is married to woman 3. First we pattern match on $l$, it has two constructors, [] and \:::. Using Agda's proof assistant capabilities, we will observe that the "goal", that is, the expected type of the function return will contain the $$compare 3 a$$ application. Therefore we must use a \emph{with} construct in our proofs too in order to allow Agda to further reduce down the terms. Depending on the order in which the patterns are opened up, we might end up with different definitions for this function, here is one:
+
+\begin{code}
 p [] a e with compare 3 a
 p [] zero () | w
 p [] (suc zero) () | w
@@ -159,40 +164,51 @@ p (x ∷ l) zero ()
 p (x ∷ l) (suc .2) refl = refl
 \end{code}
 
-Similarly, when the list of engaged men is updated, the previous husband must be removed from it:
+The clauses without a right hand side that can be seen are \emph{absurd patterns}: there is no way we can provide the proof we're hoping for when the number given as the second parameter is not 3 (in other words, \texttt{suc (suc (suc zero))} or \texttt{suc 2}...). If they were possible cases to prove, that is, cases where \emph{there would be a constructor} for the type we hope to achieve, we might for example open up a second \emph{with} construct where in this case only $| w$ was left by Agda, and continue pattern matching and reducing further and further from there until we are able to construct the goal.
+
+In a similar fashion, when the list of engaged men is updated, the previous husband must be removed from it. Ww give two versions for this function, one which simply returns the updated $engagedMen$ list and another one which returns also some extra information (the man who was dumped and goes back to being free). The reasons why are further discussed later in this chapter.
 
 \begin{code}
 -- Safely adding new engaged men to the list : dumped man is removed
-safeAddNewEngagedMan : (newEngagedMan : (ℕ × List ℕ))(prevFiance : ℕ)(prevEngagedMen : List (ℕ × List ℕ)) → List (ℕ × List ℕ)
--- Dummy case: this function is only invoked if a woman is already married, so the list of engaged men can not possibly be empty...
+safeAddNewEngagedMan : (newEngagedMan : (ℕ × List ℕ))
+                       (prevFiance : ℕ)
+                       (prevEngagedMen : List (ℕ × List ℕ))
+                       → List (ℕ × List ℕ)
+-- Dummy case: this function is only invoked if a woman is already
+-- married, so the list of engaged men can not possibly be empty...
 safeAddNewEngagedMan (newFiance , prefs) prevFiance [] = (newFiance , prefs) ∷ []
 
-safeAddNewEngagedMan (newFiance , prefs) prevFiance ((m , prefsM) ∷ []) with compare prevFiance m
-... | equal _ = (newFiance , prefs) ∷ [] --kick him out!
-... | _       = (newFiance , prefs) ∷ (m , prefsM) ∷ [] --safe to keep after all
-safeAddNewEngagedMan (newFiance , prefs) prevFiance ((m , prefsM) ∷ ms ∷ engagedMen) with compare prevFiance m
-... | equal _ = (newFiance , prefs) ∷ ms ∷ engagedMen --kick him out!
-... | _       = (m , prefsM) ∷ safeAddNewEngagedMan (newFiance , prefs) prevFiance (ms ∷ engagedMen) --safe to keep... for now
-
+safeAddNewEngagedMan (newFiance , prefs) prevFiance ((m , prefsM) ∷ [])
+                     with compare prevFiance m
+--kick him out!
+... | equal _ = (newFiance , prefs) ∷ []
+--safe to keep after all
+... | _       = (newFiance , prefs) ∷ (m , prefsM) ∷ []
+safeAddNewEngagedMan (newFiance , prefs) prevFiance ((m , prefsM) ∷ ms ∷ engagedMen)
+                     with compare prevFiance m
+ --kick him out!
+... | equal _ = (newFiance , prefs) ∷ ms ∷ engagedMen
+ --safe to keep... for now
+... | _       = (m , prefsM) ∷
+                safeAddNewEngagedMan (newFiance , prefs)
+                                     prevFiance
+                                     (ms ∷ engagedMen)
 
 -- We give an alternative version which doesn't lose information:
 -- it also returns the dumped man in a pair, or a dummy man
 -- with an empty list. This helps Agda keep track of the length
 -- of the preference lists in the matching state
 safeAddNewEngagedMan′ : (newEngagedMan : (ℕ × List ℕ))(prevFiance : ℕ)(prevEngagedMen : List (ℕ × List ℕ)) → (List (ℕ × List ℕ)) × (ℕ × List ℕ)
--- Dummy case: this function is only invoked if a woman is already married, so the list of engaged men can not possibly be empty...
 safeAddNewEngagedMan′ (newFiance , prefs) prevFiance [] = ((newFiance , prefs) ∷ [] , (0 , []))
-
 safeAddNewEngagedMan′ (newFiance , prefs) prevFiance ((m , prefsM) ∷ []) with compare prevFiance m
-... | equal _ = ((newFiance , prefs) ∷ [] , (m , prefsM)) --kick him out!
-... | _       = (((newFiance , prefs) ∷ (m , prefsM) ∷ []) , (0 , [])) --safe to keep after all
+... | equal _ = ((newFiance , prefs) ∷ [] , (m , prefsM))
+... | _       = (((newFiance , prefs) ∷ (m , prefsM) ∷ []) , (0 , []))
 safeAddNewEngagedMan′ (newFiance , prefs) prevFiance ((m , prefsM) ∷ ms ∷ engagedMen) with compare prevFiance m
-... | equal _ = ((newFiance , prefs) ∷ ms ∷ engagedMen , (m , prefsM)) --kick him out!
-... | _       = (m , prefsM) ∷ (proj₁ (safeAddNewEngagedMan′ (newFiance , prefs) prevFiance (ms ∷ engagedMen))) , proj₂ (safeAddNewEngagedMan′ (newFiance , prefs) prevFiance (ms ∷ engagedMen)) --safe to keep... for now
-
+... | equal _ = ((newFiance , prefs) ∷ ms ∷ engagedMen , (m , prefsM))
+... | _       = (m , prefsM) ∷ (proj₁ (safeAddNewEngagedMan′ (newFiance , prefs) prevFiance (ms ∷ engagedMen))) , proj₂ (safeAddNewEngagedMan′ (newFiance , prefs) prevFiance (ms ∷ engagedMen))
 \end{code}
 
-Finally, we implement a step of the Gale-Shapley algorithm by pattern matching on the matching state. There are two main cases to be distinguished:
+Finally, we are ready to implement a step of the Gale-Shapley algorithm by pattern matching on the matching state. There are two main cases to be distinguished:
 
 \begin{itemize}
     \item there is still a free man with a woman to propose to on his list: we make the proposal, update the state accordingly and return the matching;
@@ -211,7 +227,7 @@ step (mkState men [] engagedMen women couples k p) = mkState men [] engagedMen w
 step (mkState men ((n , []) ∷ freeMen) engagedMen women couples k p) = mkState men ((n , []) ∷ freeMen) engagedMen women couples k p
 
 -- Proposal step
-step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k p) with getHusband w couples
+step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k p) with getPartner w couples
 ... | just h with propose n h (getPreferenceList w women) --Woman has a husband, represented by his literal number
 ...               | true  = mkState men freeMenUpdated engagedMenUpdated women (safeAddNewCouple (n , w) couples) (compSumPrefLists freeMenUpdated engagedMenUpdated) refl
                            where
@@ -222,11 +238,19 @@ step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k p) 
 step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k p) | nothing  = mkState men freeMen ((n , prefs) ∷ engagedMen) women (safeAddNewCouple (n , w) couples)
                                                                                                    (compSumPrefLists freeMen ((n , prefs) ∷ engagedMen)) refl
 
+\end{code}
+\section{Proofs on Gale-Shapley algorithm}
+
+\subsection{Termination}
+
+
+
+\begin{code}
 +-zero : ∀ n k → k ≡ n + 0 → k ≡ n
 +-zero zero zero p = p
 +-zero zero (suc k) p = p
 +-zero (suc n) zero ()
-+-zero (suc n) (suc .(n + 0)) refl = cong suc (+-right-identity n)
++-zero (suc n) (suc .(n + 0)) refl = cong suc (+-identityʳ n)
 
 +-move-zero : ∀ n k → k ≡ n + 0 → n ≡ k + 0
 +-move-zero zero zero refl = refl
@@ -236,7 +260,7 @@ step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k p) 
 
 n≤n+m : ∀ m n → n ≤′ n + m
 n≤n+m zero zero = ≤′-refl
-n≤n+m zero (suc m) =  ≤⇒≤′ (≤-reflexive (cong suc (sym (+-right-identity m))))
+n≤n+m zero (suc m) =  ≤⇒≤′ (≤-reflexive (cong suc (sym (+-identityʳ m))))
 n≤n+m (suc n) zero = ≤′-step (n≤n+m n zero)
 n≤n+m (suc n) (suc m) = s≤′s (n≤n+m (suc n) m)
 
@@ -250,6 +274,7 @@ n+m≤n+m+s (suc n) zero (suc s) = s≤s (n+m≤n+m+s n zero (suc s))
 n+m≤n+m+s (suc n) (suc m) zero = s≤s (n+m≤n+m+s (suc n) m zero)
 n+m≤n+m+s (suc n) (suc m) (suc s) = s≤s (n+m≤n+m+s (suc n) m (suc s))
 
+{--
 lengthPrefsOneSide : ∀ (freeMen engagedMen : List (ℕ × List ℕ))(k : ℕ) → k ≡ compSumPrefLists freeMen engagedMen → (lengthPrefs freeMen ≤′ k) × (lengthPrefs engagedMen ≤′ k)
 lengthPrefsOneSide [] [] k p = z≤′n , z≤′n
 lengthPrefsOneSide [] ((fst , []) ∷ engagedMen) k p = z≤′n , proj₂ (lengthPrefsOneSide [] engagedMen k p)
@@ -260,6 +285,7 @@ lengthPrefsOneSide ((fst , []) ∷ freeMen) ((fst₁ , []) ∷ engagedMen) k p =
 lengthPrefsOneSide ((fst , []) ∷ freeMen) ((fst₁ , x ∷ snd₁) ∷ engagedMen) .(lengthPrefs freeMen + suc (lengthPrefs ((fst₁ , snd₁) ∷ engagedMen))) refl = proj₁ (lengthPrefsOneSide freeMen ((fst₁ , x ∷ snd₁) ∷ engagedMen) (lengthPrefs freeMen + suc (lengthPrefs ((fst₁ , snd₁) ∷ engagedMen))) refl) , ≤⇒≤′ (n≤m+n (lengthPrefs freeMen) (suc (lengthPrefs ((fst₁ , snd₁) ∷ engagedMen))))
 lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen) ((fst₁ , []) ∷ engagedMen) .(suc (lengthPrefs ((fst , snd) ∷ freeMen) + lengthPrefs engagedMen)) refl = ≤⇒≤′ (s≤s (n+m≤n+m+s (lengthPrefs freeMen) (length snd) (lengthPrefs engagedMen))) , proj₂ (lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen) engagedMen ((suc (lengthPrefs ((fst , snd) ∷ freeMen) + lengthPrefs engagedMen))) (cong suc refl)) 
 lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen) ((fst₁ , x₁ ∷ snd₁) ∷ engagedMen) p refl = n≤n+m (suc (lengthPrefs ((fst₁ , snd₁) ∷ engagedMen))) (suc (lengthPrefs ((fst , snd) ∷ freeMen))) , ≤⇒≤′ (n≤m+n (lengthPrefs ((fst , x ∷ snd) ∷ freeMen)) (lengthPrefs ((fst₁ , x₁ ∷ snd₁) ∷ engagedMen)))
+--}
 
 stepsWithPrefs : ∀ m n → m ≤ n → m ≤ 1 + n
 stepsWithPrefs zero zero z≤n = z≤n
@@ -310,6 +336,21 @@ freeMen+nLemma man (x₂ ∷ prefs) ((fst , []) ∷ freeMen) ((fst₁ , []) ∷ 
 freeMen+nLemma man (x₂ ∷ prefs) ((fst , []) ∷ freeMen) ((fst₁ , x ∷ snd₁) ∷ engagedMen) = {!!}
 freeMen+nLemma man (x₂ ∷ prefs) ((fst , x ∷ snd) ∷ freeMen) ((fst₁ , []) ∷ engagedMen) = {!!}
 freeMen+nLemma man (x₂ ∷ prefs) ((fst , x ∷ snd) ∷ freeMen) ((fst₁ , x₁ ∷ snd₁) ∷ engagedMen) = {!!}
+\end{code}
+
+For the following proofs we might 
+
+
+\begin{code}
+import Data.Nat.Solver
+open Data.Nat.Solver.+-*-Solver
+  using (prove; solve; _:=_; con; var; _:+_; _:*_; :-_; _:-_)
+
+lem2 : (4 + 6 ≡ 10)
+lem2 = solve 0 (con 4 :+ con 6 := con 10) refl
+
+lem3 : (x : ℕ) → (2 * (x + 4) ≡ 8 + 2 * x)
+lem3 = solve 1 (λ x' → con 2 :* (x' :+ con 4) := con 8 :+ con 2 :* x') refl
 
 lemmaProposeTrue : ∀ (freeMen engagedMen : List (ℕ × List ℕ))(formerHusband man : ℕ)(prefs : List ℕ) →
                    length (proj₂ (proj₂ (safeAddNewEngagedMan′ (man , prefs) formerHusband engagedMen))) + lengthPrefs freeMen + lengthPrefs (proj₁ (safeAddNewEngagedMan′ (man , prefs) formerHusband engagedMen))
@@ -349,15 +390,15 @@ singleWomanLemma freeMen n prefs engagedMen = subst (λ x → lengthPrefs freeMe
                                                 (solve 3 (λ x y z → x :+ (y :+ z) := y :+ x :+ z) refl (lengthPrefs freeMen) (length prefs) (lengthPrefs engagedMen))
                                                 (≤⇒≤′ (n≤1+n _))
 
-stepDec : (m : MatchingState) → MatchingState.sumPrefLists m ≥′ MatchingState.sumPrefLists (step m)
+stepDec : (m : MatchingState) → compSumPrefLists (MatchingState.freeMen m) (MatchingState.engagedMen m) ≥′ compSumPrefLists (MatchingState.freeMen (step m)) (MatchingState.engagedMen (step m))
 stepDec (mkState men [] [] women couples k p) = ≤′-refl
 stepDec (mkState men [] ((man , prefs) ∷ engagedMen) women couples k p) = ≤′-refl
 stepDec (mkState men ((man , []) ∷ freeMen) engagedMen women couples k p) = ≤′-refl
-stepDec (mkState men ((man , w ∷ prefs) ∷ freeMen) engagedMen women couples k p) with getHusband w couples
+stepDec (mkState men ((man , w ∷ prefs) ∷ freeMen) engagedMen women couples k p) with getPartner w couples
 ...             | just h with propose man h (getPreferenceList w women)
-...             | true  = {!!} --lemmaProposeTrue freeMen engagedMen h man prefs 
-...             | false = {!!} --≤⇒≤′ (n≤1+n _)
-stepDec (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k p) | nothing = {!!} --singleWomanLemma freeMen n prefs engagedMen
+...             | true  = lemmaProposeTrue freeMen engagedMen h man prefs
+...             | false = ≤⇒≤′ (n≤1+n _)
+stepDec (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k p) | nothing = singleWomanLemma freeMen n prefs engagedMen
 
 {-# TERMINATING #-}
 allSteps : (m : MatchingState)(k : ℕ) → k ≡ compSumPrefLists (MatchingState.freeMen m) (MatchingState.engagedMen m) → MatchingState
@@ -365,6 +406,11 @@ allSteps m k p with step m
 ... | mkState men [] engagedMen women couples k₁ p₁ = mkState men [] engagedMen women couples k₁ p₁
 ... | m' = allSteps m' (compSumPrefLists (MatchingState.freeMen m') (MatchingState.engagedMen m')) refl
 
+\end{code}
+
+Now let us examine some examples. We look at the two cases from Gale and Shapley's original paper, one where we have an uncomplicated setup for which the deferred acceptance algorithm gives every man the first possible choice of woman, and another where there is in fact only one possible stable set of marriages and the algorithm takes a longer number of steps to arrive to its final state.
+
+\begin{code}
 -- List of preferences of men and women from the Gale-Shapley canonical example
 listMen : List (ℕ × List ℕ)
 listMen = (1 , ( 1 ∷ 2 ∷ 3 ∷ [] )) ∷ (2 , ( 2 ∷ 3 ∷ 1 ∷ [])) ∷ (3 , ( 3 ∷ 1 ∷ 2 ∷ [])) ∷ []
@@ -380,8 +426,11 @@ listDifficultMen = (1 , ( 1 ∷ 2 ∷ 3 ∷ 4 ∷ [] )) ∷ (2 , ( 1 ∷ 4 ∷ 3
 listDifficultWomen : List (ℕ × List ℕ)
 listDifficultWomen = (1 , ( 4 ∷ 3 ∷ 1 ∷ 2 ∷ []) ) ∷ (2 , ( 2 ∷ 4 ∷ 1 ∷ 3 ∷ [])) ∷ (3 , ( 4 ∷ 1 ∷ 2 ∷ 3 ∷ [])) ∷ (4 , (3 ∷ 2 ∷ 1 ∷ 4 ∷ [])) ∷ []
 
--- Proofs! :D
+\end{code}
 
+We now proceed to discuss the correctness of the deferred acceptance algorithm.
+
+\begin{code}
 -- The type of elements that belong to a list.
 data _∈_ {A : Set}(a : A) : List A → Set where
   now   : (as : List A) → a ∈ (a ∷ as)
@@ -430,8 +479,6 @@ ex2End           = step (step (step (step (step (step (step (step (step ex2Start
 result2IsWhatWeExpected : ex2End ≡ ex2EndExpected
 result2IsWhatWeExpected = refl
 
--- f : just 0 >just just 1 → ⊥
--- f (_from>_ ())
 
 matchIsStableHelper : (c₁ c₂ : ℕ × ℕ)  →
       c₁ ∈ MatchingState.couples exEnd →
