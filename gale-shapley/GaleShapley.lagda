@@ -257,10 +257,9 @@ step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k p) 
 step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k p) | nothing
      = mkState men freeMen ((n , prefs) ∷ engagedMen) women (safeAddNewCouple (n , w) couples)
                (compSumPrefLists freeMen ((n , prefs) ∷ engagedMen)) refl
-
 \end{code}
 
-In order to calculate a final result we just apply the step function 
+In order to calculate a final result we just apply the step function until there are no more free men waiting for a wife \footnote{We apply a special TERMINATING pragma so Agda's termination checker accepts this function: since the preference lists are hidden inside the matching state structure, it is not immediately obvious that some term is always decreasing in the recursive call. An alternative implementation could be done with the Bove-Capretta method, discussed in Chapter \ref{Chapter5}.}:
 
 \begin{code}
 {-# TERMINATING #-}
@@ -270,13 +269,17 @@ allSteps m k p with step m
 ... | m' = allSteps m' (MatchingState.sumPrefLists m') refl
 \end{code}
 
--- (compSumPrefLists (MatchingState.freeMen m') (MatchingState.engagedMen m')
-
 \section{Proofs on Gale-Shapley algorithm}
 
 \subsection{Termination}
 
+In order to establish the termination of the Gale Shapley algorithm, we hope to prove a 
 
+\begin{code}
+stepDec : (m : MatchingState) → compSumPrefLists (MatchingState.freeMen m) (MatchingState.engagedMen m) ≥′ compSumPrefLists (MatchingState.freeMen (step m)) (MatchingState.engagedMen (step m))
+\end{code}
+
+Before taking a look at this bigger proof, let us take a look at the techniques used to construct it. Agda's pattern matching and computation is extensively at play here again, as we hope to prove facts. Such proofs can be easily constructed in Agda by pattern matching on the arguments of the proof (arguments of the function) further and further until we can reduce to a point where a constructor exists for the type we hope the function to return. Let us warm up with some proofs about properties of the natural numbers:
 
 \begin{code}
 +-zero : ∀ n k → k ≡ n + 0 → k ≡ n
@@ -307,8 +310,17 @@ n+m≤n+m+s (suc n) zero (suc s) = s≤s (n+m≤n+m+s n zero (suc s))
 n+m≤n+m+s (suc n) (suc m) zero = s≤s (n+m≤n+m+s (suc n) m zero)
 n+m≤n+m+s (suc n) (suc m) (suc s) = s≤s (n+m≤n+m+s (suc n) m (suc s))
 
-{--
+\end{code}
+
+Let us take a perhaps uninteresting, but clearly true property of our implementation: since the sum of preference lists is calculated by summing up the preferences of free and engaged men, the sum is at most the same as the sum of preferences in each of the lists at the same time. In Agda:
+
+\begin{code}
 lengthPrefsOneSide : ∀ (freeMen engagedMen : List (ℕ × List ℕ))(k : ℕ) → k ≡ compSumPrefLists freeMen engagedMen → (lengthPrefs freeMen ≤′ k) × (lengthPrefs engagedMen ≤′ k)
+\end{code}
+
+A new operator makes its appearance here: ≤′
+
+\begin{code}
 lengthPrefsOneSide [] [] k p = z≤′n , z≤′n
 lengthPrefsOneSide [] ((fst , []) ∷ engagedMen) k p = z≤′n , proj₂ (lengthPrefsOneSide [] engagedMen k p)
 lengthPrefsOneSide [] ((fst , x ∷ snd) ∷ engagedMen) k p = z≤′n , ≤⇒≤′ (≤-reflexive (sym p))
@@ -318,7 +330,6 @@ lengthPrefsOneSide ((fst , []) ∷ freeMen) ((fst₁ , []) ∷ engagedMen) k p =
 lengthPrefsOneSide ((fst , []) ∷ freeMen) ((fst₁ , x ∷ snd₁) ∷ engagedMen) .(lengthPrefs freeMen + suc (lengthPrefs ((fst₁ , snd₁) ∷ engagedMen))) refl = proj₁ (lengthPrefsOneSide freeMen ((fst₁ , x ∷ snd₁) ∷ engagedMen) (lengthPrefs freeMen + suc (lengthPrefs ((fst₁ , snd₁) ∷ engagedMen))) refl) , ≤⇒≤′ (n≤m+n (lengthPrefs freeMen) (suc (lengthPrefs ((fst₁ , snd₁) ∷ engagedMen))))
 lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen) ((fst₁ , []) ∷ engagedMen) .(suc (lengthPrefs ((fst , snd) ∷ freeMen) + lengthPrefs engagedMen)) refl = ≤⇒≤′ (s≤s (n+m≤n+m+s (lengthPrefs freeMen) (length snd) (lengthPrefs engagedMen))) , proj₂ (lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen) engagedMen ((suc (lengthPrefs ((fst , snd) ∷ freeMen) + lengthPrefs engagedMen))) (cong suc refl)) 
 lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen) ((fst₁ , x₁ ∷ snd₁) ∷ engagedMen) p refl = n≤n+m (suc (lengthPrefs ((fst₁ , snd₁) ∷ engagedMen))) (suc (lengthPrefs ((fst , snd) ∷ freeMen))) , ≤⇒≤′ (n≤m+n (lengthPrefs ((fst , x ∷ snd) ∷ freeMen)) (lengthPrefs ((fst₁ , x₁ ∷ snd₁) ∷ engagedMen)))
---}
 
 stepsWithPrefs : ∀ m n → m ≤ n → m ≤ 1 + n
 stepsWithPrefs zero zero z≤n = z≤n
@@ -369,11 +380,11 @@ import Data.Nat.Solver
 open Data.Nat.Solver.+-*-Solver
   using (prove; solve; _:=_; con; var; _:+_; _:*_; :-_; _:-_)
 
-lem2 : (4 + 6 ≡ 10)
-lem2 = solve 0 (con 4 :+ con 6 := con 10) refl
+lem : (4 + 6 ≡ 10)
+lem = solve 0 (con 4 :+ con 6 := con 10) refl
 
-lem3 : (x : ℕ) → (2 * (x + 4) ≡ 8 + 2 * x)
-lem3 = solve 1 (λ x' → con 2 :* (x' :+ con 4) := con 8 :+ con 2 :* x') refl
+lem₁ : (x : ℕ) → (2 * (x + 4) ≡ 8 + 2 * x)
+lem₁ = solve 1 (λ x' → con 2 :* (x' :+ con 4) := con 8 :+ con 2 :* x') refl
 
 lemmaProposeTrue : ∀ (freeMen engagedMen : List (ℕ × List ℕ))(formerHusband man : ℕ)(prefs : List ℕ) →
                    length (proj₂ (proj₂ (safeAddNewEngagedMan′ (man , prefs) formerHusband engagedMen))) + lengthPrefs freeMen + lengthPrefs (proj₁ (safeAddNewEngagedMan′ (man , prefs) formerHusband engagedMen))
@@ -413,7 +424,6 @@ singleWomanLemma freeMen n prefs engagedMen = subst (λ x → lengthPrefs freeMe
                                                 (solve 3 (λ x y z → x :+ (y :+ z) := y :+ x :+ z) refl (lengthPrefs freeMen) (length prefs) (lengthPrefs engagedMen))
                                                 (≤⇒≤′ (n≤1+n _))
 
-stepDec : (m : MatchingState) → compSumPrefLists (MatchingState.freeMen m) (MatchingState.engagedMen m) ≥′ compSumPrefLists (MatchingState.freeMen (step m)) (MatchingState.engagedMen (step m))
 stepDec (mkState men [] [] women couples k p) = ≤′-refl
 stepDec (mkState men [] ((man , prefs) ∷ engagedMen) women couples k p) = ≤′-refl
 stepDec (mkState men ((man , []) ∷ freeMen) engagedMen women couples k p) = ≤′-refl
@@ -708,5 +718,7 @@ leftInv a = refl
 rightInv : (a : ℕ) → a + zero ≡ a
 rightInv zero = refl
 rightInv (suc a) = cong suc (rightInv a)
+
+stepDec' : (m : MatchingState) → compSumPrefLists (MatchingState.freeMen m) (MatchingState.engagedMen m) ≥′ compSumPrefLists (MatchingState.freeMen (step m)) (MatchingState.engagedMen (step m))
 
 \end{code}}
