@@ -460,7 +460,7 @@ lengthPrefsExtLemma (man , x ∷ prefs)
 
 \end{code}
 
-Let us attempt a more sophisticated proof. Since the sum of preference lists is calculated by summing up the preferences of free and engaged men, we can state that the sum is at most the same as the sum of preferences in each of the lists at the same time. In this case, our proofs will consist of pairs, constructed by the _,_ operator. In Agda:
+Let us attempt a more sophisticated proof. Since the sum of preference lists is calculated by summing up the preferences of free and engaged men, we can state that the sum is at most the same as the sum of preferences in each of the lists at the same time. In this case, our proofs will consist of pairs, constructed by the $\_,\_$ operator. In Agda:
 
 \begin{code}
 lengthPrefsOneSide : ∀ (freeMen engagedMen : List (ℕ × List ℕ))(k : ℕ) →
@@ -577,6 +577,7 @@ Now let us turn into the definition of the stepDec function. In order to make us
         \begin{itemize}
           \item In case he's not, we must give a proof that the sum of preference lists was decreased by one in this step (since the man discards the woman from the list).
           \item In case he is in fact accepted, we must write down a lemma which calls the functions involved and proves that after calling these functions, the value of $k$ will be equal or decreased. Again, this function should repeat the pattern matching of the involved functions.
+        \end{itemize}
       \item In case she was single, she accepts the proposal immediately. We must write down a lemma which shows that, when that man moves from the list of free men to the list of engaged men, the value of $k$ is decreased.
     \end{itemize}
 \end{itemize}
@@ -1173,10 +1174,5 @@ postulate
                      MatchingState.women m₂ ≡ MatchingState.women m →
                      is-stable-matching m₁ → is-stable-matching m₂ →
                      is-better-matching m₁ m₂
-
-allSteps' : (m : MatchingState) → MatchingState
-allSteps' m with step m
-... | (mkState men [] engagedMen women couples sumPrefLists sumEq) = mkState men [] engagedMen women couples sumPrefLists sumEq
-allSteps' m | mkState men freeMen engagedMen women couples sumPrefLists sumEq = {!!}
 
 \end{code}}

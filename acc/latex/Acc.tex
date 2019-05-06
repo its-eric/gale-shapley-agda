@@ -1,4 +1,7 @@
-\newcommand{AccAgda}{%
+\newcommand{\AccAgda}{%
+
+This implementation is based on the paper by Ana Bove \cite{Bove2002SimpleTheory}.
+
 \begin{code}%
 \>[0]\<%
 \\
@@ -53,12 +56,6 @@
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- Based on the paper by Ana Bove}\<%
-\\
-\>[0]\AgdaComment{-- http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.32.6626\&rep=rep1\&type=pdf}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaDatatype{Maybe}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{A}\AgdaSpace{}%
@@ -84,20 +81,29 @@
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{\{- Something like this is defined in the stdlib:
-\AgdaUnderscore{}<?\AgdaUnderscore{} : Decidable \AgdaUnderscore{}<\AgdaUnderscore{}
-x <? y = suc x ≤? y 
-
-That is a help for "it is decidable whether a natural number is less than another".
--\}}\<%
+\>[0]\AgdaComment{{-}{-} Something like this is defined in the stdlib:}\<%
+\\
+\>[0]\AgdaComment{{-}{-} \AgdaUnderscore{}<?\AgdaUnderscore{} : Decidable \AgdaUnderscore{}<\AgdaUnderscore{}}\<%
+\\
+\>[0]\AgdaComment{{-}{-} x <? y = suc x ≤? y }\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- The following lemma -< says if a natural number n is not less than another one (not zero)}\<%
+\>[0]\AgdaComment{{-}{-} That is a help for "it is decidable whether a}\<%
 \\
-\>[0]\AgdaComment{-- then the result of subtracting the second from the first is less than the first.}\<%
+\>[0]\AgdaComment{{-}{-} natural number is less than another".}\<%
 \\
-\>[0]\AgdaFunction{-<}\AgdaSpace{}%
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaComment{{-}{-} The following lemma {-}< says if a natural number n is}\<%
+\\
+\>[0]\AgdaComment{{-}{-} not less than another one (not zero)}\<%
+\\
+\>[0]\AgdaComment{{-}{-} then the result of subtracting the second from the first}\<%
+\\
+\>[0]\AgdaComment{{-}{-} is less than the first.}\<%
+\\
+\>[0]\AgdaFunction{{-}<}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaBound{n}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSpace{}%
@@ -117,7 +123,7 @@ That is a help for "it is decidable whether a natural number is less than anothe
 \AgdaOperator{\AgdaFunction{<}}\AgdaSpace{}%
 \AgdaBound{n}\<%
 \\
-\>[0]\AgdaFunction{-<}\AgdaSpace{}%
+\>[0]\AgdaFunction{{-}<}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaSymbol{λ}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSpace{}%
@@ -126,7 +132,7 @@ That is a help for "it is decidable whether a natural number is less than anothe
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- This could help perhaps...}\<%
+\>[0]\AgdaComment{{-}{-} This could help perhaps...}\<%
 \\
 \>[0]\AgdaFunction{trans}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -152,18 +158,23 @@ That is a help for "it is decidable whether a natural number is less than anothe
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- First we try to prove accessibility using a standard predicate.}\<%
+\>[0]\AgdaComment{{-}{-} First we try to prove accessibility using a standard predicate.}\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{\{-- The Haskell version of the mod algorithm would go something like this:
-
-mod : ℕ → ℕ → Maybe ℕ
-mod n zero = Nothing
-mod n (suc m) with n <? suc m
-mod n (suc m) | yes p = Just n
-mod n (suc m) | no ¬p = mod (n ∸ suc m) (suc m)
---\}}\<%
+\>[0]\AgdaComment{{-}{-} The Haskell version of the mod algorithm would go something like this:}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaComment{{-}{-} mod : ℕ → ℕ → Maybe ℕ}\<%
+\\
+\>[0]\AgdaComment{{-}{-} mod n zero = Nothing}\<%
+\\
+\>[0]\AgdaComment{{-}{-} mod n (suc m) with n <? suc m}\<%
+\\
+\>[0]\AgdaComment{{-}{-} mod n (suc m) | yes p = Just n}\<%
+\\
+\>[0]\AgdaComment{{-}{-} mod n (suc m) | no ¬p = mod (n ∸ suc m) (suc m)}\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
@@ -225,7 +236,7 @@ mod n (suc m) | no ¬p = mod (n ∸ suc m) (suc m)
 \AgdaOperator{\AgdaPrimitive{∸}}\AgdaSpace{}%
 \AgdaInductiveConstructor{suc}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{-<}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{{-}<}\AgdaSpace{}%
 \AgdaBound{h}\AgdaSymbol{))}\<%
 \\
 %
@@ -286,7 +297,7 @@ mod n (suc m) | no ¬p = mod (n ∸ suc m) (suc m)
 \AgdaBound{x}\<%
 \\
 %
-\>[4]\AgdaComment{-- Next task: define this function}\<%
+\>[4]\AgdaComment{{-}{-} Next task: define this function}\<%
 \\
 %
 \>[4]\AgdaFunction{f}\AgdaSpace{}%
@@ -316,7 +327,9 @@ mod n (suc m) | no ¬p = mod (n ∸ suc m) (suc m)
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- From here on we use Bove's method for writing a special accessibility predicate.}\<%
+\>[0]\AgdaComment{{-}{-} From here on we use Bove's method for writing a}\<%
+\\
+\>[0]\AgdaComment{{-}{-} special accessibility predicate.}\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
@@ -362,8 +375,8 @@ mod n (suc m) | no ¬p = mod (n ∸ suc m) (suc m)
 \\
 %
 \>[2]\AgdaInductiveConstructor{modAcc≤}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{\{}\AgdaBound{n}\AgdaSpace{}%
+\AgdaSymbol{:}%
+\>[216I]\AgdaSymbol{\{}\AgdaBound{n}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\AgdaSymbol{\}}\AgdaSpace{}%
@@ -377,14 +390,16 @@ mod n (suc m) | no ¬p = mod (n ∸ suc m) (suc m)
 \AgdaSymbol{(}\AgdaBound{n}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{<}}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{ModAcc}\AgdaSpace{}%
+\AgdaSymbol{→}\<%
+\\
+\>[.]\<[216I]%
+\>[12]\AgdaDatatype{ModAcc}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{n}\AgdaSpace{}%
 \AgdaOperator{\AgdaPrimitive{∸}}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSpace{}%
 \AgdaSymbol{→}%
-\>[68]\AgdaDatatype{ModAcc}\AgdaSpace{}%
+\>[32]\AgdaDatatype{ModAcc}\AgdaSpace{}%
 \AgdaBound{n}\AgdaSpace{}%
 \AgdaBound{m}\<%
 \\
@@ -404,17 +419,17 @@ mod n (suc m) | no ¬p = mod (n ∸ suc m) (suc m)
 \AgdaDatatype{Maybe}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\<%
 \\
-\>[0]\AgdaComment{-- The case when m is zero : error}\<%
+\>[0]\AgdaComment{{-}{-} The case when m is zero : error}\<%
 \\
 \>[0]\AgdaFunction{betterMod}\AgdaSpace{}%
 \AgdaBound{n}\AgdaSpace{}%
-\AgdaDottedPattern{\AgdaSymbol{.}}\AgdaDottedPattern{\AgdaNumber{0}}\AgdaSpace{}%
+\AgdaSymbol{\AgdaDottedPattern{.}}\AgdaNumber{\AgdaDottedPattern{0}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{modAcc0}\AgdaSpace{}%
-\AgdaDottedPattern{\AgdaSymbol{.}}\AgdaDottedPattern{\AgdaBound{n}}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{\AgdaDottedPattern{.}}\AgdaBound{\AgdaDottedPattern{n}}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{Nothing}\<%
 \\
-\>[0]\AgdaComment{-- The case when n < m. h₁ is a proof of that.}\<%
+\>[0]\AgdaComment{{-}{-} The case when n < m. h₁ is a proof of that.}\<%
 \\
 \>[0]\AgdaFunction{betterMod}\AgdaSpace{}%
 \AgdaBound{n}\AgdaSpace{}%
@@ -425,11 +440,11 @@ mod n (suc m) | no ¬p = mod (n ∸ suc m) (suc m)
 \AgdaInductiveConstructor{Just}\AgdaSpace{}%
 \AgdaBound{n}\<%
 \\
-\>[0]\AgdaComment{-- h is a proof that m ≠ 0.}\<%
+\>[0]\AgdaComment{{-}{-} h is a proof that m ≠ 0.}\<%
 \\
-\>[0]\AgdaComment{-- h₁ is a proof that n ≥ m.}\<%
+\>[0]\AgdaComment{{-}{-} h₁ is a proof that n ≥ m.}\<%
 \\
-\>[0]\AgdaComment{-- h₂ is the complicated proof, that ModAcc is satisfied by (n - m, m) }\<%
+\>[0]\AgdaComment{{-}{-} h₂ is the complicated proof, that ModAcc is satisfied by (n {-} m, m) }\<%
 \\
 \>[0]\AgdaFunction{betterMod}\AgdaSpace{}%
 \AgdaBound{n}\AgdaSpace{}%
@@ -449,8 +464,8 @@ mod n (suc m) | no ¬p = mod (n ∸ suc m) (suc m)
 %
 \\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{modAccAux}\AgdaSpace{}%
-\AgdaSymbol{:}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
+\AgdaSymbol{:}%
+\>[277I]\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\AgdaSymbol{)}\AgdaSpace{}%
@@ -468,8 +483,10 @@ mod n (suc m) | no ¬p = mod (n ∸ suc m) (suc m)
 \AgdaSymbol{(}\AgdaBound{q}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{<}}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaDatatype{ModAcc}\AgdaSpace{}%
+\AgdaSymbol{→}\<%
+\\
+\>[.]\<[277I]%
+\>[12]\AgdaDatatype{ModAcc}\AgdaSpace{}%
 \AgdaBound{q}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
@@ -519,7 +536,7 @@ mod n (suc m) | no ¬p = mod (n ∸ suc m) (suc m)
 \AgdaOperator{\AgdaPrimitive{∸}}\AgdaSpace{}%
 \AgdaInductiveConstructor{suc}\AgdaSpace{}%
 \AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{-<}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{{-}<}\AgdaSpace{}%
 \AgdaBound{h₁}\AgdaSymbol{))}\<%
 \\
 %
