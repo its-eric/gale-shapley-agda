@@ -46,7 +46,6 @@ record MatchingState : Set where
     couples : List (ℕ × ℕ)
     sumPrefLists : ℕ
     sumEq : sumPrefLists ≡ lengthPrefs freeMen + lengthPrefs engagedMen
-
 \end{code}
 
 We expect to start the execution of the algorithm with a copy of all men in the $freeMen$ list, and finish with all of them in $engagedMen$. A list of couples can then be extracted from $couples$. The lists $men$ and $women$ are preserved throughout the execution; the reason behind this particular design decision is to facilitate the writing of predicates in Agda, since, as introduced before, proofs involving the Gale-Shapley algorithm may discuss at the same time the "absolute" preference list of men and women or the \emph{current state} of their preference lists at a certain step of the algorithm. Therefore the current state of a certain man's preference list can be observed either in this or that list given that the man is free or engaged at a certain point during the execution.
@@ -228,17 +227,20 @@ We detail them further in the comments:
 
 \begin{code}
 step : MatchingState → MatchingState
--- When there are no more free men, the matching is stable and this is the last step.
-step (mkState men [] engagedMen women couples k p) = mkState men [] engagedMen women couples k p
+-- When there are no more free men, the matching is stable
+-- and this is the last step.
+step (mkState men [] engagedMen women couples k p) =
+     mkState men [] engagedMen women couples k p
 
--- Dummy case : the function shouldn't really be invoked with a man with empty
--- preferences. But otherwise Agda would question the completeness of our
--- pattern matching.
+-- Dummy case : the function shouldn't really be invoked with
+-- a man with empty preferences. But otherwise Agda would
+-- question the completeness of our pattern matching.
 step (mkState men ((n , []) ∷ freeMen) engagedMen women couples k p) =
      mkState men freeMen engagedMen women couples k p
 
 -- Proposal step
-step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k p)
+step (mkState men ((n , w ∷ prefs) ∷ freeMen)
+                  engagedMen women couples k p)
      with getPartner w couples
 
 -- First case: woman w has a husband h, represented by his literal number.
@@ -248,13 +250,15 @@ step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k p)
                             (safeAddNewCouple (n , w) couples)
                             (compSumPrefLists freeMenUpdated engagedMenUpdated) refl
                            where
-                               freeMenUpdated    =
-                                 proj₂ (safeAddNewEngagedMan′ (n , prefs) h engagedMen) ∷ freeMen
-                               engagedMenUpdated =
-                                 proj₁ (safeAddNewEngagedMan′ (n , prefs) h engagedMen)
+                             freeMenUpdated =
+                               (proj₂ (safeAddNewEngagedMan′ (n , prefs) h engagedMen))
+                                 ∷ freeMen
+                             engagedMenUpdated =  proj₁
+                                 (safeAddNewEngagedMan′ (n , prefs) h engagedMen)
 ...               | false = mkState men ((n , prefs) ∷ freeMen) engagedMen women
                             couples
-                            (compSumPrefLists ((n , prefs) ∷ freeMen) engagedMen) refl
+                            (compSumPrefLists ((n , prefs) ∷ freeMen) engagedMen)
+                            refl
 
 -- Second case: woman w didn't have a husband yet: simply must accept proposal
 step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k p)
@@ -269,7 +273,8 @@ In order to calculate a final result we just apply the step function until there
 \begin{code}
 {-# TERMINATING #-}
 allSteps : (m : MatchingState) → MatchingState
-allSteps (mkState men [] engagedMen women couples sumPrefLists sumEq) = mkState men [] engagedMen women couples sumPrefLists sumEq
+allSteps (mkState men [] engagedMen women couples sumPrefLists sumEq) =
+         mkState men [] engagedMen women couples sumPrefLists sumEq
 allSteps m′ = allSteps (step m′)
 \end{code}
 
@@ -283,7 +288,8 @@ In order to provide a mathematically relevant proof of termination, we hope to p
 stepDec : (m : MatchingState) →
           compSumPrefLists (MatchingState.freeMen m) (MatchingState.engagedMen m)
           ≥′
-          compSumPrefLists (MatchingState.freeMen (step m)) (MatchingState.engagedMen (step m))
+          compSumPrefLists (MatchingState.freeMen (step m))
+                           (MatchingState.engagedMen (step m))
 \end{code}
 
 Before taking a look at this bigger proof, let us take a look at the techniques used to construct it. Agda's pattern matching and computation is extensively at play here again, as we hope to prove some facts, basically, about natural numbers. Such proofs can be easily constructed in Agda by pattern matching on the arguments of the proof (arguments of the function) further and further until we can reduce to a point where a constructor exists for the type we hope the function to return. Let us warm up with some proofs about properties of the natural numbers:
@@ -297,8 +303,8 @@ rightInv zero = refl
 rightInv (suc a) = cong suc (rightInv a)
 \end{code}
 
-What is the difference between the proofs above? In the first case, if we inspect the type we hope to construct, Agda is able to reduce it from $zero + a$ on the left-hand side to just $a$, since there is a pattern on the plus function definition that says $zero + m = m$. Then we can simply say that for any input, the $refl$ constructor constructs a proof that \begin{math}a \== a\end{math}.
-For the second case, however, the $zero + m = m$ definition is not enough, since we must construct a proof that $suc (a + 0) = suc a$. That almost looks like the definition of our $rightInv$ function, expect for a $suc$ call on both sides. The solution is to define the function recursively: $cong$ adds a parameter to both sides of an equivalence. A similar solution is applied for the next proofs.
+What is the difference between the proofs above? In the first case, if we inspect the type we hope to construct, Agda is able to reduce it from $zero + a$ on the left-hand side to just $a$, since there is a pattern on the plus function definition that says $zero + m = m$. Then we can simply say that for any input, the $refl$ constructor constructs a proof that \begin{math}a = a\end{math}.
+For the second case, however, the $zero + m = m$ definition is not enough, since we must construct a proof that suc ($a + 0$) = suc $a$. That almost looks like the definition of our $rightInv$ function, expect for a $suc$ call on both sides. The solution is to define the function recursively: $cong$ adds a parameter to both sides of an equivalence. A similar solution is applied for the next proofs.
 
 \begin{code}
 +-zero : ∀ n k → k ≡ n + 0 → k ≡ n
@@ -314,7 +320,7 @@ For the second case, however, the $zero + m = m$ definition is not enough, since
 +-move-zero (suc n) (suc .(n + 0)) refl = cong suc (+-move-zero n (n + 0) refl)
 \end{code}
 
-These proofs state some similar facts to the proofs before, but they \emph{take in as a parameter} a proof that implies our goal, which we may reuse in our pattern definitions: for example, in +-zero, in the case we get two zeroes as arguments, the definition of the plus function will simply reduce them all to $0 = 0$, which is already the proof we want. It is also interesting to notice that we don't need to give a definition for some of these cases; it will never be true that $0 = (suc k) + 0$ or $(suc n) = 0 + 0$ as we can see in the +-move-zero function, and Agda can discard these cases immediately since there are \emph{no constructors} for them.
+These proofs state some similar facts to the proofs before, but they \emph{take in as a parameter} a proof that implies our goal, which we may reuse in our pattern definitions: for example, in +-zero, in the case we get two zeroes as arguments, the definition of the plus function will simply reduce them all to $0 = 0$, which is already the proof we want. It is also interesting to notice that we don't need to give a definition for some of these cases; it will never be true that 0 = (suc k) + 0 or (suc n) = 0 + 0 as we can see in the +-move-zero function, and Agda can discard these cases immediately since there are \emph{no constructors} for them.
 
 Now onto the definition of the $\le$ operator in Agda. There are two constructors for the data type $\le$ (i.e. type of proofs about $\le$): z≤n for the cases involving zero and some other natural number $n$ and s≤s for the cases involving two numbers bigger than zero. By using extensive pattern matching, we can ask Agda to find constructors that match the types we hope to return, in fact, most of the following proofs can be written automatically by asking Agda to search for a solution:
 
@@ -460,7 +466,7 @@ lengthPrefsExtLemma (man , x ∷ prefs)
 
 \end{code}
 
-Let us attempt a more sophisticated proof. Since the sum of preference lists is calculated by summing up the preferences of free and engaged men, we can state that the sum is at most the same as the sum of preferences in each of the lists at the same time. In this case, our proofs will consist of pairs, constructed by the $\_,\_$ operator. In Agda:
+Let us attempt a more sophisticated proof. Since the sum of preference lists is calculated by summing up the preferences of free and engaged men, we can state that the sum is at most the same as the sum of preferences in each of the lists at the same time. In this case, our proofs will consist of pairs, constructed by the \_ , \_ operator. In Agda:
 
 \begin{code}
 lengthPrefsOneSide : ∀ (freeMen engagedMen : List (ℕ × List ℕ))(k : ℕ) →
@@ -472,20 +478,24 @@ lengthPrefsOneSide [] [] k p = z≤′n , z≤′n
 
 -- If the man at the head of the some list has an empty preference list,
 -- we can only be sure the desired property holds by looking at the next one
-lengthPrefsOneSide [] ((fst , []) ∷ engagedMen) k p = z≤′n ,
-                                                      proj₂ (lengthPrefsOneSide [] engagedMen k p)
+lengthPrefsOneSide [] ((fst , []) ∷ engagedMen)
+                   k p = z≤′n ,
+                         proj₂ (lengthPrefsOneSide [] engagedMen k p)
 
 -- Using reflexivity and symmetry
-lengthPrefsOneSide [] ((fst , x ∷ snd) ∷ engagedMen) k p = z≤′n , ≤⇒≤′ (≤-reflexive (sym p))
+lengthPrefsOneSide [] ((fst , x ∷ snd) ∷ engagedMen)
+                   k p = z≤′n , ≤⇒≤′ (≤-reflexive (sym p))
 
-lengthPrefsOneSide ((fst , []) ∷ freeMen) [] k p = proj₁ (lengthPrefsOneSide freeMen [] k p) , z≤′n
+lengthPrefsOneSide ((fst , []) ∷ freeMen) []
+                   k p = proj₁ (lengthPrefsOneSide freeMen [] k p) , z≤′n
 
 -- Let us use some previously defined proofs!
 lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen)
-                   [] k p = ≤⇒≤′ (≤-reflexive
-                                   (+-zero k (lengthPrefs ((fst , x ∷ snd) ∷ freeMen))
-                                   (+-move-zero (suc (lengthPrefs ((fst , snd) ∷ freeMen)))
-                                     k p)))
+                   [] k p = ≤⇒≤′
+                            (≤-reflexive
+                              (+-zero k (lengthPrefs ((fst , x ∷ snd) ∷ freeMen))
+                              (+-move-zero (suc (lengthPrefs ((fst , snd) ∷ freeMen)))
+                            k p)))
                             , z≤′n
 
 lengthPrefsOneSide ((fst , []) ∷ freeMen)
@@ -495,12 +505,13 @@ lengthPrefsOneSide ((fst , []) ∷ freeMen)
 lengthPrefsOneSide ((fst , []) ∷ freeMen)
                    ((fst₁ , x ∷ snd₁) ∷ engagedMen)
                    .(lengthPrefs freeMen + suc (lengthPrefs ((fst₁ , snd₁) ∷ engagedMen)))
-                   refl = proj₁ (lengthPrefsOneSide freeMen
-                                                    ((fst₁ , x ∷ snd₁) ∷ engagedMen)
-                                                    (lengthPrefs freeMen +
-                                                      suc (lengthPrefs ((fst₁ , snd₁) ∷ engagedMen))
-                                                     )
-                                                     refl) ,
+                   refl = proj₁ (lengthPrefsOneSide
+                                   freeMen
+                                   ((fst₁ , x ∷ snd₁) ∷ engagedMen)
+                                   (lengthPrefs freeMen +
+                                     suc (lengthPrefs ((fst₁ , snd₁) ∷ engagedMen))
+                                   )
+                                   refl) ,
                            ≤⇒≤′ (n≤m+n (lengthPrefs freeMen)
                                 (suc (lengthPrefs ((fst₁ , snd₁) ∷ engagedMen))))
 lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen)
@@ -508,14 +519,18 @@ lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen)
                    .(suc (lengthPrefs ((fst , snd) ∷ freeMen) + lengthPrefs engagedMen))
                    refl = ≤⇒≤′
                           (s≤s
-                            (n+m≤n+m+s (lengthPrefs freeMen) (length snd) (lengthPrefs engagedMen))
+                            (n+m≤n+m+s
+                              (lengthPrefs freeMen)
+                              (length snd)
+                              (lengthPrefs engagedMen))
                           )
                           ,
-                          proj₂ (lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen)
-                                                    engagedMen
-                                                    ((suc (lengthPrefs ((fst , snd) ∷ freeMen) +
-                                                      lengthPrefs engagedMen)))
-                                                    (cong suc refl))
+                          proj₂ (lengthPrefsOneSide
+                                  ((fst , x ∷ snd) ∷ freeMen)
+                                  engagedMen
+                                  ((suc (lengthPrefs ((fst , snd) ∷ freeMen) +
+                                    lengthPrefs engagedMen)))
+                                  (cong suc refl))
 
 lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen)
                    ((fst₁ , x₁ ∷ snd₁) ∷ engagedMen)
@@ -523,10 +538,11 @@ lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen)
                               (suc (lengthPrefs ((fst₁ , snd₁) ∷ engagedMen)))
                               (suc (lengthPrefs ((fst , snd) ∷ freeMen)))
                             ,
-                            ≤⇒≤′ (n≤m+n
-                                   (lengthPrefs ((fst , x ∷ snd) ∷ freeMen))
-                                   (lengthPrefs ((fst₁ , x₁ ∷ snd₁) ∷ engagedMen))
-                                 )
+                            ≤⇒≤′
+                            (n≤m+n
+                              (lengthPrefs ((fst , x ∷ snd) ∷ freeMen))
+                              (lengthPrefs ((fst₁ , x₁ ∷ snd₁) ∷ engagedMen))
+                            )
 
 \end{code}
 
@@ -557,11 +573,12 @@ lem : (x : ℕ) → (2 * (x + 4) ≡ 8 + 2 * x)
 While expanding the definition application of natural numbers however, we end up with a huge goal in Agda: \textt{x + 4 + (x + 4 + 0) ≡ suc (suc (suc (suc (suc (suc (suc (suc (x + (x + 0)))))))))}. This definitely needs a lot of moving zeros and suc's around, but the ring solver allows for a cleaner definition:
 
 \begin{code}
--- The ring solver takes three parameters:
+-- The ring solver takes at least three parameters:
 -- how many variables are involved;
 -- what is the expression to be solved,
 --   written down in an alternative syntax
 -- the refl axiom for wrapping the equality up
+-- and then the variables to replace in the lambda, if any
 lem = solve 1 (λ x' → con 2 :* (x' :+ con 4) := con 8 :+ con 2 :* x') refl
 \end{code}
 
@@ -626,16 +643,25 @@ lemmaProposeTrue : ∀ (freeMen engagedMen : List (ℕ × List ℕ))
                      (formerHusband man : ℕ)
                      (prefs : List ℕ) →
                    length (proj₂
-                             (proj₂ (safeAddNewEngagedMan′ (man , prefs) formerHusband engagedMen))
+                             (proj₂
+                             (safeAddNewEngagedMan′ (man , prefs)
+                                                     formerHusband
+                                                     engagedMen))
                           ) +
                    lengthPrefs freeMen +
                    lengthPrefs (proj₁
-                                 (safeAddNewEngagedMan′ (man , prefs) formerHusband engagedMen))
+                                 (safeAddNewEngagedMan′ (man , prefs)
+                                                        formerHusband
+                                                        engagedMen))
                    ≤′
-                   suc (length prefs + lengthPrefs freeMen + lengthPrefs engagedMen)
+                   suc (length prefs +
+                        lengthPrefs freeMen +
+                        lengthPrefs engagedMen)
 
 lemmaProposeTrue freeMen [] formerHusband man prefs =
-                              subst  (λ x → lengthPrefs freeMen + (length prefs + 0) ≤′ suc x)
+                              subst  (λ x → lengthPrefs freeMen +
+                                            (length prefs + 0)
+                                            ≤′ suc x)
                                 (solve 2
                                        (λ x y → x :+ (y :+ con 0) := (y :+ x :+ con 0))
                                        refl
@@ -644,17 +670,20 @@ lemmaProposeTrue freeMen [] formerHusband man prefs =
                                 )
                                 (≤⇒≤′ (n≤1+n _))
 
-lemmaProposeTrue freeMen ((m , prefsM) ∷ []) formerHusband man prefs with compare formerHusband m
+lemmaProposeTrue freeMen ((m , prefsM) ∷ []) formerHusband man prefs
+  with compare formerHusband m
 lemmaProposeTrue freeMen
                  ((.(suc (formerHusband + k)) , prefsM) ∷ [])
                  formerHusband
                  man
                  prefs | less .formerHusband k =
                          subst
-                           (λ x → lengthPrefs freeMen + (length prefs + (length prefsM + 0))
+                           (λ x → lengthPrefs freeMen +
+                                  (length prefs + (length prefsM + 0))
                              ≤′ suc x)
                            (solve 3
-                             (λ x y z → x :+ (y :+ (z :+ con 0)) := y :+ x :+ (z :+ con 0))
+                             (λ x y z → x :+ (y :+ (z :+ con 0))
+                                := y :+ x :+ (z :+ con 0))
                              refl
                              (lengthPrefs freeMen)
                              (length prefs)
@@ -663,9 +692,11 @@ lemmaProposeTrue freeMen
 
 lemmaProposeTrue freeMen ((m , prefsM) ∷ []) .m man prefs | equal .m =
                  subst
-                   (λ x → length prefsM + lengthPrefs freeMen + (length prefs + 0) ≤′ suc x)
+                   (λ x → length prefsM + lengthPrefs freeMen +
+                          (length prefs + 0) ≤′ suc x)
                    (solve 3
-                     (λ x y z → x :+ y :+ (z :+ con 0) := z :+ y :+ (x :+ con 0))
+                     (λ x y z → x :+ y :+ (z :+ con 0)
+                       := z :+ y :+ (x :+ con 0))
                      refl
                      (length prefsM)
                      (lengthPrefs freeMen)
@@ -677,9 +708,12 @@ lemmaProposeTrue freeMen
                  ((m , prefsM) ∷ [])
                  .(suc (m + k)) man prefs | greater .m k =
                  subst
-                   (λ x → lengthPrefs freeMen + (length prefs + (length prefsM + 0)) ≤′ suc x)
+                   (λ x → lengthPrefs freeMen +
+                     (length prefs + (length prefsM + 0))
+                     ≤′ suc x)
                    (solve 3
-                          (λ x y z → x :+ (y :+ (z :+ con 0)) := y :+ x :+ (z :+ con 0))
+                          (λ x y z → x :+ (y :+ (z :+ con 0))
+                            := y :+ x :+ (z :+ con 0))
                           refl
                           (lengthPrefs freeMen)
                           (length prefs)
@@ -698,7 +732,9 @@ lemmaProposeTrue freeMen
                  formerHusband
                  man
                  prefs | less .formerHusband k
-                       with safeAddNewEngagedMan′ (man , prefs) formerHusband (ms ∷ engagedMen)
+                       with safeAddNewEngagedMan′ (man , prefs)
+                                                  formerHusband
+                                                  (ms ∷ engagedMen)
 
 -- This is yet to be proven, but if it is, our lemma is sound.
 lemmaProposeTrue freeMen
@@ -719,7 +755,8 @@ lemmaProposeTrue freeMen
                                   ≤′ suc x)
                            (solve 5
                                   (λ u v w y z →
-                                    u :+ v :+ (w :+ (y :+ z)) := w :+ v :+ (u :+ (y :+ z)))
+                                    u :+ v :+ (w :+ (y :+ z))
+                                    := w :+ v :+ (u :+ (y :+ z)))
                                   refl
                                   (length prefsM)
                                   (lengthPrefs freeMen)
@@ -740,12 +777,13 @@ With these different pieces in place we can write down the $stepDec$ function:
 stepDec (mkState men [] [] women couples k p) = ≤′-refl
 stepDec (mkState men [] ((man , prefs) ∷ engagedMen) women couples k p) = ≤′-refl
 stepDec (mkState men ((man , []) ∷ freeMen) engagedMen women couples k p) = ≤′-refl
-stepDec (mkState men ((man , w ∷ prefs) ∷ freeMen) engagedMen women couples k p) with getPartner w couples
+stepDec (mkState men ((man , w ∷ prefs) ∷ freeMen) engagedMen women couples k p)
+  with getPartner w couples
 ...             | just h with propose man h (getPreferenceList w women)
 ...             | true  = lemmaProposeTrue freeMen engagedMen h man prefs
 ...             | false = ≤⇒≤′ (n≤1+n _)
-stepDec (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k p) | nothing = singleWomanLemma freeMen n prefs engagedMen
-
+stepDec (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k p)
+  | nothing = singleWomanLemma freeMen n prefs engagedMen
 \end{code}
 
 \subsection{Correctness}
@@ -762,13 +800,16 @@ data _∈_ {A : Set}(a : A) : List A → Set where
 data _>just_ : Maybe ℕ → Maybe ℕ → Set where
   _from>_ : {m n : ℕ} → m > n → just m >just just n
 
--- Helper for the condition of stability: a person is better than another one
+-- Helper for the condition of stability:
+-- a person is better than another one
 -- in a preference list if it appears earlier in it.
 _≻[_]_ : ℕ → List ℕ → ℕ → Set
 person ≻[ list ] person₂ = positionInList person₂ list >just positionInList person list
 
--- Given a man and a woman and their preferences, the condition of stability is satisfied if
--- another m' and w' are not better positioned in their preference lists than their partners.
+-- Given a man and a woman and their preferences,
+-- the condition of stability is satisfied if
+-- no other m' and w' are not better positioned
+-- in their preference lists than their partners.
 conditionOfStabilitySatisfied : (c₁ : (ℕ × List ℕ) × (ℕ × List ℕ))
                                 (c₂ : (ℕ × List ℕ) × (ℕ × List ℕ))
                                 → Set
@@ -793,14 +834,16 @@ is-stable-matching (mkState men freeMen engagedMen women couples k p) =
 Now let us examine some examples to make use of these definitions. We look at the two cases from Gale and Shapley's original paper, one where we have an uncomplicated setup for which the deferred acceptance algorithm gives every man the first possible choice of woman, and another where there is in fact only one possible stable set of marriages and the algorithm takes a longer number of steps to arrive to its final state.
 
 \begin{code}
--- List of preferences of men and women from the Gale-Shapley canonical example
+-- List of preferences of men and women from the
+-- Gale-Shapley canonical example
 listMen : List (ℕ × List ℕ)
 listMen = (1 , ( 1 ∷ 2 ∷ 3 ∷ [] )) ∷ (2 , ( 2 ∷ 3 ∷ 1 ∷ [])) ∷ (3 , ( 3 ∷ 1 ∷ 2 ∷ [])) ∷ []
 
 listWomen : List (ℕ × List ℕ)
 listWomen = (1 , ( 2 ∷ 3 ∷ 1 ∷ [] )) ∷ (2 , ( 3 ∷ 1 ∷ 2 ∷ [])) ∷ ((3 , ( 1 ∷ 2 ∷ 3 ∷ []))) ∷ []
 
--- Extra example : men and women have only one possible stable set of marriages!
+-- Extra example : men and women have only
+-- one possible stable set of marriages!
 -- What could happen...?
 listDifficultMen : List (ℕ × List ℕ)
 listDifficultMen = (1 , ( 1 ∷ 2 ∷ 3 ∷ 4 ∷ [] )) ∷
@@ -813,9 +856,13 @@ listDifficultWomen = (1 , ( 4 ∷ 3 ∷ 1 ∷ 2 ∷ [] )) ∷
                      (2 , ( 2 ∷ 4 ∷ 1 ∷ 3 ∷ [] )) ∷
                      (3 , ( 4 ∷ 1 ∷ 2 ∷ 3 ∷ [] )) ∷
                      (4 , ( 3 ∷ 2 ∷ 1 ∷ 4 ∷ [] )) ∷ []
+\end{code}
 
+We can check that our implementation reaches the result promised by Gale and Shapley by simply constructing the proof that some applications of the step function reach the expected end state:
+
+\begin{code}
 exStart exEnd exEndExpected : MatchingState
-exStart       = mkState listMen listMen [] listWomen [] 9 refl
+exStart = mkState listMen listMen [] listWomen [] 9 refl
 -- Gale and Shapley tell us that, for the first simple example, each men
 -- gets his first woman from the list as a wife and there are no
 -- conflicts amongst them. So we expect the following end state:
@@ -833,14 +880,11 @@ exEnd         = step (step (step (step exStart)))
 resultIsWhatWeExpected : exEnd ≡ exEndExpected
 resultIsWhatWeExpected = refl
 
-numberOfStepsIsCorrect : exEnd ≡ allSteps exStart
-numberOfStepsIsCorrect = refl
-
 ex2Start ex2End ex2EndExpected : MatchingState
-ex2Start         = mkState listDifficultMen listDifficultMen [] listDifficultWomen [] 16 refl
+ex2Start = mkState listDifficultMen listDifficultMen [] listDifficultWomen [] 16 refl
 -- A second, harder example is given where
 -- there is only one possible stable set of marriages.
-ex2EndExpected   = mkState listDifficultMen
+ex2EndExpected = mkState listDifficultMen
                            []
                            ((1 , ( 4 ∷ [] )) ∷ (4 , (3 ∷ 1 ∷ [])) ∷
                              (2 , ( 3 ∷ 2 ∷ [] )) ∷ (3 , ( 3 ∷ 4 ∷ [])) ∷ [])
@@ -848,11 +892,19 @@ ex2EndExpected   = mkState listDifficultMen
                            (((2 , 4) ∷ (4 , 2) ∷ (1 , 3) ∷ (3 , 1) ∷ []))
                            7
                            refl
-ex2End           = step (step (step (step (step
-                        (step (step (step (step ex2Start))))))))
+ex2End  = step (step (step (step (step
+               (step (step (step (step ex2Start))))))))
 
 result2IsWhatWeExpected : ex2End ≡ ex2EndExpected
 result2IsWhatWeExpected = refl
+
+\end{code}
+
+Expectably, these applications are precisely the total applications of step if we utilize our previously defined allSteps function:
+
+\begin{code}
+numberOfStepsIsCorrect : exEnd ≡ allSteps exStart
+numberOfStepsIsCorrect = refl
 
 numberOfStepsIsCorrectAgain : ex2End ≡ allSteps ex2Start
 numberOfStepsIsCorrectAgain = refl
@@ -882,14 +934,18 @@ matchIsStableHelper : (c₁ c₂ : ℕ × ℕ)  →
       (getPreferenceList (proj₂ c₂) (MatchingState.women exEnd))))
 \end{code}
 
+The proof for a particular case can be done by exhaustive pattern matching on the constructors of the elements; in particular, we pattern match on the proofs that the couples are part of the list of couples. There are three different possibilities for this pattern matching:
+
+\begin{itemize}
+  \item We are looking at the case where $c_1$ and $c_2$ are in fact the same couple: we use the proof that $\neg (c_1 \== c_2)$ to eliminate this impossible case.
+  \item The pattern is simply not possible (the combinations with less than 2 couples), so we write them out as absurd patterns. 
+  \item We are looking at two different couples indeed, and must provide a proof that at least one person prefers their partner to the possibility in the other couple (since the condition of stability is written down as a pair, or cartesian product, only one suffices). Since our comparison helper function for persons in preference lists, $\succ$, is total and , we use our helper >from> constructor that compares Maybe-N typed elements to show that this is true for the side of the men in every one of these cases\footnote{Remember every man gets the best possible wife, so surely his wife is preferred to any alternative.}, and the second part of the proof can be skipped with an underline marker since it is sufficient for the condition of stability that at least one side fullfills it.
+\end{itemize}
 
 \begin{code}
 matchIsStableHelper _ _ (now .((3 , 3) ∷ (1 , 1) ∷ []))
                         (now .((3 , 3) ∷ (1 , 1) ∷ []))
                         p = ⊥-elim (p refl) , ⊥-elim (p refl)
-\end{code}
-
-\begin{code}
 matchIsStableHelper _ _ (now .((3 , 3) ∷ (1 , 1) ∷ []))
                         (later (now .((1 , 1) ∷ [])))
                         p = (λ { (_from>_ () , _) }) ,
@@ -901,11 +957,6 @@ matchIsStableHelper _ _ (now .((3 , 3) ∷ (1 , 1) ∷ []))
 matchIsStableHelper _ _ (now .((3 , 3) ∷ (1 , 1) ∷ []))
                         (later (later (later ())))
                         p
-\end{code}
-
-Further, similar pattern matching will be omitted for the sake of brevity due to the verbosity of the code.
-
-\begin{code}[hide]
 matchIsStableHelper _ _ (later (now .((1 , 1) ∷ [])))
                         (now .((3 , 3) ∷ (1 , 1) ∷ []))
                         p = (λ { (_from>_ () , _) }) ,
@@ -935,7 +986,7 @@ matchIsStableHelper _ _ (later (later (now .[])))
 matchIsStableHelper _ _ (later (later (later ()))) _ _
 \end{code}
 
-So what does it mean for a matching to be stable again according to our definition? To have an empty list of free men... which we can prove for $exEnd$ using the refl axiom; and to satisfy the condition of stability for every two couples... which is the definition we have just provided of matchIsStableHelper. We can then give a proof that $exEnd$ is indeed a stable matching: 
+So, again, what does it mean for a matching to be stable according to our definition? To have an empty list of free men... which we can prove for $exEnd$ using the refl axiom; and to satisfy the condition of stability for every two couples... which is the definition we have just provided of matchIsStableHelper. We can then give a proof that $exEnd$ is indeed a stable matching: 
 
 \begin{code}
 matchIsStable : is-stable-matching exEnd
@@ -974,23 +1025,25 @@ anyMatchIsStableHelper : (m : MatchingState)(c₁ c₂ : ℕ × ℕ)  →
 
 -- Absurd pattern: if there are no couples at all
 -- we can't possibly think about this!
-anyMatchIsStableHelper (mkState men [] engagedMen women [] sumPrefLists sumEq)
+anyMatchIsStableHelper (mkState _ [] _ _ [] _ _)
                        (fst , snd) (fst₁ , snd₁) () p₂ p₃ p₄
 
-anyMatchIsStableHelper (mkState men [] engagedMen women (x ∷ couples) sumPrefLists sumEq)
-                                (fst , snd) (fst₁ , snd₁) p₁ p₂ p₃ p₄ = {!!} , {!!}
+anyMatchIsStableHelper (mkState men [] engagedMen women (x ∷ couples)
+                                sumPrefLists sumEq)
+                       (fst , snd) (fst₁ , snd₁) p₁ p₂ p₃ p₄ = {!!} , {!!}
 -- Absurd pattern: if there are still some free men
 -- we can't possibly think about this either!
-anyMatchIsStableHelper (mkState men (x ∷ freeMen) engagedMen women couples sumPrefLists sumEq) c₁ c₂ p₁ p₂ p₃ ()
+anyMatchIsStableHelper (mkState _ (x ∷ freeMen) _ _ _ _ _)
+                       c₁ c₂ p₁ p₂ p₃ ()
 
 anyMatchIsStable : ∀ (m m' : MatchingState) → m' ≡ allSteps m →
                    is-stable-matching m'
-anyMatchIsStable m m′ p = subst (λ x → {!!}) p {!refl!} , {!!}
+anyMatchIsStable m m′ p = {!!}
 \end{code}
 
 \subsection{Optimality}
 
-
+We have logically reasoned in Section \ref{output-is-optimal} that, given every possible stable matching, no man has a better option than the woman he is assigned to by the Gale-Shapley algorithm. In Agda:
 
 \begin{code}
 -- In order to define that a matching m₁ is better than a matching m₂,
@@ -1007,10 +1060,15 @@ is-better-matching (mkState men freeMen engagedMen women couples k p)
                    ((m₁ m₂ : ℕ × List ℕ) →
                    m₁ ∈ engagedMen →  m₂ ∈ engagedMen₁ →
                    proj₁ m₁ ≡ proj₁ m₂ →
-                   getPreferenceList (proj₁ m₁) men ≡ getPreferenceList (proj₁ m₂) men₁ →
+                   getPreferenceList (proj₁ m₁) men
+                   ≡ getPreferenceList (proj₁ m₂) men₁ →
                    length (proj₂ m₁) ≥ length (proj₂ m₂))
 
+\end{code}
 
+Let us define another possible stable matching from the first example given by Gale and Shapley:
+
+\begin{code}
 -- Let us demonstrate with the first canonical example. Gale and Shapley
 -- tell us that another possible stable marriage (not returned by their
 -- algorithm) is obtained by giving every woman her first choice:
@@ -1022,7 +1080,11 @@ anotherPossibleStableMatching = mkState listMen
                                         ((3 , 2) ∷ (1 , 3) ∷ (2 , 1) ∷ [])
                                         _
                                         refl
+\end{code}
 
+We go about proving it as we have seen before:
+
+\begin{code}
 anotherMatchIsStableHelper : (c₁ c₂ : ℕ × ℕ) →
       c₁ ∈ MatchingState.couples anotherPossibleStableMatching →
       c₂ ∈ MatchingState.couples anotherPossibleStableMatching →
@@ -1050,6 +1112,11 @@ anotherMatchIsStableHelper _ _ (now .((1 , 3) ∷ (2 , 1) ∷ []))
 anotherMatchIsStableHelper _ _ (now .((1 , 3) ∷ (2 , 1) ∷ []))
                                (later (later (later ())))
                                p
+\end{code}
+
+Further cases are omitted for the sake of brevity, as it works exactly as the $matchIsStableHelper$ function discussed before.
+
+\begin{code}[hide]
 anotherMatchIsStableHelper _ _ (later (now .((2 , 1) ∷ [])))
                                (now .((1 , 3) ∷ (2 , 1) ∷ []))
                                p = (λ { (_ , _from>_ ()) }) ,
@@ -1092,7 +1159,7 @@ anotherMatchIsStableHelper _ _ (later (later (later ())))
                                p
 \end{code}
 
-We are then able to give a proof that this second matching is also stable:
+We are then able to give a proof that this second matching is also stable, but that it is not better than the first one, also by exhaustive pattern matching:
 
 \begin{code}
 itIsAlsoStable : is-stable-matching anotherPossibleStableMatching
@@ -1164,8 +1231,10 @@ matchIsBetter = matchIsStable , itIsAlsoStable , matchIsBetterHelper
 We postulate that a proof can be written for any stable matching in the same vein as the example above: 
 
 \begin{code}
--- Given two stable matchings m₁ , m₂ where m₁ is the result of the computation of
--- the Gale-Shapley algorithm and m₂ is a matching over the same man and women,
+-- Given two stable matchings m₁ , m₂
+-- where m₁ is the result of the computation of
+-- the Gale-Shapley algorithm
+-- and m₂ is a matching over the same man and women,
 -- m₂ is at most as good as m₁ but no better.
 postulate
   pAnyMatchIsBetter : ∀ (m m₁ m₂ : MatchingState) →
