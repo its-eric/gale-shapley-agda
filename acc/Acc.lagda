@@ -7,6 +7,7 @@ This implementation is based on the paper by Ana Bove \cite{Bove2002SimpleTheory
 module Acc where
 
 open import Data.Nat
+open import Data.Nat.Properties
 open import Data.Empty
 open import Function
 open import Induction
@@ -63,7 +64,8 @@ allAcc (suc n) | acc h = acc f
   where
     f : (x : ℕ) → suc x ≤ suc n → Acc _<_ x
     -- Next task: define this function
-    f = {!!}
+    f zero (s≤s p₁) = acc {!!}
+    f (suc x) (s≤s p₁) = acc {!!}
 
 mod : ℕ → ℕ → Maybe ℕ
 mod n m = mod' n m (allAcc n)
@@ -92,7 +94,11 @@ modAccAux : (m p : ℕ) → Acc _<_ p → (f : (q : ℕ) → (q < p) →
 modAccAux zero p h f = modAcc0 p
 modAccAux (suc n) p h f with p <? suc n
 ... | yes h₁ = modAcc< h₁
-... | no  h₁ = modAcc≤ ({!!}) h₁ (f (p ∸ suc n) (-< h₁))
+... | no  h₁ = modAcc≤ (λ ()) h₁ (f (p ∸ suc n) (-< h₁))
+
+1-le-m : ∀ m → 1 ≤ suc m
+1-le-m zero = ≤-refl
+1-le-m (suc m) = s≤s z≤n
 
 Pₙ : {n m : ℕ} → ∀ n m → ModAcc n m 
 Pₙ n zero    = modAcc0 n
@@ -100,7 +106,7 @@ Pₙ n (suc m) with n <? suc m
 ... | yes h = modAcc< h
 ... | no  h = modAccAux (suc m) n (allAcc n) f where
   f : (q : ℕ) → suc q ≤ n → ModAcc q (suc m)
-  f zero    (s≤s h) = modAcc< {!!}
+  f zero    (s≤s h) = modAcc< (1-le-m m)
   f (suc q) (s≤s h) = modAcc< {!!}
   
 allModAcc : (n m : ℕ) → ModAcc n m

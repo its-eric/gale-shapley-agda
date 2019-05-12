@@ -1,6 +1,6 @@
 \newcommand{\GaleShapley}{%
 
-To define the Gale-Shapley algorithm in Agda, we need a data structure which captures the state of the procedure in its various elements, in order to reason about its properties in an expressive enough manner that proofs can be written in the same manner as we have reasoned logically about the properties of the algorithm in chapter \ref{Chapter3}. We make use here of Agda's record types.
+To define the Gale-Shapley algorithm in Agda, we need a data structure which captures the state of the procedure in its various elements, in order to reason about its properties in an expressive enough manner that proofs can be written in the same manner as we have reasoned logically about the properties of the algorithm in Chapter \ref{Chapter3}. We make use here of Agda's record types.
 
 In Agda syntax, a $record$ defines a type that groups some values, in our case, the details of the group of men and women and their preference lists for the "matching ritual". Men are preference lists indexed over a representative natural number as well as women, giving a similar "state space" to the problem as the one defined in the previous mathematical specification. This type can be constructed with the $mkState$ keyword, and its elements are accessible at all times through (pattern matching and) projection functions defined automatically by Agda.
 
@@ -48,20 +48,23 @@ record MatchingState : Set where
     sumEq : sumPrefLists ≡ lengthPrefs freeMen + lengthPrefs engagedMen
 \end{code}
 
-We expect to start the execution of the algorithm with a copy of all men in the $freeMen$ list, and finish with all of them in $engagedMen$. A list of couples can then be extracted from $couples$. The lists $men$ and $women$ are preserved throughout the execution; the reason behind this particular design decision is to facilitate the writing of predicates in Agda, since, as introduced before, proofs involving the Gale-Shapley algorithm may discuss at the same time the "absolute" preference list of men and women or the \emph{current state} of their preference lists at a certain step of the algorithm. Therefore the current state of a certain man's preference list can be observed either in this or that list given that the man is free or engaged at a certain point during the execution.
+We expect to start the execution of the algorithm with a copy of all men in the $freeMen$ list, and finish with all of them in $engagedMen$. A list of couples can then be extracted from $couples$. The lists $men$ and $women$ are preserved throughout the execution; the reason behind this particular design decision is to facilitate the writing of predicates in Agda, since, as introduced before, proofs involving the Gale-Shapley algorithm may discuss, at the same time, the "absolute" preference list of men and women or the \emph{current state} of their preference lists at a certain step of the algorithm. Therefore the current state of a certain man's preference list can be observed either in this or that list given that the man is free or engaged at a certain point during the execution.
 
-We give two extra implementation-specific components: we keep track of the sum of preference lists of men, and at all times provide a proof that this number is in fact equal to the sum if it is computed.
+We give two extra implementation-specific components: we keep track of the sum of preference lists of men, and provide a proof at all times that this number is in fact equal to the sum if it is computed.
 
-Some helper functions are defined as tools to support the algorithm. They are defined always over pattern matching, typed with the help of Agda's case expansions. Very similar code can be written, for example, in Haskell to perform these operations over lists:
+Some helper functions are defined as tools to support the algorithm. They are defined always over pattern matching, typed with the help of Agda's case expansions. Very similar code can be written, for example, in Haskell to perform these operations over lists.
 
+We define a function that decides whether a natural number is less than another one, in Agda style:
 \begin{code}
--- Code by @yeputons on Stack Overflow :D
 is-≤ : ℕ → ℕ → Bool
 is-≤ a b with a ≤′? b
 ... | Dec.yes _ = true
 ... | Dec.no _ = false
+\end{code}
 
--- Helper function to search for an element in a list of natural numbers.
+A helper function to search for an element in a list of natural numbers:
+
+\begin{code}
 positionInListHelper : ℕ → List ℕ → ℕ → Maybe ℕ
 --searched everywhere but couldn't find it!
 positionInListHelper x [] _ = nothing
@@ -80,42 +83,52 @@ positionInListHelper x (xs ∷ xss) (suc n) with compare x xs
 positionInList : ℕ → List ℕ → Maybe ℕ
 positionInList n ns = positionInListHelper n ns zero
 
--- We usually assume the "husbands" to be the proposing side,
--- therefore if women propose instead the pair will
--- look like (wife, husband)
+\end{code}
+
+A function to search for a partner in a list of couples (we usually assume the "husbands" to be the proposing side, so the couples look like \texttt{(husband, wife)}; therefore if women propose instead the pair will look like \texttt{(wife, husband)} and this function is reusable):
+
+\begin{code}
+
 getPartner : (person : ℕ) → (couples : List (ℕ × ℕ)) → Maybe ℕ
---not married yet and this is the first proposal in the algorithm!
 getPartner person [] = nothing
 getPartner person ((m , w) ∷ []) with compare person w
-... | equal _ = just m --found your husband!
-... | _       = nothing --not married yet
+... | equal _ = just m
+... | _       = nothing
 getPartner person ((m , w) ∷ (c ∷ cs)) with compare person w
-... | equal _ = just m --found your husband!
-... | _       = getPartner person (c ∷ cs) --keep searching
+... | equal _ = just m
+... | _       = getPartner person (c ∷ cs)
+\end{code}
 
--- Simply extract a preference list from the scheme of indexed lists.
+A function to extract a preference list from a list of men or women:
+
+\begin{code}
 getPreferenceList : ℕ → List (ℕ × List ℕ) → List ℕ
-getPreferenceList person [] = [] --dummy case
+getPreferenceList person [] = []
 getPreferenceList person ((p , preferences) ∷ ps) with compare person p
 ... | equal _ = preferences
 ... | _       = getPreferenceList person ps
-
 \end{code}
 
 Three main "operations" are performed during the execution of the algorithm which deserve special attention. In the beginning of the \emph{proposal} step a woman receives a proposal over which she mulls:
+\begin{itemize}
+  \item $m$ is the proposing man,
+  \item $h$ is the current husband of the woman,
+  \item $prefs$ is the preference list of the woman.
+\end{itemize}
+The function returns true if the woman prefers $m$ over $h$.
 
 \begin{code}
--- m is the proposing man
--- h is the current husband of the woman
--- prefs is the preference list of the woman
--- returns true if the woman prefers m over h
 propose : (m : ℕ)(h : ℕ)(prefs : List ℕ) → Bool
--- Woman compares
 propose man h preferenceList with
         positionInList man preferenceList | positionInList h preferenceList
---does she prefer the new guy to the current one?
+\end{code}
+This case is the interesting one: does she prefer the new guy to the current one?
+\begin{code}
 ... | just p  | just q  = is-≤ p q
---shouldn't happen in an ideal world: proposal from an unknown man??
+\end{code}
+The next ones are added for completeness and shouldn't happen in case we give preference lists that make sense to the Gale-Shapley algorithm:
+\begin{code}
+-- shouldn't happen in an ideal world: proposal from an unknown man!
 ... | just p  | nothing = false
 --shouldn't happen in an ideal world: married an unknown man previously??
 ... | nothing | just q  = false
@@ -124,12 +137,11 @@ propose man h preferenceList with
 
 \end{code}
 
-Here it is already possible to notice that, using pattern matching, we are forced to look at every possible case of the execution (since Agda performs termination and pattern matching completeness checkings). But some things just quite don't make sense when examined from the point of view of the Gale-Shapley algorithm: because our implementation must be type-safe, we only \emph{possibly} return a man when we search for him in a woman's preference list. Accordingly, we pattern-match on the possibility that one of the examined men (current fiance or new suitor) doesn't even exist in that woman's list!
+Here it is already possible to notice that, using pattern matching, we are forced to look at every possible case of the execution (since Agda performs termination and pattern matching completeness checkings). But some things just quite don't make sense when examined from the point of view of the Gale-Shapley algorithm: because our implementation must be type-safe, we \emph{possibly} return a man when we search for him in a woman's preference list, only if he exists in it. Accordingly, we pattern-match on the possibility that one of the examined men (current fiance or new suitor) doesn't even exist in that woman's list!
 
-In case the woman was previously married and accepts this new proposal, it is important that the new couple "overwrites" the previous couple in which the woman was featured, therefore we simply introduce a "safe" operation for the list update:
+In case the woman was previously engaged and accepts this new proposal, it is important that the new couple "overwrites" the previous couple in which the woman was featured, therefore we simply introduce a "safe" operation for the list update:
 
 \begin{code}
--- Safely adding couples : previous marriages are unmade
 safeAddNewCouple : (newCouple : ℕ × ℕ)(couples : List (ℕ × ℕ)) → List (ℕ × ℕ)
 safeAddNewCouple (m , w) [] = (m , w) ∷ []
 safeAddNewCouple (m , w) ((a , b) ∷ []) with compare w b
@@ -140,17 +152,14 @@ safeAddNewCouple (m , w) ((a , b) ∷ (c ∷ cs)) with compare w b
 ... | _       = (a , b) ∷ safeAddNewCouple (m , w) (c ∷ cs)
 \end{code}
 
-It is perhaps worth it to stop here and examine what these implementation decisions mean for our later proofs. Since our proofs will be just functions, type-checked and computed down to normal form, the \emph{consistency} of our pattern matching definitions is key to enjoy Agda's computing power (remember: proof-checking is the same activity as type-checking). Suppose we want to prove a simple property of the $safeNewAddCouple$ operation, for example, that it indeed will work for a particular, very easy case:
+It is perhaps worth it to stop here and examine what these implementation decisions mean for our later proofs. Since our proofs will be just functions, type-checked and computed down to normal form, the \emph{consistency} of our pattern matching definitions is key to enjoy Agda's computing power (remember: proof-checking is the same activity as type-checking). Suppose we want to prove a simple property of the $safeNewAddCouple$ operation, for example, that it indeed will work for a particular, very easy case: let us prove that, if woman 3 is in the list of couples with husband 1 and should now be married to husband 2, the new couple will indeed be added.
 
 \begin{code}
--- Warm up: let us prove that, if woman 3 is in the list of couples with
--- husband 1 and should now be married to husband 2, the new couple will
--- indeed be added.
 p : (l : List (ℕ × ℕ))(a : ℕ) → a ≡ 3 →
     safeAddNewCouple (2 , 3) ((1 , a) ∷ l) ≡ ((2 , a) ∷ l)
 \end{code}
 
-What are the components of this proof, in other words, the parameters to this function? We provide a list, a natural number $a$, a proof that $a = 3$, and must return a proof that the operation returns a new list of couples where man 2 is married to woman 3. First we pattern match on $l$, it has two constructors, [] and \:::. Using Agda's proof assistant capabilities, we will observe that the "goal", that is, the expected type of the function return will contain the $$compare 3 a$$ application. Therefore we must use a \emph{with} construct in our proofs too in order to allow Agda to further reduce down the terms. Depending on the order in which the patterns are opened up, we might end up with different definitions for this function, here is one:
+What are the components of this proof, in other words, the parameters to this function? We provide a list, a natural number $a$, a proof that $a = 3$, and must return a proof that the operation returns a new list of couples where man 2 is married to woman 3. First we pattern match on $l$, it has two constructors, [] and \:::. Using Agda's proof assistant capabilities, we will observe that the "goal", that is, the expected type of the function return will contain the \texttt{compare 3 a} application. Therefore we must use a \emph{with} construct in our proofs too in order to allow Agda to further reduce down the terms. Depending on the order in which the patterns are opened up, we might end up with different definitions for this function, here is one:
 
 \begin{code}
 p [] a e with compare 3 a
@@ -165,38 +174,32 @@ p (x ∷ l) (suc .2) refl = refl
 
 The clauses without a right hand side that can be seen are \emph{absurd patterns}: there is no way we can provide the proof we're hoping for when the number given as the second parameter is not 3 (in other words, \texttt{suc (suc (suc zero))} or \texttt{suc 2}...). If they were possible cases to prove, that is, cases where \emph{there would be a constructor} for the type we hope to achieve, we might for example open up a second \emph{with} construct where in this case only $| w$ was left by Agda, and continue pattern matching and reducing further and further from there until we are able to construct the goal.
 
-In a similar fashion, when the list of engaged men is updated, the previous husband must be removed from it. Ww give two versions for this function, one which simply returns the updated $engagedMen$ list and another one which returns also some extra information (the man who was dumped and goes back to being free). The reasons why are further discussed later in this chapter.
+In a similar fashion, when the list of engaged men is updated, the previous husband must be removed from it. Ww give two versions for this function, one which simply returns the updated $engagedMen$ list and another one which returns also some extra information (the man who was dumped and goes back to being free).
 
 \begin{code}
--- Safely adding new engaged men to the list : dumped man is removed
 safeAddNewEngagedMan : (newEngagedMan : (ℕ × List ℕ))
                        (prevFiance : ℕ)
                        (prevEngagedMen : List (ℕ × List ℕ))
                        → List (ℕ × List ℕ)
--- Dummy case: this function is only invoked if a woman is already
--- married, so the list of engaged men can not possibly be empty...
+\end{code}
+The first one is again a dummy case: this function is only invoked if a woman is already married, so the list of engaged men can not possibly be empty...
+\begin{code}
 safeAddNewEngagedMan (newFiance , prefs) prevFiance [] = (newFiance , prefs) ∷ []
 
 safeAddNewEngagedMan (newFiance , prefs) prevFiance ((m , prefsM) ∷ [])
                      with compare prevFiance m
--- kick him out!
 ... | equal _ = (newFiance , prefs) ∷ []
--- safe to keep after all
 ... | _       = (newFiance , prefs) ∷ (m , prefsM) ∷ []
 safeAddNewEngagedMan (newFiance , prefs) prevFiance ((m , prefsM) ∷ ms ∷ engagedMen)
                      with compare prevFiance m
--- kick him out!
 ... | equal _ = (newFiance , prefs) ∷ ms ∷ engagedMen
--- safe to keep... for now
 ... | _       = (m , prefsM) ∷
                 safeAddNewEngagedMan (newFiance , prefs)
                                      prevFiance
                                      (ms ∷ engagedMen)
-
--- We give an alternative version which doesn't lose information:
--- it also returns the dumped man in a pair, or a dummy man
--- with an empty list. This helps Agda keep track of the length
--- of the preference lists in the matching state
+\end{code}
+We give an alternative version which doesn't lose information: it also returns the dumped man in a pair, or a dummy man with an empty list. This helps Agda keep track of the length of the preference lists in the matching state.
+\begin{code}
 safeAddNewEngagedMan′ : (newEngagedMan : (ℕ × List ℕ))
                         (prevFiance : ℕ)
                         (prevEngagedMen : List (ℕ × List ℕ))
@@ -223,29 +226,34 @@ Finally, we are ready to implement a step of the Gale-Shapley algorithm by patte
     \item There are no more free men: we return the current state as the final (and stable) matching state. That is our base case.
 \end{itemize}
 
-We detail them further in the comments:
-
 \begin{code}
 step : MatchingState → MatchingState
--- When there are no more free men, the matching is stable
--- and this is the last step.
+-- base case
 step (mkState men [] engagedMen women couples k p) =
      mkState men [] engagedMen women couples k p
+\end{code}
 
--- Dummy case : the function shouldn't really be invoked with
--- a man with empty preferences. But otherwise Agda would
--- question the completeness of our pattern matching.
+The function shouldn't really be invoked with a man with empty preferences. But otherwise Agda would question the completeness of our pattern matching, so:
+
+\begin{code}
 step (mkState men ((n , []) ∷ freeMen) engagedMen women couples k p) =
      mkState men freeMen engagedMen women couples k p
+\end{code}
 
--- Proposal step
+And finally, our proposal step as laid out:
+
+\begin{code}
 step (mkState men ((n , w ∷ prefs) ∷ freeMen)
                   engagedMen women couples k p)
      with getPartner w couples
 
--- First case: woman w has a husband h, represented by his literal number.
--- In this case
+\end{code}
+In the first case, woman $w$ has a husband $h$, represented by his literal number.
+\begin{code}
 ... | just h with propose n h (getPreferenceList w women)
+\end{code}
+If she accepts the new proposal, we switch the man around in the lists of free and engaged men, and add the new couple "safely" to the list of couples.
+\begin{code}
 ...               | true  = mkState men freeMenUpdated engagedMenUpdated women
                             (safeAddNewCouple (n , w) couples)
                             (compSumPrefLists freeMenUpdated engagedMenUpdated) refl
@@ -255,12 +263,16 @@ step (mkState men ((n , w ∷ prefs) ∷ freeMen)
                                  ∷ freeMen
                              engagedMenUpdated =  proj₁
                                  (safeAddNewEngagedMan′ (n , prefs) h engagedMen)
+\end{code}
+If not, we simply give back a state in which that woman is dropped from the man's list, and he remains in the list of free men with nothing else changing.
+\begin{code}
 ...               | false = mkState men ((n , prefs) ∷ freeMen) engagedMen women
                             couples
                             (compSumPrefLists ((n , prefs) ∷ freeMen) engagedMen)
                             refl
-
--- Second case: woman w didn't have a husband yet: simply must accept proposal
+\end{code}
+In the second case, woman $w$ didn't have a husband yet: she simply must accept the proposal.
+\begin{code}
 step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k p)
      | nothing
      = mkState men freeMen ((n , prefs) ∷ engagedMen) women
@@ -346,24 +358,19 @@ n+m≤n+m+s (suc n) (suc m) zero = s≤s (n+m≤n+m+s (suc n) m zero)
 n+m≤n+m+s (suc n) (suc m) (suc s) = s≤s (n+m≤n+m+s (suc n) m (suc s))
 \end{code}
 
-But how are these proofs being computed down and how does it all type-check? Let us introduce and discuss a new operator: ≤′. This is defined in Agda's standard library as an induction-friendlier alternative to $\le$. Agda also provides some conversion functions that allows us to turn proofs about ≤′ into proofs about $\le$ and vice-versa; they will feature prominently in our code in a moment. The constructors for ≤′ are ≤′-refl and ≤′-step, introduced in the comments of the following code, in which we walk through the process of constructing some of the proofs:
+But how are these proofs being computed down and how does it all type-check? Let us introduce and discuss a new operator: ≤′. This is defined in Agda's standard library as an induction-friendlier alternative to $\le$. Agda also provides some conversion functions that allows us to turn proofs about ≤′ into proofs about $\le$ and vice-versa; they will feature prominently in our code in a moment. The constructors for ≤′ are \texttt{≤′-refl} and \texttt{≤′-step}:
 
 \begin{code}
-
 -- These are defined somewhere in the standard library:
 
 -- data _≤′_ (m : ℕ) : ℕ → Set where
 --  ≤′-refl :                         m ≤′ m
 --  ≤′-step : ∀ {n} (m≤′n : m ≤′ n) → m ≤′ suc n
+\end{code}
 
--- In this interpretation, there are two ways of expressing ≤:
--- a number m is always less than or equal to itself;
--- or if it's less than or equal to another number n,
--- the property will hold also for successors of n.
+In this interpretation, there are two ways of expressing $\le$: a number $m$ is always less than or equal to itself; or if it's less than or equal to another number $n$, the property will hold also for successors of $n$. With these tools we can then reconstruct what we had previously with the traditional $\le$ operator:
 
--- With these tools we can then reconstruct what we had
--- previously with the traditional ≤ operator:
-
+\begin{code}
 -- z≤′n : ∀ {n} → zero ≤′ n
 -- z≤′n {zero}  = ≤′-refl
 -- z≤′n {suc n} = ≤′-step z≤′n
@@ -371,66 +378,78 @@ But how are these proofs being computed down and how does it all type-check? Let
 -- s≤′s : ∀ {m n} → m ≤′ n → suc m ≤′ suc n
 -- s≤′s ≤′-refl        = ≤′-refl
 -- s≤′s (≤′-step m≤′n) = ≤′-step (s≤′s m≤′n)
+\end{code}
 
--- Now let us prove
+Now let us prove
+
+\begin{code}
 n≤n+m : ∀ m n → n ≤′ n + m
+\end{code}
 
--- This first case just stems from the definition of ≤′-refl.
+The first case just stems from the definition of \texttt{≤′-refl}:
+
+\begin{code}
 n≤n+m zero zero = ≤′-refl
+\end{code}
 
+The second case needs to return a proof of \texttt{suc m ≤′ suc (m + 0)}. This doesn't quite match the definition of \texttt{≤′-step}, so we fallback to ≤ to construct a proof.
 
--- This second case needs to return a proof of
---  suc m ≤′ suc (m + 0).
--- This doesn't quite match the definition of ≤′-step,
--- so we fallback to ≤ to construct a proof.
--- ≤-reflexive says that, if a number is equal to another number,
--- then it is also minus than or equal to it.
--- So we just have to give a proof that
---   suc m ≡ suc (m + 0)
--- which we construct in three steps:
+\texttt{≤-reflexive} says that, if a number is equal to another number, then it is also minus than or equal to it. So we just have to give a proof that \texttt{suc m ≡ suc (m + 0)} which we construct in three steps:
 
--- 1. +-identityʳ m returns a proof that m + 0 ≡ m;
--- 2. We flip the arguments with symmetry so we have m ≡ m + 0;
--- 3. We apply the suc function on both sides with congruency
---   (since a ≡ b → f a ≡ f b), so we have our goal proof.
+\begin{enumerate}
+  \item \texttt{+-identityʳ m} returns a proof that \texttt{m + 0 ≡ m};
+  \item We flip the arguments with symmetry so we have \texttt{m ≡ m + 0};
+  \item We apply the suc function on both sides with congruency (since \texttt{a ≡ b → f a ≡ f b}), so we have our goal proof.
+\end{enumerate}
+
+\begin{code}
 n≤n+m zero (suc m) =  ≤⇒≤′ (≤-reflexive (cong suc (sym (+-identityʳ m))))
+\end{code}
 
--- In the third case, although the goal is simply
---  zero ≤′ suc m
--- we can observe that our alternative operator does not immediately
--- provide a constructor for that as ≤ did; instead we should do it
--- constructively with ≤′-step applied to a recursive call. That 
--- can be deduced from the definition of the z≤′n function above. 
+In the third case, although the goal is simply \texttt{zero ≤′ suc m} we can observe that our alternative operator does not immediately provide a constructor for that case as ≤ did; instead we should do it constructively with \texttt{≤′-step} applied to a recursive call. That can be deduced from the definition of the \texttt{z≤′n} function above.
+
+\begin{code}
 n≤n+m (suc n) zero = ≤′-step (n≤n+m n zero)
+\end{code}
 
--- In the fourth case we conform to the pattern of the  s≤′s function. 
+In the fourth case we conform to the pattern of the \texttt{s≤′s} function.
+
+\begin{code}  
 n≤n+m (suc n) (suc m) = s≤′s (n≤n+m (suc n) m)
+\end{code}
 
--- Onto some more computationally complicated proofs:
+Onto some more computationally complicated proofs:
+
+\begin{code}
 n≤2+m+n : ∀ m n → n + 0 ≤′ suc (suc (m + n) + 0)
+\end{code}
 
--- The goal for the first case is
---   0 ≤′ 2.
--- With ≤′-refl we can give a proof that
---   0 ≤′ 0
--- and then step until the number 2 with ≤′-step.
+The goal for the first case is 0 ≤′ 2. With \texttt{≤′-refl} we can give a proof that 0 ≤′ 0 and then step until the number 2 with \texttt{≤′-step}: it is induction friendly, so our proof is conserved.
+
+\begin{code}
 n≤2+m+n zero zero = ≤′-step (≤′-step ≤′-refl)
+\end{code}
 
--- Here the goal doesn't reduce down completely,
--- so we must construct the type
---   suc (n + 0) ≤′ suc (suc (suc (n + 0)))
+Here the goal doesn't reduce down completely, so we must construct the type
 
--- But we may notice that if we take (suc (n + 0)) as a
--- number n, then our goal is again to prove n ≤ n + 2
--- which can be done with the same solution above:
+\texttt{suc (n + 0) ≤′ suc (suc (suc (n + 0)))}
+
+But we may notice that if we take \texttt{(suc (n + 0))} as a number $n$, then our goal is again to prove \texttt{n ≤ n + 2} which can be done with the same solution above:
+
+\begin{code}
 n≤2+m+n zero (suc n) = ≤′-step (≤′-step ≤′-refl)
+\end{code}
 
--- For the remaining cases we can do a recursive call while
--- beautifully stepping through the natural numbers.
+For the remaining cases we can do a recursive call while beautifully stepping through the natural numbers.
+
+\begin{code}
 n≤2+m+n (suc m) zero = ≤′-step (n≤2+m+n m zero)
 n≤2+m+n (suc m) (suc n) = ≤′-step (n≤2+m+n m (suc n))
+\end{code}
 
--- Here is a similar function which features later in our implementation.
+Here is a similar function which features later in our implementation:
+
+\begin{code}
 m≤n+r+m : ∀ m n r → m ≤′ n + suc (r + m)
 m≤n+r+m zero zero zero = z≤′n
 m≤n+r+m zero zero (suc r) = z≤′n
@@ -554,15 +573,9 @@ Finally, we introduce an extra feature of Agda that precisely allowed us to simp
 import Data.Nat.Solver
 open Data.Nat.Solver.+-*-Solver
   using (prove; solve; _:=_; con; var; _:+_; _:*_; :-_; _:-_)
-
--- Here an alternative language is imported for expressing the
--- proof obligations we would like to fulfill:
---   the := operator instead of =
---   the :+ and :* and so on operators instead of
---    their natural number counterparts
---   con n instead of n
--- and so on...
 \end{code}
+
+Here an alternative language is imported for expressing the proof obligations we would like to fulfill: the := operator instead of =; the :+ and :* and so on operators instead of their natural number counterparts; \texttt{con n} instead of n and so on.
 
 We know the following equation to be true for any x natural number:
 
@@ -570,19 +583,14 @@ We know the following equation to be true for any x natural number:
 lem : (x : ℕ) → (2 * (x + 4) ≡ 8 + 2 * x)
 \end{code}
 
-While expanding the definition application of natural numbers however, we end up with a huge goal in Agda: \textt{x + 4 + (x + 4 + 0) ≡ suc (suc (suc (suc (suc (suc (suc (suc (x + (x + 0)))))))))}. This definitely needs a lot of moving zeros and suc's around, but the ring solver allows for a cleaner definition:
+While expanding the definition application of natural numbers however, we end up with a huge goal in Agda: \textt{x + 4 + (x + 4 + 0) ≡ suc (suc (suc (suc (suc (suc (suc (suc (x + (x + 0)))))))))}. This definitely needs a lot of moving zeros and suc's around, but the ring solver allows for a cleaner definition.
 
+The ring solver takes at least three parameters: how many variables are involved; what is the expression to be solved, written down in an alternative syntax; the refl axiom for wrapping the equality up. Then come the variables to replace the ones in the lambda, if any:
 \begin{code}
--- The ring solver takes at least three parameters:
--- how many variables are involved;
--- what is the expression to be solved,
---   written down in an alternative syntax
--- the refl axiom for wrapping the equality up
--- and then the variables to replace in the lambda, if any
 lem = solve 1 (λ x' → con 2 :* (x' :+ con 4) := con 8 :+ con 2 :* x') refl
 \end{code}
 
-Now let us turn into the definition of the stepDec function. In order to make use of Agda's computational capabilities, We must pattern match on proofs about a function by pattern matching in the same way that function does. Let us look at each case individually:
+Now let us turn into the definition of the \texttt{stepDec} function. In order to make use of Agda's computational capabilities, We must pattern match on proofs about a function by pattern matching in the same way that function does. Let us look at each case individually:
 
 \begin{itemize}
   \item When both the lists of free men and engaged men are empty, our proposition is true since calling the step function will not modify the value of $k$, the sum of preference lists (according to the definition of step). We can in turn prove that k $\le$ k from the definition of ≤′-refl.
@@ -790,26 +798,31 @@ stepDec (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k 
 
 We now proceed to discuss the correctness of the deferred acceptance algorithm. Again, we start by giving some definitions and a few helper functions.
 
+First we define the type of elements that belong to a list:
+
 \begin{code}
--- The type of elements that belong to a list.
 data _∈_ {A : Set}(a : A) : List A → Set where
   now   : (as : List A) → a ∈ (a ∷ as)
   later : {a' : A}{as : List A} → a ∈ as → a ∈ (a' ∷ as)
+\end{code}
 
--- Bigger than comparison for Maybe ℕ-typed elements. 
+Then since we defined the lookup functions on the preference lists with Maybe-types, we give a bigger-than comparison for Maybe ℕ-typed elements:
+
+\begin{code}
 data _>just_ : Maybe ℕ → Maybe ℕ → Set where
   _from>_ : {m n : ℕ} → m > n → just m >just just n
+\end{code}
 
--- Helper for the condition of stability:
--- a person is better than another one
--- in a preference list if it appears earlier in it.
+With that we can define a helper for the condition of stability: a person is better than another one in a preference list if it appears earlier in it.
+
+\begin{code}
 _≻[_]_ : ℕ → List ℕ → ℕ → Set
 person ≻[ list ] person₂ = positionInList person₂ list >just positionInList person list
+\end{code}
 
--- Given a man and a woman and their preferences,
--- the condition of stability is satisfied if
--- no other m' and w' are not better positioned
--- in their preference lists than their partners.
+Given a man $m$ and a woman $w$ and their preferences, the condition of stability is satisfied if no other $m\prime$ and $w\prime$ are better positioned in their preference lists than their partners.
+
+\begin{code}
 conditionOfStabilitySatisfied : (c₁ : (ℕ × List ℕ) × (ℕ × List ℕ))
                                 (c₂ : (ℕ × List ℕ) × (ℕ × List ℕ))
                                 → Set
@@ -817,9 +830,11 @@ conditionOfStabilitySatisfied ((m , prefsM) , w , prefsW) ((m' , prefsM') , w' ,
   (¬ ( ( w' ≻[ prefsM ] w ) ×  ( m ≻[ prefsW' ] m' )))
   ×
   (¬ ( (w ≻[ prefsM' ] w') × (m' ≻[ prefsW ] m)))
+\end{code}
 
--- A matching is stable if the condition of stability is satisfied
--- for every pair of man and woman not married.
+We are ready to write down a definition of stable matching: a matching is stable if no man are waiting to be married and the condition of stability is satisfied for every two pairs of man and woman formed.
+
+\begin{code}
 is-stable-matching : MatchingState → Set
 is-stable-matching (mkState men freeMen engagedMen women couples k p) =
   (freeMen ≡ []) × (
@@ -863,9 +878,10 @@ We can check that our implementation reaches the result promised by Gale and Sha
 \begin{code}
 exStart exEnd exEndExpected : MatchingState
 exStart = mkState listMen listMen [] listWomen [] 9 refl
--- Gale and Shapley tell us that, for the first simple example, each men
--- gets his first woman from the list as a wife and there are no
--- conflicts amongst them. So we expect the following end state:
+\end{code}
+
+Gale and Shapley tell us that, for the first simple example, each men gets his first woman from the list as a wife and there are no conflicts amongst them. So we expect the following end state:
+\begin{code}
 exEndExpected = mkState listMen
                         []
                         ((3 , (1 ∷ 2 ∷ [])) ∷
@@ -876,14 +892,21 @@ exEndExpected = mkState listMen
                         6
                         refl
 exEnd         = step (step (step (step exStart)))
+\end{code}
 
+Which we can see is what we get:
+
+\begin{code}
 resultIsWhatWeExpected : exEnd ≡ exEndExpected
 resultIsWhatWeExpected = refl
+\end{code}
 
+The same goes for the second, harder example:
+
+\begin{code}
 ex2Start ex2End ex2EndExpected : MatchingState
 ex2Start = mkState listDifficultMen listDifficultMen [] listDifficultWomen [] 16 refl
--- A second, harder example is given where
--- there is only one possible stable set of marriages.
+
 ex2EndExpected = mkState listDifficultMen
                            []
                            ((1 , ( 4 ∷ [] )) ∷ (4 , (3 ∷ 1 ∷ [])) ∷
@@ -892,6 +915,7 @@ ex2EndExpected = mkState listDifficultMen
                            (((2 , 4) ∷ (4 , 2) ∷ (1 , 3) ∷ (3 , 1) ∷ []))
                            7
                            refl
+
 ex2End  = step (step (step (step (step
                (step (step (step (step ex2Start))))))))
 
@@ -900,7 +924,7 @@ result2IsWhatWeExpected = refl
 
 \end{code}
 
-Expectably, these applications are precisely the total applications of step if we utilize our previously defined allSteps function:
+Expectably, these consecutive \texttt{step} applications are precisely the total applications of step if we utilize our previously defined \texttt{allSteps} function:
 
 \begin{code}
 numberOfStepsIsCorrect : exEnd ≡ allSteps exStart
@@ -915,7 +939,6 @@ Expressing such properties in the code also calls our attention to later inconsi
 What about showing that the matching returned by the deferred acceptance algorithm is stable? Let's do it for $exEnd$:
 
 \begin{code}
--- What does it mean to be stable?
 matchIsStableHelper : (c₁ c₂ : ℕ × ℕ)  →
       -- Given any two couples in exEnd
       c₁ ∈ MatchingState.couples exEnd →
@@ -997,21 +1020,22 @@ Let us now take that promised leap onto the next level. We postulate that, indee
 
 \begin{code}
 postulate
-  pAnyMatchIsStable : ∀ (m m' : MatchingState) → m' ≡ allSteps m →
-                   is-stable-matching m'
+  pAnyMatchIsStable : ∀ (m m′ : MatchingState) →
+                   m′ ≡ allSteps m →
+                   MatchingState.freeMen m′ ≡ [] →
+                   is-stable-matching m′
 \end{code}
 
-We go about trying to prove it by providing similar elements to the ones used in the proof of the particular case before.
+We can go about trying to prove it by providing similar elements to the ones used in the proof of the particular case before (the proof is incomplete, but the given pattern matching is a good start):
 
 \begin{code}
-anyMatchIsStableHelper : (m : MatchingState)(c₁ c₂ : ℕ × ℕ)  →
+anyMatchIsStableHelper : ∀ (m : MatchingState) → (MatchingState.freeMen m ≡ []) →
+      (c₁ c₂ : ℕ × ℕ)  →
       -- Given any two couples in a matching
       c₁ ∈ MatchingState.couples m →
       c₂ ∈ MatchingState.couples m →
       -- If it's not the same couple
       ¬ (c₁ ≡ c₂) →
-      -- When there are no more free men
-      MatchingState.freeMen m ≡ [] →
       -- Then the condition of stability is satisfied 
        conditionOfStabilitySatisfied
       (((proj₁ c₁) ,
@@ -1022,23 +1046,39 @@ anyMatchIsStableHelper : (m : MatchingState)(c₁ c₂ : ℕ × ℕ)  →
       (getPreferenceList (proj₁ c₂) (MatchingState.men m))) ,
       ((proj₂ c₂) ,
       (getPreferenceList (proj₂ c₂) (MatchingState.women m))))
+\end{code}
 
--- Absurd pattern: if there are no couples at all
--- we can't possibly think about this!
+The first pattern is absurd: if there are no couples at all we can't possibly think about this!
+
+\begin{code}
 anyMatchIsStableHelper (mkState _ [] _ _ [] _ _)
-                       (fst , snd) (fst₁ , snd₁) () p₂ p₃ p₄
+                       p₁ (fst , snd) (fst₁ , snd₁) () p₂ p₃
+\end{code}
 
+What interests us is the case when there are no more free men and at least one couple has been formed:
+
+\begin{code}
 anyMatchIsStableHelper (mkState men [] engagedMen women (x ∷ couples)
                                 sumPrefLists sumEq)
-                       (fst , snd) (fst₁ , snd₁) p₁ p₂ p₃ p₄ = {!!} , {!!}
--- Absurd pattern: if there are still some free men
--- we can't possibly think about this either!
-anyMatchIsStableHelper (mkState _ (x ∷ freeMen) _ _ _ _ _)
-                       c₁ c₂ p₁ p₂ p₃ ()
+                       refl (fst , snd) (fst₁ , snd₁) p₁ p₂ p₃ = {!!} , {!!}
+\end{code}
 
-anyMatchIsStable : ∀ (m m' : MatchingState) → m' ≡ allSteps m →
-                   is-stable-matching m'
-anyMatchIsStable m m′ p = {!!}
+Another absurd pattern which is cancelled out by Agda in this suggested version is the one where there are still some free men:
+
+\begin{code}
+anyMatchIsStableHelper (mkState _ (m ∷ freeMen) _ _ _ _ _)
+                       () c₁ c₂ p₂ p₃ p₄
+
+\end{code}
+
+With the helper proof we can then prove the match is stable 
+
+\begin{code}
+anyMatchIsStable : ∀ (m m′ : MatchingState) →
+                   m′ ≡ allSteps m →
+                   MatchingState.freeMen m′ ≡ [] →
+                   is-stable-matching m′
+anyMatchIsStable m m′ p₁ p₂ = p₂ , {!!}
 \end{code}
 
 \subsection{Optimality}

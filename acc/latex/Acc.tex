@@ -17,6 +17,10 @@ This implementation is based on the paper by Ana Bove \cite{Bove2002SimpleTheory
 \\
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
 \AgdaKeyword{import}\AgdaSpace{}%
+\AgdaModule{Data.Nat.Properties}\<%
+\\
+\>[0]\AgdaKeyword{open}\AgdaSpace{}%
+\AgdaKeyword{import}\AgdaSpace{}%
 \AgdaModule{Data.Empty}\<%
 \\
 \>[0]\AgdaKeyword{open}\AgdaSpace{}%
@@ -81,29 +85,29 @@ This implementation is based on the paper by Ana Bove \cite{Bove2002SimpleTheory
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{{-}{-} Something like this is defined in the stdlib:}\<%
+\>[0]\AgdaComment{-- Something like this is defined in the stdlib:}\<%
 \\
-\>[0]\AgdaComment{{-}{-} \AgdaUnderscore{}<?\AgdaUnderscore{} : Decidable \AgdaUnderscore{}<\AgdaUnderscore{}}\<%
+\>[0]\AgdaComment{-- \AgdaUnderscore{}<?\AgdaUnderscore{} : Decidable \AgdaUnderscore{}<\AgdaUnderscore{}}\<%
 \\
-\>[0]\AgdaComment{{-}{-} x <? y = suc x ≤? y }\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{{-}{-} That is a help for "it is decidable whether a}\<%
-\\
-\>[0]\AgdaComment{{-}{-} natural number is less than another".}\<%
+\>[0]\AgdaComment{-- x <? y = suc x ≤? y }\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{{-}{-} The following lemma {-}< says if a natural number n is}\<%
+\>[0]\AgdaComment{-- That is a help for "it is decidable whether a}\<%
 \\
-\>[0]\AgdaComment{{-}{-} not less than another one (not zero)}\<%
+\>[0]\AgdaComment{-- natural number is less than another".}\<%
 \\
-\>[0]\AgdaComment{{-}{-} then the result of subtracting the second from the first}\<%
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaComment{-- The following lemma -< says if a natural number n is}\<%
 \\
-\>[0]\AgdaComment{{-}{-} is less than the first.}\<%
+\>[0]\AgdaComment{-- not less than another one (not zero)}\<%
 \\
-\>[0]\AgdaFunction{{-}<}\AgdaSpace{}%
+\>[0]\AgdaComment{-- then the result of subtracting the second from the first}\<%
+\\
+\>[0]\AgdaComment{-- is less than the first.}\<%
+\\
+\>[0]\AgdaFunction{-<}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaBound{n}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSpace{}%
@@ -123,7 +127,7 @@ This implementation is based on the paper by Ana Bove \cite{Bove2002SimpleTheory
 \AgdaOperator{\AgdaFunction{<}}\AgdaSpace{}%
 \AgdaBound{n}\<%
 \\
-\>[0]\AgdaFunction{{-}<}\AgdaSpace{}%
+\>[0]\AgdaFunction{-<}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaSymbol{λ}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSpace{}%
@@ -132,7 +136,7 @@ This implementation is based on the paper by Ana Bove \cite{Bove2002SimpleTheory
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{{-}{-} This could help perhaps...}\<%
+\>[0]\AgdaComment{-- This could help perhaps...}\<%
 \\
 \>[0]\AgdaFunction{trans}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -158,23 +162,23 @@ This implementation is based on the paper by Ana Bove \cite{Bove2002SimpleTheory
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{{-}{-} First we try to prove accessibility using a standard predicate.}\<%
+\>[0]\AgdaComment{-- First we try to prove accessibility using a standard predicate.}\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{{-}{-} The Haskell version of the mod algorithm would go something like this:}\<%
+\>[0]\AgdaComment{-- The Haskell version of the mod algorithm would go something like this:}\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{{-}{-} mod : ℕ → ℕ → Maybe ℕ}\<%
+\>[0]\AgdaComment{-- mod : ℕ → ℕ → Maybe ℕ}\<%
 \\
-\>[0]\AgdaComment{{-}{-} mod n zero = Nothing}\<%
+\>[0]\AgdaComment{-- mod n zero = Nothing}\<%
 \\
-\>[0]\AgdaComment{{-}{-} mod n (suc m) with n <? suc m}\<%
+\>[0]\AgdaComment{-- mod n (suc m) with n <? suc m}\<%
 \\
-\>[0]\AgdaComment{{-}{-} mod n (suc m) | yes p = Just n}\<%
+\>[0]\AgdaComment{-- mod n (suc m) | yes p = Just n}\<%
 \\
-\>[0]\AgdaComment{{-}{-} mod n (suc m) | no ¬p = mod (n ∸ suc m) (suc m)}\<%
+\>[0]\AgdaComment{-- mod n (suc m) | no ¬p = mod (n ∸ suc m) (suc m)}\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
@@ -236,7 +240,7 @@ This implementation is based on the paper by Ana Bove \cite{Bove2002SimpleTheory
 \AgdaOperator{\AgdaPrimitive{∸}}\AgdaSpace{}%
 \AgdaInductiveConstructor{suc}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{{-}<}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{-<}\AgdaSpace{}%
 \AgdaBound{h}\AgdaSymbol{))}\<%
 \\
 %
@@ -297,11 +301,25 @@ This implementation is based on the paper by Ana Bove \cite{Bove2002SimpleTheory
 \AgdaBound{x}\<%
 \\
 %
-\>[4]\AgdaComment{{-}{-} Next task: define this function}\<%
+\>[4]\AgdaComment{-- Next task: define this function}\<%
 \\
 %
 \>[4]\AgdaFunction{f}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{s≤s}\AgdaSpace{}%
+\AgdaBound{p₁}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{acc}\AgdaSpace{}%
+\AgdaSymbol{\{!!\}}\<%
+\\
+%
+\>[4]\AgdaFunction{f}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{x}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{s≤s}\AgdaSpace{}%
+\AgdaBound{p₁}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{acc}\AgdaSpace{}%
 \AgdaSymbol{\{!!\}}\<%
 \\
 %
@@ -327,9 +345,9 @@ This implementation is based on the paper by Ana Bove \cite{Bove2002SimpleTheory
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{{-}{-} From here on we use Bove's method for writing a}\<%
+\>[0]\AgdaComment{-- From here on we use Bove's method for writing a}\<%
 \\
-\>[0]\AgdaComment{{-}{-} special accessibility predicate.}\<%
+\>[0]\AgdaComment{-- special accessibility predicate.}\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
@@ -376,7 +394,7 @@ This implementation is based on the paper by Ana Bove \cite{Bove2002SimpleTheory
 %
 \>[2]\AgdaInductiveConstructor{modAcc≤}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[216I]\AgdaSymbol{\{}\AgdaBound{n}\AgdaSpace{}%
+\>[229I]\AgdaSymbol{\{}\AgdaBound{n}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\AgdaSymbol{\}}\AgdaSpace{}%
@@ -392,7 +410,7 @@ This implementation is based on the paper by Ana Bove \cite{Bove2002SimpleTheory
 \AgdaBound{m}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
-\>[.]\<[216I]%
+\>[.][@{}l@{}]\<[229I]%
 \>[12]\AgdaDatatype{ModAcc}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{n}\AgdaSpace{}%
 \AgdaOperator{\AgdaPrimitive{∸}}\AgdaSpace{}%
@@ -419,17 +437,17 @@ This implementation is based on the paper by Ana Bove \cite{Bove2002SimpleTheory
 \AgdaDatatype{Maybe}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\<%
 \\
-\>[0]\AgdaComment{{-}{-} The case when m is zero : error}\<%
+\>[0]\AgdaComment{-- The case when m is zero : error}\<%
 \\
 \>[0]\AgdaFunction{betterMod}\AgdaSpace{}%
 \AgdaBound{n}\AgdaSpace{}%
-\AgdaSymbol{\AgdaDottedPattern{.}}\AgdaNumber{\AgdaDottedPattern{0}}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaSymbol{.}}\AgdaDottedPattern{\AgdaNumber{0}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{modAcc0}\AgdaSpace{}%
-\AgdaSymbol{\AgdaDottedPattern{.}}\AgdaBound{\AgdaDottedPattern{n}}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaDottedPattern{\AgdaSymbol{.}}\AgdaDottedPattern{\AgdaBound{n}}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{Nothing}\<%
 \\
-\>[0]\AgdaComment{{-}{-} The case when n < m. h₁ is a proof of that.}\<%
+\>[0]\AgdaComment{-- The case when n < m. h₁ is a proof of that.}\<%
 \\
 \>[0]\AgdaFunction{betterMod}\AgdaSpace{}%
 \AgdaBound{n}\AgdaSpace{}%
@@ -440,11 +458,11 @@ This implementation is based on the paper by Ana Bove \cite{Bove2002SimpleTheory
 \AgdaInductiveConstructor{Just}\AgdaSpace{}%
 \AgdaBound{n}\<%
 \\
-\>[0]\AgdaComment{{-}{-} h is a proof that m ≠ 0.}\<%
+\>[0]\AgdaComment{-- h is a proof that m ≠ 0.}\<%
 \\
-\>[0]\AgdaComment{{-}{-} h₁ is a proof that n ≥ m.}\<%
+\>[0]\AgdaComment{-- h₁ is a proof that n ≥ m.}\<%
 \\
-\>[0]\AgdaComment{{-}{-} h₂ is the complicated proof, that ModAcc is satisfied by (n {-} m, m) }\<%
+\>[0]\AgdaComment{-- h₂ is the complicated proof, that ModAcc is satisfied by (n - m, m) }\<%
 \\
 \>[0]\AgdaFunction{betterMod}\AgdaSpace{}%
 \AgdaBound{n}\AgdaSpace{}%
@@ -465,7 +483,7 @@ This implementation is based on the paper by Ana Bove \cite{Bove2002SimpleTheory
 \\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{modAccAux}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[277I]\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
+\>[290I]\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\AgdaSymbol{)}\AgdaSpace{}%
@@ -485,7 +503,7 @@ This implementation is based on the paper by Ana Bove \cite{Bove2002SimpleTheory
 \AgdaBound{p}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
-\>[.]\<[277I]%
+\>[.][@{}l@{}]\<[290I]%
 \>[12]\AgdaDatatype{ModAcc}\AgdaSpace{}%
 \AgdaBound{q}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSymbol{)}\AgdaSpace{}%
@@ -529,15 +547,40 @@ This implementation is based on the paper by Ana Bove \cite{Bove2002SimpleTheory
 \>[10]\AgdaBound{h₁}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{modAcc≤}\AgdaSpace{}%
-\AgdaSymbol{(\{!!\})}\AgdaSpace{}%
+\AgdaSymbol{(λ}\AgdaSpace{}%
+\AgdaSymbol{())}\AgdaSpace{}%
 \AgdaBound{h₁}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{f}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{p}\AgdaSpace{}%
 \AgdaOperator{\AgdaPrimitive{∸}}\AgdaSpace{}%
 \AgdaInductiveConstructor{suc}\AgdaSpace{}%
 \AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaFunction{{-}<}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaFunction{-<}\AgdaSpace{}%
 \AgdaBound{h₁}\AgdaSymbol{))}\<%
+\\
+%
+\\[\AgdaEmptyExtraSkip]%
+\>[0]\AgdaFunction{1-le-m}\AgdaSpace{}%
+\AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{∀}\AgdaSpace{}%
+\AgdaBound{m}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaNumber{1}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{≤}}\AgdaSpace{}%
+\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{m}\<%
+\\
+\>[0]\AgdaFunction{1-le-m}\AgdaSpace{}%
+\AgdaInductiveConstructor{zero}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaFunction{≤-refl}\<%
+\\
+\>[0]\AgdaFunction{1-le-m}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
+\AgdaBound{m}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{=}\AgdaSpace{}%
+\AgdaInductiveConstructor{s≤s}\AgdaSpace{}%
+\AgdaInductiveConstructor{z≤n}\<%
 \\
 %
 \\[\AgdaEmptyExtraSkip]%
@@ -619,7 +662,8 @@ This implementation is based on the paper by Ana Bove \cite{Bove2002SimpleTheory
 \AgdaBound{h}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{modAcc<}\AgdaSpace{}%
-\AgdaSymbol{\{!!\}}\<%
+\AgdaSymbol{(}\AgdaFunction{1-le-m}\AgdaSpace{}%
+\AgdaBound{m}\AgdaSymbol{)}\<%
 \\
 %
 \>[2]\AgdaFunction{f}\AgdaSpace{}%

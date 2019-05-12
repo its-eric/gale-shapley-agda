@@ -1,6 +1,6 @@
 \newcommand{\GaleShapley}{%
 
-To define the Gale-Shapley algorithm in Agda, we need a data structure which captures the state of the procedure in its various elements, in order to reason about its properties in an expressive enough manner that proofs can be written in the same manner as we have reasoned logically about the properties of the algorithm in chapter \ref{Chapter3}. We make use here of Agda's record types.
+To define the Gale-Shapley algorithm in Agda, we need a data structure which captures the state of the procedure in its various elements, in order to reason about its properties in an expressive enough manner that proofs can be written in the same manner as we have reasoned logically about the properties of the algorithm in Chapter \ref{Chapter3}. We make use here of Agda's record types.
 
 In Agda syntax, a $record$ defines a type that groups some values, in our case, the details of the group of men and women and their preference lists for the "matching ritual". Men are preference lists indexed over a representative natural number as well as women, giving a similar "state space" to the problem as the one defined in the previous mathematical specification. This type can be constructed with the $mkState$ keyword, and its elements are accessible at all times through (pattern matching and) projection functions defined automatically by Agda.
 
@@ -213,11 +213,10 @@ We expect to start the execution of the algorithm with a copy of all men in the 
 
 We give two extra implementation-specific components: we keep track of the sum of preference lists of men, and at all times provide a proof that this number is in fact equal to the sum if it is computed.
 
-Some helper functions are defined as tools to support the algorithm. They are defined always over pattern matching, typed with the help of Agda's case expansions. Very similar code can be written, for example, in Haskell to perform these operations over lists:
+Some helper functions are defined as tools to support the algorithm. They are defined always over pattern matching, typed with the help of Agda's case expansions. Very similar code can be written, for example, in Haskell to perform these operations over lists.
 
+We define a function that decides whether a natural number is less than another one, in Agda style:
 \begin{code}%
-\>[0]\AgdaComment{-- Code by @yeputons on Stack Overflow :D}\<%
-\\
 \>[0]\AgdaFunction{is-≤}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\AgdaSpace{}%
@@ -247,11 +246,11 @@ Some helper functions are defined as tools to support the algorithm. They are de
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{false}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- Helper function to search for an element in a list of natural numbers.}\<%
-\\
+\end{code}
+
+A helper function to search for an element in a list of natural numbers:
+
+\begin{code}%
 \>[0]\AgdaFunction{positionInListHelper}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\AgdaSpace{}%
@@ -366,13 +365,13 @@ Some helper functions are defined as tools to support the algorithm. They are de
 \AgdaBound{ns}\AgdaSpace{}%
 \AgdaInductiveConstructor{zero}\<%
 \\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- We usually assume the "husbands" to be the proposing side,}\<%
-\\
-\>[0]\AgdaComment{-- therefore if women propose instead the pair will}\<%
-\\
-\>[0]\AgdaComment{-- look like (wife, husband)}\<%
+\>[0]\<%
+\end{code}
+
+A function to search for a partner in a list of couples (we usually assume the "husbands" to be the proposing side, so the couples look like \texttt{(husband, wife)}; therefore if women propose instead the pair will look like \texttt{(wife, husband)} and this function is reusable):
+
+\begin{code}%
+\>[0]\<%
 \\
 \>[0]\AgdaFunction{getPartner}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -389,8 +388,6 @@ Some helper functions are defined as tools to support the algorithm. They are de
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaDatatype{Maybe}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\<%
-\\
-\>[0]\AgdaComment{--not married yet and this is the first proposal in the algorithm!}\<%
 \\
 \>[0]\AgdaFunction{getPartner}\AgdaSpace{}%
 \AgdaBound{person}\AgdaSpace{}%
@@ -416,15 +413,13 @@ Some helper functions are defined as tools to support the algorithm. They are de
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{just}\AgdaSpace{}%
-\AgdaBound{m}\AgdaSpace{}%
-\AgdaComment{--found your husband!}\<%
+\AgdaBound{m}\<%
 \\
 \>[0]\AgdaSymbol{...}\AgdaSpace{}%
 \AgdaSymbol{|}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
 \>[14]\AgdaSymbol{=}\AgdaSpace{}%
-\AgdaInductiveConstructor{nothing}\AgdaSpace{}%
-\AgdaComment{--not married yet}\<%
+\AgdaInductiveConstructor{nothing}\<%
 \\
 \>[0]\AgdaFunction{getPartner}\AgdaSpace{}%
 \AgdaBound{person}\AgdaSpace{}%
@@ -446,8 +441,7 @@ Some helper functions are defined as tools to support the algorithm. They are de
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{just}\AgdaSpace{}%
-\AgdaBound{m}\AgdaSpace{}%
-\AgdaComment{--found your husband!}\<%
+\AgdaBound{m}\<%
 \\
 \>[0]\AgdaSymbol{...}\AgdaSpace{}%
 \AgdaSymbol{|}\AgdaSpace{}%
@@ -457,13 +451,12 @@ Some helper functions are defined as tools to support the algorithm. They are de
 \AgdaBound{person}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{c}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
-\AgdaBound{cs}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaComment{--keep searching}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- Simply extract a preference list from the scheme of indexed lists.}\<%
-\\
+\AgdaBound{cs}\AgdaSymbol{)}\<%
+\end{code}
+
+A function to extract a preference list from a list of men or women:
+
+\begin{code}%
 \>[0]\AgdaFunction{getPreferenceList}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\AgdaSpace{}%
@@ -481,8 +474,7 @@ Some helper functions are defined as tools to support the algorithm. They are de
 \AgdaBound{person}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
-\AgdaInductiveConstructor{[]}\AgdaSpace{}%
-\AgdaComment{--dummy case}\<%
+\AgdaInductiveConstructor{[]}\<%
 \\
 \>[0]\AgdaFunction{getPreferenceList}\AgdaSpace{}%
 \AgdaBound{person}\AgdaSpace{}%
@@ -510,21 +502,17 @@ Some helper functions are defined as tools to support the algorithm. They are de
 \AgdaFunction{getPreferenceList}\AgdaSpace{}%
 \AgdaBound{person}\AgdaSpace{}%
 \AgdaBound{ps}\<%
-\\
-\>[0]\<%
 \end{code}
 
 Three main "operations" are performed during the execution of the algorithm which deserve special attention. In the beginning of the \emph{proposal} step a woman receives a proposal over which she mulls:
+\begin{itemize}
+  \item $m$ is the proposing man,
+  \item $h$ is the current husband of the woman,
+  \item $prefs$ is the preference list of the woman.
+\end{itemize}
+The function returns true if the woman prefers $m$ over $h$.
 
 \begin{code}%
-\>[0]\AgdaComment{-- m is the proposing man}\<%
-\\
-\>[0]\AgdaComment{-- h is the current husband of the woman}\<%
-\\
-\>[0]\AgdaComment{-- prefs is the preference list of the woman}\<%
-\\
-\>[0]\AgdaComment{-- returns true if the woman prefers m over h}\<%
-\\
 \>[0]\AgdaFunction{propose}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
@@ -538,15 +526,13 @@ Three main "operations" are performed during the execution of the algorithm whic
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaDatatype{Bool}\<%
 \\
-\>[0]\AgdaComment{-- Woman compares}\<%
-\\
 \>[0]\AgdaFunction{propose}%
-\>[328I]\AgdaBound{man}\AgdaSpace{}%
+\>[323I]\AgdaBound{man}\AgdaSpace{}%
 \AgdaBound{h}\AgdaSpace{}%
 \AgdaBound{preferenceList}\AgdaSpace{}%
 \AgdaKeyword{with}\<%
 \\
-\>[.][@{}l@{}]\<[328I]%
+\>[.][@{}l@{}]\<[323I]%
 \>[8]\AgdaFunction{positionInList}\AgdaSpace{}%
 \AgdaBound{man}\AgdaSpace{}%
 \AgdaBound{preferenceList}\AgdaSpace{}%
@@ -554,9 +540,9 @@ Three main "operations" are performed during the execution of the algorithm whic
 \AgdaFunction{positionInList}\AgdaSpace{}%
 \AgdaBound{h}\AgdaSpace{}%
 \AgdaBound{preferenceList}\<%
-\\
-\>[0]\AgdaComment{--does she prefer the new guy to the current one?}\<%
-\\
+\end{code}
+This case is the interesting one: does she prefer the new guy to the current one?
+\begin{code}%
 \>[0]\AgdaSymbol{...}\AgdaSpace{}%
 \AgdaSymbol{|}\AgdaSpace{}%
 \AgdaInductiveConstructor{just}\AgdaSpace{}%
@@ -568,8 +554,10 @@ Three main "operations" are performed during the execution of the algorithm whic
 \AgdaFunction{is-≤}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSpace{}%
 \AgdaBound{q}\<%
-\\
-\>[0]\AgdaComment{--shouldn't happen in an ideal world: proposal from an unknown man??}\<%
+\end{code}
+The next ones are added for completeness and shouldn't happen in case we give preference lists that make sense to the Gale-Shapley algorithm:
+\begin{code}%
+\>[0]\AgdaComment{-- shouldn't happen in an ideal world: proposal from an unknown man!}\<%
 \\
 \>[0]\AgdaSymbol{...}\AgdaSpace{}%
 \AgdaSymbol{|}\AgdaSpace{}%
@@ -609,8 +597,6 @@ Here it is already possible to notice that, using pattern matching, we are force
 In case the woman was previously married and accepts this new proposal, it is important that the new couple "overwrites" the previous couple in which the woman was featured, therefore we simply introduce a "safe" operation for the list update:
 
 \begin{code}%
-\>[0]\AgdaComment{-- Safely adding couples : previous marriages are unmade}\<%
-\\
 \>[0]\AgdaFunction{safeAddNewCouple}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{newCouple}\AgdaSpace{}%
@@ -726,18 +712,12 @@ In case the woman was previously married and accepts this new proposal, it is im
 \AgdaBound{cs}\AgdaSymbol{)}\<%
 \end{code}
 
-It is perhaps worth it to stop here and examine what these implementation decisions mean for our later proofs. Since our proofs will be just functions, type-checked and computed down to normal form, the \emph{consistency} of our pattern matching definitions is key to enjoy Agda's computing power (remember: proof-checking is the same activity as type-checking). Suppose we want to prove a simple property of the $safeNewAddCouple$ operation, for example, that it indeed will work for a particular, very easy case:
+It is perhaps worth it to stop here and examine what these implementation decisions mean for our later proofs. Since our proofs will be just functions, type-checked and computed down to normal form, the \emph{consistency} of our pattern matching definitions is key to enjoy Agda's computing power (remember: proof-checking is the same activity as type-checking). Suppose we want to prove a simple property of the $safeNewAddCouple$ operation, for example, that it indeed will work for a particular, very easy case: let us prove that, if woman 3 is in the list of couples with husband 1 and should now be married to husband 2, the new couple will indeed be added.
 
 \begin{code}%
-\>[0]\AgdaComment{-- Warm up: let us prove that, if woman 3 is in the list of couples with}\<%
-\\
-\>[0]\AgdaComment{-- husband 1 and should now be married to husband 2, the new couple will}\<%
-\\
-\>[0]\AgdaComment{-- indeed be added.}\<%
-\\
 \>[0]\AgdaFunction{p}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[461I]\AgdaSymbol{(}\AgdaBound{l}\AgdaSpace{}%
+\>[456I]\AgdaSymbol{(}\AgdaBound{l}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{List}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
@@ -751,7 +731,7 @@ It is perhaps worth it to stop here and examine what these implementation decisi
 \AgdaNumber{3}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
-\>[.][@{}l@{}]\<[461I]%
+\>[.][@{}l@{}]\<[456I]%
 \>[4]\AgdaFunction{safeAddNewCouple}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaNumber{2}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
@@ -769,7 +749,7 @@ It is perhaps worth it to stop here and examine what these implementation decisi
 \AgdaBound{l}\AgdaSymbol{)}\<%
 \end{code}
 
-What are the components of this proof, in other words, the parameters to this function? We provide a list, a natural number $a$, a proof that $a = 3$, and must return a proof that the operation returns a new list of couples where man 2 is married to woman 3. First we pattern match on $l$, it has two constructors, [] and \:::. Using Agda's proof assistant capabilities, we will observe that the "goal", that is, the expected type of the function return will contain the $$compare 3 a$$ application. Therefore we must use a \emph{with} construct in our proofs too in order to allow Agda to further reduce down the terms. Depending on the order in which the patterns are opened up, we might end up with different definitions for this function, here is one:
+What are the components of this proof, in other words, the parameters to this function? We provide a list, a natural number $a$, a proof that $a = 3$, and must return a proof that the operation returns a new list of couples where man 2 is married to woman 3. First we pattern match on $l$, it has two constructors, [] and \:::. Using Agda's proof assistant capabilities, we will observe that the "goal", that is, the expected type of the function return will contain the \texttt{compare 3 a} application. Therefore we must use a \emph{with} construct in our proofs too in order to allow Agda to further reduce down the terms. Depending on the order in which the patterns are opened up, we might end up with different definitions for this function, here is one:
 
 \begin{code}%
 \>[0]\AgdaFunction{p}\AgdaSpace{}%
@@ -849,21 +829,19 @@ What are the components of this proof, in other words, the parameters to this fu
 
 The clauses without a right hand side that can be seen are \emph{absurd patterns}: there is no way we can provide the proof we're hoping for when the number given as the second parameter is not 3 (in other words, \texttt{suc (suc (suc zero))} or \texttt{suc 2}...). If they were possible cases to prove, that is, cases where \emph{there would be a constructor} for the type we hope to achieve, we might for example open up a second \emph{with} construct where in this case only $| w$ was left by Agda, and continue pattern matching and reducing further and further from there until we are able to construct the goal.
 
-In a similar fashion, when the list of engaged men is updated, the previous husband must be removed from it. Ww give two versions for this function, one which simply returns the updated $engagedMen$ list and another one which returns also some extra information (the man who was dumped and goes back to being free). The reasons why are further discussed later in this chapter.
+In a similar fashion, when the list of engaged men is updated, the previous husband must be removed from it. Ww give two versions for this function, one which simply returns the updated $engagedMen$ list and another one which returns also some extra information (the man who was dumped and goes back to being free).
 
 \begin{code}%
-\>[0]\AgdaComment{-- Safely adding new engaged men to the list : dumped man is removed}\<%
-\\
 \>[0]\AgdaFunction{safeAddNewEngagedMan}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[547I]\AgdaSymbol{(}\AgdaBound{newEngagedMan}\AgdaSpace{}%
+\>[542I]\AgdaSymbol{(}\AgdaBound{newEngagedMan}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
 \AgdaDatatype{List}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\AgdaSymbol{))}\<%
 \\
-\>[.][@{}l@{}]\<[547I]%
+\>[.][@{}l@{}]\<[542I]%
 \>[23]\AgdaSymbol{(}\AgdaBound{prevFiance}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\AgdaSymbol{)}\<%
@@ -884,11 +862,9 @@ In a similar fashion, when the list of engaged men is updated, the previous husb
 \AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
 \AgdaDatatype{List}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\AgdaSymbol{)}\<%
-\\
-\>[0]\AgdaComment{-- Dummy case: this function is only invoked if a woman is already}\<%
-\\
-\>[0]\AgdaComment{-- married, so the list of engaged men can not possibly be empty...}\<%
-\\
+\end{code}
+The first one is again a dummy case: this function is only invoked if a woman is already married, so the list of engaged men can not possibly be empty...
+\begin{code}%
 \>[0]\AgdaFunction{safeAddNewEngagedMan}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{newFiance}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
@@ -905,7 +881,7 @@ In a similar fashion, when the list of engaged men is updated, the previous husb
 %
 \\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{safeAddNewEngagedMan}%
-\>[577I]\AgdaSymbol{(}\AgdaBound{newFiance}\AgdaSpace{}%
+\>[572I]\AgdaSymbol{(}\AgdaBound{newFiance}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaBound{prevFiance}\AgdaSpace{}%
@@ -915,13 +891,11 @@ In a similar fashion, when the list of engaged men is updated, the previous husb
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[577I]%
+\>[.][@{}l@{}]\<[572I]%
 \>[21]\AgdaKeyword{with}\AgdaSpace{}%
 \AgdaFunction{compare}\AgdaSpace{}%
 \AgdaBound{prevFiance}\AgdaSpace{}%
 \AgdaBound{m}\<%
-\\
-\>[0]\AgdaComment{-- kick him out!}\<%
 \\
 \>[0]\AgdaSymbol{...}\AgdaSpace{}%
 \AgdaSymbol{|}\AgdaSpace{}%
@@ -933,8 +907,6 @@ In a similar fashion, when the list of engaged men is updated, the previous husb
 \AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}\<%
-\\
-\>[0]\AgdaComment{-- safe to keep after all}\<%
 \\
 \>[0]\AgdaSymbol{...}\AgdaSpace{}%
 \AgdaSymbol{|}\AgdaSpace{}%
@@ -951,7 +923,7 @@ In a similar fashion, when the list of engaged men is updated, the previous husb
 \AgdaInductiveConstructor{[]}\<%
 \\
 \>[0]\AgdaFunction{safeAddNewEngagedMan}%
-\>[609I]\AgdaSymbol{(}\AgdaBound{newFiance}\AgdaSpace{}%
+\>[604I]\AgdaSymbol{(}\AgdaBound{newFiance}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaBound{prevFiance}\AgdaSpace{}%
@@ -963,13 +935,11 @@ In a similar fashion, when the list of engaged men is updated, the previous husb
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaBound{engagedMen}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[609I]%
+\>[.][@{}l@{}]\<[604I]%
 \>[21]\AgdaKeyword{with}\AgdaSpace{}%
 \AgdaFunction{compare}\AgdaSpace{}%
 \AgdaBound{prevFiance}\AgdaSpace{}%
 \AgdaBound{m}\<%
-\\
-\>[0]\AgdaComment{-- kick him out!}\<%
 \\
 \>[0]\AgdaSymbol{...}\AgdaSpace{}%
 \AgdaSymbol{|}\AgdaSpace{}%
@@ -984,51 +954,41 @@ In a similar fashion, when the list of engaged men is updated, the previous husb
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaBound{engagedMen}\<%
 \\
-\>[0]\AgdaComment{-- safe to keep... for now}\<%
-\\
 \>[0]\AgdaSymbol{...}\AgdaSpace{}%
 \AgdaSymbol{|}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
 \>[14]\AgdaSymbol{=}%
-\>[636I]\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
+\>[631I]\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{prefsM}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\<%
 \\
-\>[.][@{}l@{}]\<[636I]%
+\>[.][@{}l@{}]\<[631I]%
 \>[16]\AgdaFunction{safeAddNewEngagedMan}%
-\>[640I]\AgdaSymbol{(}\AgdaBound{newFiance}\AgdaSpace{}%
+\>[635I]\AgdaSymbol{(}\AgdaBound{newFiance}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{prefs}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[640I]%
+\>[.][@{}l@{}]\<[635I]%
 \>[37]\AgdaBound{prevFiance}\<%
 \\
 %
 \>[37]\AgdaSymbol{(}\AgdaBound{ms}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaBound{engagedMen}\AgdaSymbol{)}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- We give an alternative version which doesn't lose information:}\<%
-\\
-\>[0]\AgdaComment{-- it also returns the dumped man in a pair, or a dummy man}\<%
-\\
-\>[0]\AgdaComment{-- with an empty list. This helps Agda keep track of the length}\<%
-\\
-\>[0]\AgdaComment{-- of the preference lists in the matching state}\<%
-\\
+\end{code}
+We give an alternative version which doesn't lose information: it also returns the dumped man in a pair, or a dummy man with an empty list. This helps Agda keep track of the length of the preference lists in the matching state.
+\begin{code}%
 \>[0]\AgdaFunction{safeAddNewEngagedMan′}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[646I]\AgdaSymbol{(}\AgdaBound{newEngagedMan}\AgdaSpace{}%
+\>[641I]\AgdaSymbol{(}\AgdaBound{newEngagedMan}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
 \AgdaDatatype{List}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\AgdaSymbol{))}\<%
 \\
-\>[.][@{}l@{}]\<[646I]%
+\>[.][@{}l@{}]\<[641I]%
 \>[24]\AgdaSymbol{(}\AgdaBound{prevFiance}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\AgdaSymbol{)}\<%
@@ -1056,14 +1016,14 @@ In a similar fashion, when the list of engaged men is updated, the previous husb
 \AgdaDatatype{ℕ}\AgdaSymbol{)}\<%
 \\
 \>[0]\AgdaFunction{safeAddNewEngagedMan′}%
-\>[670I]\AgdaSymbol{(}\AgdaBound{newFiance}\AgdaSpace{}%
+\>[665I]\AgdaSymbol{(}\AgdaBound{newFiance}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaBound{prevFiance}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}\AgdaSpace{}%
 \AgdaSymbol{=}\<%
 \\
-\>[.][@{}l@{}]\<[670I]%
+\>[.][@{}l@{}]\<[665I]%
 \>[22]\AgdaSymbol{((}\AgdaBound{newFiance}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
@@ -1075,7 +1035,7 @@ In a similar fashion, when the list of engaged men is updated, the previous husb
 \AgdaInductiveConstructor{[]}\AgdaSymbol{))}\<%
 \\
 \>[0]\AgdaFunction{safeAddNewEngagedMan′}%
-\>[684I]\AgdaSymbol{(}\AgdaBound{newFiance}\AgdaSpace{}%
+\>[679I]\AgdaSymbol{(}\AgdaBound{newFiance}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaBound{prevFiance}\AgdaSpace{}%
@@ -1085,7 +1045,7 @@ In a similar fashion, when the list of engaged men is updated, the previous husb
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[684I]%
+\>[.][@{}l@{}]\<[679I]%
 \>[22]\AgdaKeyword{with}\AgdaSpace{}%
 \AgdaFunction{compare}\AgdaSpace{}%
 \AgdaBound{prevFiance}\AgdaSpace{}%
@@ -1164,12 +1124,12 @@ In a similar fashion, when the list of engaged men is updated, the previous husb
 \AgdaSymbol{|}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
 \>[14]\AgdaSymbol{=}%
-\>[755I]\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
+\>[750I]\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{prefsM}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\<%
 \\
-\>[.][@{}l@{}]\<[755I]%
+\>[.][@{}l@{}]\<[750I]%
 \>[16]\AgdaSymbol{(}\AgdaField{proj₁}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{safeAddNewEngagedMan′}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{newFiance}\AgdaSpace{}%
@@ -1202,8 +1162,6 @@ Finally, we are ready to implement a step of the Gale-Shapley algorithm by patte
     \item There are no more free men: we return the current state as the final (and stable) matching state. That is our base case.
 \end{itemize}
 
-We detail them further in the comments:
-
 \begin{code}%
 \>[0]\AgdaFunction{step}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -1211,12 +1169,10 @@ We detail them further in the comments:
 \AgdaSymbol{→}\AgdaSpace{}%
 \AgdaRecord{MatchingState}\<%
 \\
-\>[0]\AgdaComment{-- When there are no more free men, the matching is stable}\<%
-\\
-\>[0]\AgdaComment{-- and this is the last step.}\<%
+\>[0]\AgdaComment{-- base case}\<%
 \\
 \>[0]\AgdaFunction{step}%
-\>[779I]\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
+\>[774I]\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
 \AgdaBound{men}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}\AgdaSpace{}%
 \AgdaBound{engagedMen}\AgdaSpace{}%
@@ -1226,7 +1182,7 @@ We detail them further in the comments:
 \AgdaBound{p}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{=}\<%
 \\
-\>[.][@{}l@{}]\<[779I]%
+\>[.][@{}l@{}]\<[774I]%
 \>[5]\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
 \AgdaBound{men}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}\AgdaSpace{}%
@@ -1235,17 +1191,13 @@ We detail them further in the comments:
 \AgdaBound{couples}\AgdaSpace{}%
 \AgdaBound{k}\AgdaSpace{}%
 \AgdaBound{p}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- Dummy case : the function shouldn't really be invoked with}\<%
-\\
-\>[0]\AgdaComment{-- a man with empty preferences. But otherwise Agda would}\<%
-\\
-\>[0]\AgdaComment{-- question the completeness of our pattern matching.}\<%
-\\
+\end{code}
+
+The function shouldn't really be invoked with a man with empty preferences. But otherwise Agda would question the completeness of our pattern matching, so:
+
+\begin{code}%
 \>[0]\AgdaFunction{step}%
-\>[795I]\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
+\>[790I]\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
 \AgdaBound{men}\AgdaSpace{}%
 \AgdaSymbol{((}\AgdaBound{n}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
@@ -1259,7 +1211,7 @@ We detail them further in the comments:
 \AgdaBound{p}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{=}\<%
 \\
-\>[.][@{}l@{}]\<[795I]%
+\>[.][@{}l@{}]\<[790I]%
 \>[5]\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
 \AgdaBound{men}\AgdaSpace{}%
 \AgdaBound{freeMen}\AgdaSpace{}%
@@ -1268,15 +1220,15 @@ We detail them further in the comments:
 \AgdaBound{couples}\AgdaSpace{}%
 \AgdaBound{k}\AgdaSpace{}%
 \AgdaBound{p}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- Proposal step}\<%
-\\
+\end{code}
+
+And finally, our proposal step as laid out:
+
+\begin{code}%
 \>[0]\AgdaFunction{step}%
-\>[815I]\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
+\>[810I]\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
 \AgdaBound{men}%
-\>[817I]\AgdaSymbol{((}\AgdaBound{n}\AgdaSpace{}%
+\>[812I]\AgdaSymbol{((}\AgdaBound{n}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{w}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
@@ -1284,25 +1236,23 @@ We detail them further in the comments:
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaBound{freeMen}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[817I]%
+\>[.][@{}l@{}]\<[812I]%
 \>[18]\AgdaBound{engagedMen}\AgdaSpace{}%
 \AgdaBound{women}\AgdaSpace{}%
 \AgdaBound{couples}\AgdaSpace{}%
 \AgdaBound{k}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[815I]%
+\>[.][@{}l@{}]\<[810I]%
 \>[5]\AgdaKeyword{with}\AgdaSpace{}%
 \AgdaFunction{getPartner}\AgdaSpace{}%
 \AgdaBound{w}\AgdaSpace{}%
 \AgdaBound{couples}\<%
 \\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- First case: woman w has a husband h, represented by his literal number.}\<%
-\\
-\>[0]\AgdaComment{-- In this case}\<%
-\\
+\>[0]\<%
+\end{code}
+In the first case, woman $w$ has a husband $h$, represented by his literal number.
+\begin{code}%
 \>[0]\AgdaSymbol{...}\AgdaSpace{}%
 \AgdaSymbol{|}\AgdaSpace{}%
 \AgdaInductiveConstructor{just}\AgdaSpace{}%
@@ -1314,18 +1264,20 @@ We detail them further in the comments:
 \AgdaSymbol{(}\AgdaFunction{getPreferenceList}\AgdaSpace{}%
 \AgdaBound{w}\AgdaSpace{}%
 \AgdaBound{women}\AgdaSymbol{)}\<%
-\\
+\end{code}
+If she accepts the new proposal, we switch the man around in the lists of free and engaged men, and add the new couple "safely" to the list of couples.
+\begin{code}%
 \>[0]\AgdaSymbol{...}%
 \>[18]\AgdaSymbol{|}\AgdaSpace{}%
 \AgdaInductiveConstructor{true}%
 \>[26]\AgdaSymbol{=}%
-\>[842I]\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
+\>[837I]\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
 \AgdaBound{men}\AgdaSpace{}%
 \AgdaFunction{freeMenUpdated}\AgdaSpace{}%
 \AgdaFunction{engagedMenUpdated}\AgdaSpace{}%
 \AgdaBound{women}\<%
 \\
-\>[.][@{}l@{}]\<[842I]%
+\>[.][@{}l@{}]\<[837I]%
 \>[28]\AgdaSymbol{(}\AgdaFunction{safeAddNewCouple}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{n}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
@@ -1370,12 +1322,14 @@ We detail them further in the comments:
 \AgdaBound{prefs}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaBound{h}\AgdaSpace{}%
 \AgdaBound{engagedMen}\AgdaSymbol{)}\<%
-\\
+\end{code}
+If not, we simply give back a state in which that woman is dropped from the man's list, and he remains in the list of free men with nothing else changing.
+\begin{code}%
 \>[0]\AgdaSymbol{...}%
 \>[18]\AgdaSymbol{|}\AgdaSpace{}%
 \AgdaInductiveConstructor{false}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[870I]\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
+\>[865I]\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
 \AgdaBound{men}\AgdaSpace{}%
 \AgdaSymbol{((}\AgdaBound{n}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
@@ -1385,7 +1339,7 @@ We detail them further in the comments:
 \AgdaBound{engagedMen}\AgdaSpace{}%
 \AgdaBound{women}\<%
 \\
-\>[.][@{}l@{}]\<[870I]%
+\>[.][@{}l@{}]\<[865I]%
 \>[28]\AgdaBound{couples}\<%
 \\
 %
@@ -1399,13 +1353,11 @@ We detail them further in the comments:
 \\
 %
 \>[28]\AgdaInductiveConstructor{refl}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- Second case: woman w didn't have a husband yet: simply must accept proposal}\<%
-\\
+\end{code}
+In the second case, woman $w$ didn't have a husband yet: she simply must accept the proposal.
+\begin{code}%
 \>[0]\AgdaFunction{step}%
-\>[885I]\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
+\>[880I]\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
 \AgdaBound{men}\AgdaSpace{}%
 \AgdaSymbol{((}\AgdaBound{n}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
@@ -1420,14 +1372,14 @@ We detail them further in the comments:
 \AgdaBound{k}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[885I]%
+\>[.][@{}l@{}]\<[880I]%
 \>[5]\AgdaSymbol{|}\AgdaSpace{}%
 \AgdaInductiveConstructor{nothing}\<%
 \\
 %
 \>[5]\AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{mkState}%
-\>[901I]\AgdaBound{men}\AgdaSpace{}%
+\>[896I]\AgdaBound{men}\AgdaSpace{}%
 \AgdaBound{freeMen}\AgdaSpace{}%
 \AgdaSymbol{((}\AgdaBound{n}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
@@ -1436,7 +1388,7 @@ We detail them further in the comments:
 \AgdaBound{engagedMen}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaBound{women}\<%
 \\
-\>[.][@{}l@{}]\<[901I]%
+\>[.][@{}l@{}]\<[896I]%
 \>[15]\AgdaSymbol{(}\AgdaFunction{safeAddNewCouple}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{n}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
@@ -1470,7 +1422,7 @@ In order to calculate a final result we just apply the step function until there
 \AgdaRecord{MatchingState}\<%
 \\
 \>[0]\AgdaFunction{allSteps}%
-\>[928I]\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
+\>[923I]\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
 \AgdaBound{men}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}\AgdaSpace{}%
 \AgdaBound{engagedMen}\AgdaSpace{}%
@@ -1480,7 +1432,7 @@ In order to calculate a final result we just apply the step function until there
 \AgdaBound{sumEq}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{=}\<%
 \\
-\>[.][@{}l@{}]\<[928I]%
+\>[.][@{}l@{}]\<[923I]%
 \>[9]\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
 \AgdaBound{men}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}\AgdaSpace{}%
@@ -1507,12 +1459,12 @@ In order to provide a mathematically relevant proof of termination, we hope to p
 \begin{code}%
 \>[0]\AgdaFunction{stepDec}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[950I]\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
+\>[945I]\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaRecord{MatchingState}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
-\>[.][@{}l@{}]\<[950I]%
+\>[.][@{}l@{}]\<[945I]%
 \>[10]\AgdaFunction{compSumPrefLists}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{MatchingState.freeMen}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSymbol{)}\AgdaSpace{}%
@@ -1524,11 +1476,11 @@ In order to provide a mathematically relevant proof of termination, we hope to p
 \\
 %
 \>[10]\AgdaFunction{compSumPrefLists}%
-\>[958I]\AgdaSymbol{(}\AgdaField{MatchingState.freeMen}\AgdaSpace{}%
+\>[953I]\AgdaSymbol{(}\AgdaField{MatchingState.freeMen}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{step}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSymbol{))}\<%
 \\
-\>[.][@{}l@{}]\<[958I]%
+\>[.][@{}l@{}]\<[953I]%
 \>[27]\AgdaSymbol{(}\AgdaField{MatchingState.engagedMen}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{step}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSymbol{))}\<%
@@ -1897,11 +1849,9 @@ Now onto the definition of the $\le$ operator in Agda. There are two constructor
 \AgdaBound{s}\AgdaSymbol{))}\<%
 \end{code}
 
-But how are these proofs being computed down and how does it all type-check? Let us introduce and discuss a new operator: ≤′. This is defined in Agda's standard library as an induction-friendlier alternative to $\le$. Agda also provides some conversion functions that allows us to turn proofs about ≤′ into proofs about $\le$ and vice-versa; they will feature prominently in our code in a moment. The constructors for ≤′ are ≤′-refl and ≤′-step, introduced in the comments of the following code, in which we walk through the process of constructing some of the proofs:
+But how are these proofs being computed down and how does it all type-check? Let us introduce and discuss a new operator: ≤′. This is defined in Agda's standard library as an induction-friendlier alternative to $\le$. Agda also provides some conversion functions that allows us to turn proofs about ≤′ into proofs about $\le$ and vice-versa; they will feature prominently in our code in a moment. The constructors for ≤′ are \texttt{≤′-refl} and \texttt{≤′-step}:
 
 \begin{code}%
-\>[0]\<%
-\\
 \>[0]\AgdaComment{-- These are defined somewhere in the standard library:}\<%
 \\
 %
@@ -1911,25 +1861,11 @@ But how are these proofs being computed down and how does it all type-check? Let
 \>[0]\AgdaComment{--  ≤′-refl :                         m ≤′ m}\<%
 \\
 \>[0]\AgdaComment{--  ≤′-step : ∀ \{n\} (m≤′n : m ≤′ n) → m ≤′ suc n}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- In this interpretation, there are two ways of expressing ≤:}\<%
-\\
-\>[0]\AgdaComment{-- a number m is always less than or equal to itself;}\<%
-\\
-\>[0]\AgdaComment{-- or if it's less than or equal to another number n,}\<%
-\\
-\>[0]\AgdaComment{-- the property will hold also for successors of n.}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- With these tools we can then reconstruct what we had}\<%
-\\
-\>[0]\AgdaComment{-- previously with the traditional ≤ operator:}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}
+
+In this interpretation, there are two ways of expressing $\le$: a number $m$ is always less than or equal to itself; or if it's less than or equal to another number $n$, the property will hold also for successors of $n$. With these tools we can then reconstruct what we had previously with the traditional $\le$ operator:
+
+\begin{code}%
 \>[0]\AgdaComment{-- z≤′n : ∀ \{n\} → zero ≤′ n}\<%
 \\
 \>[0]\AgdaComment{-- z≤′n \{zero\}  = ≤′-refl}\<%
@@ -1943,11 +1879,11 @@ But how are these proofs being computed down and how does it all type-check? Let
 \>[0]\AgdaComment{-- s≤′s ≤′-refl        = ≤′-refl}\<%
 \\
 \>[0]\AgdaComment{-- s≤′s (≤′-step m≤′n) = ≤′-step (s≤′s m≤′n)}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- Now let us prove}\<%
-\\
+\end{code}
+
+Now let us prove
+
+\begin{code}%
 \>[0]\AgdaFunction{n≤n+m}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{∀}\AgdaSpace{}%
@@ -1959,49 +1895,29 @@ But how are these proofs being computed down and how does it all type-check? Let
 \AgdaBound{n}\AgdaSpace{}%
 \AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
 \AgdaBound{m}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- This first case just stems from the definition of ≤′-refl.}\<%
-\\
+\end{code}
+
+The first case just stems from the definition of \texttt{≤′-refl}:
+
+\begin{code}%
 \>[0]\AgdaFunction{n≤n+m}\AgdaSpace{}%
 \AgdaInductiveConstructor{zero}\AgdaSpace{}%
 \AgdaInductiveConstructor{zero}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{≤′-refl}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- This second case needs to return a proof of}\<%
-\\
-\>[0]\AgdaComment{--  suc m ≤′ suc (m + 0).}\<%
-\\
-\>[0]\AgdaComment{-- This doesn't quite match the definition of ≤′-step,}\<%
-\\
-\>[0]\AgdaComment{-- so we fallback to ≤ to construct a proof.}\<%
-\\
-\>[0]\AgdaComment{-- ≤-reflexive says that, if a number is equal to another number,}\<%
-\\
-\>[0]\AgdaComment{-- then it is also minus than or equal to it.}\<%
-\\
-\>[0]\AgdaComment{-- So we just have to give a proof that}\<%
-\\
-\>[0]\AgdaComment{--   suc m ≡ suc (m + 0)}\<%
-\\
-\>[0]\AgdaComment{-- which we construct in three steps:}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- 1. +-identityʳ m returns a proof that m + 0 ≡ m;}\<%
-\\
-\>[0]\AgdaComment{-- 2. We flip the arguments with symmetry so we have m ≡ m + 0;}\<%
-\\
-\>[0]\AgdaComment{-- 3. We apply the suc function on both sides with congruency}\<%
-\\
-\>[0]\AgdaComment{--   (since a ≡ b → f a ≡ f b), so we have our goal proof.}\<%
-\\
+\end{code}
+
+The second case needs to return a proof of \texttt{suc m ≤′ suc (m + 0)}. This doesn't quite match the definition of \texttt{≤′-step}, so we fallback to ≤ to construct a proof.
+
+\texttt{≤-reflexive} says that, if a number is equal to another number, then it is also minus than or equal to it. So we just have to give a proof that \texttt{suc m ≡ suc (m + 0)} which we construct in three steps:
+
+\begin{enumerate}
+  \item \texttt{+-identityʳ m} returns a proof that \texttt{m + 0 ≡ m};
+  \item We flip the arguments with symmetry so we have \texttt{m ≡ m + 0};
+  \item We apply the suc function on both sides with congruency (since \texttt{a ≡ b → f a ≡ f b}), so we have our goal proof.
+\end{enumerate}
+
+\begin{code}%
 \>[0]\AgdaFunction{n≤n+m}\AgdaSpace{}%
 \AgdaInductiveConstructor{zero}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
@@ -2014,21 +1930,11 @@ But how are these proofs being computed down and how does it all type-check? Let
 \AgdaSymbol{(}\AgdaFunction{sym}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{+-identityʳ}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSymbol{))))}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- In the third case, although the goal is simply}\<%
-\\
-\>[0]\AgdaComment{--  zero ≤′ suc m}\<%
-\\
-\>[0]\AgdaComment{-- we can observe that our alternative operator does not immediately}\<%
-\\
-\>[0]\AgdaComment{-- provide a constructor for that as ≤ did; instead we should do it}\<%
-\\
-\>[0]\AgdaComment{-- constructively with ≤′-step applied to a recursive call. That }\<%
-\\
-\>[0]\AgdaComment{-- can be deduced from the definition of the z≤′n function above. }\<%
-\\
+\end{code}
+
+In the third case, although the goal is simply \texttt{zero ≤′ suc m} we can observe that our alternative operator does not immediately provide a constructor for that case as ≤ did; instead we should do it constructively with \texttt{≤′-step} applied to a recursive call. That can be deduced from the definition of the \texttt{z≤′n} function above.
+
+\begin{code}%
 \>[0]\AgdaFunction{n≤n+m}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
 \AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
@@ -2038,11 +1944,11 @@ But how are these proofs being computed down and how does it all type-check? Let
 \AgdaSymbol{(}\AgdaFunction{n≤n+m}\AgdaSpace{}%
 \AgdaBound{n}\AgdaSpace{}%
 \AgdaInductiveConstructor{zero}\AgdaSymbol{)}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- In the fourth case we conform to the pattern of the  s≤′s function. }\<%
-\\
+\end{code}
+
+In the fourth case we conform to the pattern of the \texttt{s≤′s} function.
+
+\begin{code}  %
 \>[0]\AgdaFunction{n≤n+m}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
 \AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
@@ -2054,11 +1960,11 @@ But how are these proofs being computed down and how does it all type-check? Let
 \AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
 \AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSymbol{)}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- Onto some more computationally complicated proofs:}\<%
-\\
+\end{code}
+
+Onto some more computationally complicated proofs:
+
+\begin{code}%
 \>[0]\AgdaFunction{n≤2+m+n}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{∀}\AgdaSpace{}%
@@ -2076,19 +1982,11 @@ But how are these proofs being computed down and how does it all type-check? Let
 \AgdaBound{n}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
 \AgdaNumber{0}\AgdaSymbol{)}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- The goal for the first case is}\<%
-\\
-\>[0]\AgdaComment{--   0 ≤′ 2.}\<%
-\\
-\>[0]\AgdaComment{-- With ≤′-refl we can give a proof that}\<%
-\\
-\>[0]\AgdaComment{--   0 ≤′ 0}\<%
-\\
-\>[0]\AgdaComment{-- and then step until the number 2 with ≤′-step.}\<%
-\\
+\end{code}
+
+The goal for the first case is 0 ≤′ 2. With \texttt{≤′-refl} we can give a proof that 0 ≤′ 0 and then step until the number 2 with \texttt{≤′-step}: it is induction friendly, so our proof is conserved.
+
+\begin{code}%
 \>[0]\AgdaFunction{n≤2+m+n}\AgdaSpace{}%
 \AgdaInductiveConstructor{zero}\AgdaSpace{}%
 \AgdaInductiveConstructor{zero}\AgdaSpace{}%
@@ -2096,23 +1994,15 @@ But how are these proofs being computed down and how does it all type-check? Let
 \AgdaInductiveConstructor{≤′-step}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{≤′-step}\AgdaSpace{}%
 \AgdaInductiveConstructor{≤′-refl}\AgdaSymbol{)}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- Here the goal doesn't reduce down completely,}\<%
-\\
-\>[0]\AgdaComment{-- so we must construct the type}\<%
-\\
-\>[0]\AgdaComment{--   suc (n + 0) ≤′ suc (suc (suc (n + 0)))}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- But we may notice that if we take (suc (n + 0)) as a}\<%
-\\
-\>[0]\AgdaComment{-- number n, then our goal is again to prove n ≤ n + 2}\<%
-\\
-\>[0]\AgdaComment{-- which can be done with the same solution above:}\<%
-\\
+\end{code}
+
+Here the goal doesn't reduce down completely, so we must construct the type
+
+\texttt{suc (n + 0) ≤′ suc (suc (suc (n + 0)))}
+
+But we may notice that if we take \texttt{(suc (n + 0))} as a number $n$, then our goal is again to prove \texttt{n ≤ n + 2} which can be done with the same solution above:
+
+\begin{code}%
 \>[0]\AgdaFunction{n≤2+m+n}\AgdaSpace{}%
 \AgdaInductiveConstructor{zero}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
@@ -2121,13 +2011,11 @@ But how are these proofs being computed down and how does it all type-check? Let
 \AgdaInductiveConstructor{≤′-step}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{≤′-step}\AgdaSpace{}%
 \AgdaInductiveConstructor{≤′-refl}\AgdaSymbol{)}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- For the remaining cases we can do a recursive call while}\<%
-\\
-\>[0]\AgdaComment{-- beautifully stepping through the natural numbers.}\<%
-\\
+\end{code}
+
+For the remaining cases we can do a recursive call while beautifully stepping through the natural numbers.
+
+\begin{code}%
 \>[0]\AgdaFunction{n≤2+m+n}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSymbol{)}\AgdaSpace{}%
@@ -2149,11 +2037,11 @@ But how are these proofs being computed down and how does it all type-check? Let
 \AgdaBound{m}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
 \AgdaBound{n}\AgdaSymbol{))}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- Here is a similar function which features later in our implementation.}\<%
-\\
+\end{code}
+
+Here is a similar function which features later in our implementation:
+
+\begin{code}%
 \>[0]\AgdaFunction{m≤n+r+m}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{∀}\AgdaSpace{}%
@@ -2262,7 +2150,7 @@ Now let us turn this knowledge into action with some warmup proofs about the Gal
 \begin{code}%
 \>[0]\AgdaFunction{lengthPrefsExtLemma}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[1413I]\AgdaSymbol{∀}\AgdaSpace{}%
+\>[1408I]\AgdaSymbol{∀}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{x}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\AgdaSpace{}%
@@ -2279,7 +2167,7 @@ Now let us turn this knowledge into action with some warmup proofs about the Gal
 \AgdaDatatype{ℕ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
-\>[.][@{}l@{}]\<[1413I]%
+\>[.][@{}l@{}]\<[1408I]%
 \>[22]\AgdaFunction{lengthPrefs}\AgdaSpace{}%
 \AgdaBound{xs}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{≤′}}\AgdaSpace{}%
@@ -2320,13 +2208,13 @@ This perhaps uninteresting, but clearly true property of our implementation can 
 \AgdaBound{ms}\AgdaSymbol{)}\<%
 \\
 \>[0]\AgdaFunction{lengthPrefsExtLemma}%
-\>[1458I]\AgdaSymbol{(}\AgdaBound{man}\AgdaSpace{}%
+\>[1453I]\AgdaSymbol{(}\AgdaBound{man}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaBound{prefs}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[1458I]%
+\>[.][@{}l@{}]\<[1453I]%
 \>[20]\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSpace{}%
@@ -2346,11 +2234,11 @@ This perhaps uninteresting, but clearly true property of our implementation can 
 \AgdaBound{n}\<%
 \\
 \>[0]\AgdaFunction{lengthPrefsExtLemma}%
-\>[1476I]\AgdaSymbol{(}\AgdaBound{man}\AgdaSpace{}%
+\>[1471I]\AgdaSymbol{(}\AgdaBound{man}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[1476I]%
+\>[.][@{}l@{}]\<[1471I]%
 \>[20]\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{w}\AgdaSpace{}%
@@ -2373,13 +2261,13 @@ This perhaps uninteresting, but clearly true property of our implementation can 
 \AgdaBound{ms}\AgdaSymbol{)))}\<%
 \\
 \>[0]\AgdaFunction{lengthPrefsExtLemma}%
-\>[1495I]\AgdaSymbol{(}\AgdaBound{man}\AgdaSpace{}%
+\>[1490I]\AgdaSymbol{(}\AgdaBound{man}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaBound{prefs}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[1495I]%
+\>[.][@{}l@{}]\<[1490I]%
 \>[20]\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{w}\AgdaSpace{}%
@@ -2410,7 +2298,7 @@ Let us attempt a more sophisticated proof. Since the sum of preference lists is 
 \begin{code}%
 \>[0]\AgdaFunction{lengthPrefsOneSide}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[1518I]\AgdaSymbol{∀}\AgdaSpace{}%
+\>[1513I]\AgdaSymbol{∀}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{freeMen}\AgdaSpace{}%
 \AgdaBound{engagedMen}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -2423,7 +2311,7 @@ Let us attempt a more sophisticated proof. Since the sum of preference lists is 
 \AgdaDatatype{ℕ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
-\>[.][@{}l@{}]\<[1518I]%
+\>[.][@{}l@{}]\<[1513I]%
 \>[21]\AgdaBound{k}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{≡}}\AgdaSpace{}%
 \AgdaFunction{compSumPrefLists}\AgdaSpace{}%
@@ -2463,21 +2351,21 @@ Let us attempt a more sophisticated proof. Since the sum of preference lists is 
 \>[0]\AgdaComment{-- we can only be sure the desired property holds by looking at the next one}\<%
 \\
 \>[0]\AgdaFunction{lengthPrefsOneSide}%
-\>[1551I]\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\>[1546I]\AgdaInductiveConstructor{[]}\AgdaSpace{}%
 \AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaBound{engagedMen}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[1551I]%
+\>[.][@{}l@{}]\<[1546I]%
 \>[19]\AgdaBound{k}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[1559I]\AgdaFunction{z≤′n}\AgdaSpace{}%
+\>[1554I]\AgdaFunction{z≤′n}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\<%
 \\
-\>[.][@{}l@{}]\<[1559I]%
+\>[.][@{}l@{}]\<[1554I]%
 \>[25]\AgdaField{proj₂}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{lengthPrefsOneSide}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}\AgdaSpace{}%
@@ -2490,7 +2378,7 @@ Let us attempt a more sophisticated proof. Since the sum of preference lists is 
 \>[0]\AgdaComment{-- Using reflexivity and symmetry}\<%
 \\
 \>[0]\AgdaFunction{lengthPrefsOneSide}%
-\>[1566I]\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\>[1561I]\AgdaInductiveConstructor{[]}\AgdaSpace{}%
 \AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSpace{}%
@@ -2499,7 +2387,7 @@ Let us attempt a more sophisticated proof. Since the sum of preference lists is 
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaBound{engagedMen}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[1566I]%
+\>[.][@{}l@{}]\<[1561I]%
 \>[19]\AgdaBound{k}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
@@ -2513,14 +2401,14 @@ Let us attempt a more sophisticated proof. Since the sum of preference lists is 
 %
 \\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{lengthPrefsOneSide}%
-\>[1582I]\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
+\>[1577I]\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaBound{freeMen}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}\<%
 \\
-\>[.][@{}l@{}]\<[1582I]%
+\>[.][@{}l@{}]\<[1577I]%
 \>[19]\AgdaBound{k}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
@@ -2538,7 +2426,7 @@ Let us attempt a more sophisticated proof. Since the sum of preference lists is 
 \>[0]\AgdaComment{-- Let us use some previously defined proofs!}\<%
 \\
 \>[0]\AgdaFunction{lengthPrefsOneSide}%
-\>[1598I]\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
+\>[1593I]\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
@@ -2546,14 +2434,14 @@ Let us attempt a more sophisticated proof. Since the sum of preference lists is 
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaBound{freeMen}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[1598I]%
+\>[.][@{}l@{}]\<[1593I]%
 \>[19]\AgdaInductiveConstructor{[]}\AgdaSpace{}%
 \AgdaBound{k}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[1608I]\AgdaFunction{≤⇒≤′}\<%
+\>[1603I]\AgdaFunction{≤⇒≤′}\<%
 \\
-\>[.][@{}l@{}]\<[1608I]%
+\>[.][@{}l@{}]\<[1603I]%
 \>[28]\AgdaSymbol{(}\AgdaFunction{≤-reflexive}\<%
 \\
 \>[28][@{}l@{\AgdaIndent{0}}]%
@@ -2589,13 +2477,13 @@ Let us attempt a more sophisticated proof. Since the sum of preference lists is 
 %
 \\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{lengthPrefsOneSide}%
-\>[1627I]\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
+\>[1622I]\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaBound{freeMen}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[1627I]%
+\>[.][@{}l@{}]\<[1622I]%
 \>[19]\AgdaSymbol{((}\AgdaBound{fst₁}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSpace{}%
@@ -2615,13 +2503,13 @@ Let us attempt a more sophisticated proof. Since the sum of preference lists is 
 %
 \\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{lengthPrefsOneSide}%
-\>[1643I]\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
+\>[1638I]\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaBound{freeMen}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[1643I]%
+\>[.][@{}l@{}]\<[1638I]%
 \>[19]\AgdaSymbol{((}\AgdaBound{fst₁}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSpace{}%
@@ -2645,10 +2533,10 @@ Let us attempt a more sophisticated proof. Since the sum of preference lists is 
 %
 \>[19]\AgdaInductiveConstructor{refl}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[1664I]\AgdaField{proj₁}%
-\>[1665I]\AgdaSymbol{(}\AgdaFunction{lengthPrefsOneSide}\<%
+\>[1659I]\AgdaField{proj₁}%
+\>[1660I]\AgdaSymbol{(}\AgdaFunction{lengthPrefsOneSide}\<%
 \\
-\>[1665I][@{}l@{\AgdaIndent{0}}]%
+\>[1660I][@{}l@{\AgdaIndent{0}}]%
 \>[35]\AgdaBound{freeMen}\<%
 \\
 %
@@ -2681,13 +2569,13 @@ Let us attempt a more sophisticated proof. Since the sum of preference lists is 
 \>[35]\AgdaInductiveConstructor{refl}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\<%
 \\
-\>[1664I][@{}l@{\AgdaIndent{0}}]%
+\>[1659I][@{}l@{\AgdaIndent{0}}]%
 \>[27]\AgdaFunction{≤⇒≤′}%
-\>[1681I]\AgdaSymbol{(}\AgdaFunction{n≤m+n}\AgdaSpace{}%
+\>[1676I]\AgdaSymbol{(}\AgdaFunction{n≤m+n}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{lengthPrefs}\AgdaSpace{}%
 \AgdaBound{freeMen}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[1681I]%
+\>[.][@{}l@{}]\<[1676I]%
 \>[32]\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{lengthPrefs}\AgdaSpace{}%
 \AgdaSymbol{((}\AgdaBound{fst₁}\AgdaSpace{}%
@@ -2697,7 +2585,7 @@ Let us attempt a more sophisticated proof. Since the sum of preference lists is 
 \AgdaBound{engagedMen}\AgdaSymbol{))))}\<%
 \\
 \>[0]\AgdaFunction{lengthPrefsOneSide}%
-\>[1690I]\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
+\>[1685I]\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
@@ -2705,7 +2593,7 @@ Let us attempt a more sophisticated proof. Since the sum of preference lists is 
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaBound{freeMen}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[1690I]%
+\>[.][@{}l@{}]\<[1685I]%
 \>[19]\AgdaSymbol{((}\AgdaBound{fst₁}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSpace{}%
@@ -2727,9 +2615,9 @@ Let us attempt a more sophisticated proof. Since the sum of preference lists is 
 %
 \>[19]\AgdaInductiveConstructor{refl}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[1711I]\AgdaFunction{≤⇒≤′}\<%
+\>[1706I]\AgdaFunction{≤⇒≤′}\<%
 \\
-\>[.][@{}l@{}]\<[1711I]%
+\>[.][@{}l@{}]\<[1706I]%
 \>[26]\AgdaSymbol{(}\AgdaInductiveConstructor{s≤s}\<%
 \\
 \>[26][@{}l@{\AgdaIndent{0}}]%
@@ -2755,9 +2643,9 @@ Let us attempt a more sophisticated proof. Since the sum of preference lists is 
 \\
 %
 \>[26]\AgdaField{proj₂}%
-\>[1715I]\AgdaSymbol{(}\AgdaFunction{lengthPrefsOneSide}\<%
+\>[1710I]\AgdaSymbol{(}\AgdaFunction{lengthPrefsOneSide}\<%
 \\
-\>[1715I][@{}l@{\AgdaIndent{0}}]%
+\>[1710I][@{}l@{\AgdaIndent{0}}]%
 \>[34]\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSpace{}%
@@ -2791,7 +2679,7 @@ Let us attempt a more sophisticated proof. Since the sum of preference lists is 
 %
 \\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{lengthPrefsOneSide}%
-\>[1732I]\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
+\>[1727I]\AgdaSymbol{((}\AgdaBound{fst}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
@@ -2799,7 +2687,7 @@ Let us attempt a more sophisticated proof. Since the sum of preference lists is 
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaBound{freeMen}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[1732I]%
+\>[.][@{}l@{}]\<[1727I]%
 \>[19]\AgdaSymbol{((}\AgdaBound{fst₁}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{x₁}\AgdaSpace{}%
@@ -2812,9 +2700,9 @@ Let us attempt a more sophisticated proof. Since the sum of preference lists is 
 \>[19]\AgdaBound{p}\AgdaSpace{}%
 \AgdaInductiveConstructor{refl}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[1747I]\AgdaFunction{n≤n+m}\<%
+\>[1742I]\AgdaFunction{n≤n+m}\<%
 \\
-\>[1747I][@{}l@{\AgdaIndent{0}}]%
+\>[1742I][@{}l@{\AgdaIndent{0}}]%
 \>[30]\AgdaSymbol{(}\AgdaInductiveConstructor{suc}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{lengthPrefs}\AgdaSpace{}%
 \AgdaSymbol{((}\AgdaBound{fst₁}\AgdaSpace{}%
@@ -2832,7 +2720,7 @@ Let us attempt a more sophisticated proof. Since the sum of preference lists is 
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaBound{freeMen}\AgdaSymbol{)))}\<%
 \\
-\>[.][@{}l@{}]\<[1747I]%
+\>[.][@{}l@{}]\<[1742I]%
 \>[28]\AgdaOperator{\AgdaInductiveConstructor{,}}\<%
 \\
 %
@@ -2889,23 +2777,9 @@ Finally, we introduce an extra feature of Agda that precisely allowed us to simp
 \AgdaOperator{\AgdaFunction{\AgdaUnderscore{}:*\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{:-\AgdaUnderscore{}}}\AgdaSymbol{;}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{\AgdaUnderscore{}:-\AgdaUnderscore{}}}\AgdaSymbol{)}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- Here an alternative language is imported for expressing the}\<%
-\\
-\>[0]\AgdaComment{-- proof obligations we would like to fulfill:}\<%
-\\
-\>[0]\AgdaComment{--   the := operator instead of =}\<%
-\\
-\>[0]\AgdaComment{--   the :+ and :* and so on operators instead of}\<%
-\\
-\>[0]\AgdaComment{--    their natural number counterparts}\<%
-\\
-\>[0]\AgdaComment{--   con n instead of n}\<%
-\\
-\>[0]\AgdaComment{-- and so on...}\<%
 \end{code}
+
+Here an alternative language is imported for expressing the proof obligations we would like to fulfill: the := operator instead of =; the :+ and :* and so on operators instead of their natural number counterparts; \texttt{con n} instead of n and so on.
 
 We know the following equation to be true for any x natural number:
 
@@ -2929,21 +2803,10 @@ We know the following equation to be true for any x natural number:
 \AgdaBound{x}\AgdaSymbol{)}\<%
 \end{code}
 
-While expanding the definition application of natural numbers however, we end up with a huge goal in Agda: \textt{x + 4 + (x + 4 + 0) ≡ suc (suc (suc (suc (suc (suc (suc (suc (x + (x + 0)))))))))}. This definitely needs a lot of moving zeros and suc's around, but the ring solver allows for a cleaner definition:
+While expanding the definition application of natural numbers however, we end up with a huge goal in Agda: \textt{x + 4 + (x + 4 + 0) ≡ suc (suc (suc (suc (suc (suc (suc (suc (x + (x + 0)))))))))}. This definitely needs a lot of moving zeros and suc's around, but the ring solver allows for a cleaner definition.
 
+The ring solver takes at least three parameters: how many variables are involved; what is the expression to be solved, written down in an alternative syntax; the refl axiom for wrapping the equality up. Then come the variables to replace the ones in the lambda, if any:
 \begin{code}%
-\>[0]\AgdaComment{-- The ring solver takes at least three parameters:}\<%
-\\
-\>[0]\AgdaComment{-- how many variables are involved;}\<%
-\\
-\>[0]\AgdaComment{-- what is the expression to be solved,}\<%
-\\
-\>[0]\AgdaComment{--   written down in an alternative syntax}\<%
-\\
-\>[0]\AgdaComment{-- the refl axiom for wrapping the equality up}\<%
-\\
-\>[0]\AgdaComment{-- and then the variables to replace in the lambda, if any}\<%
-\\
 \>[0]\AgdaFunction{lem}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{solve}\AgdaSpace{}%
@@ -2969,7 +2832,7 @@ While expanding the definition application of natural numbers however, we end up
 \AgdaInductiveConstructor{refl}\<%
 \end{code}
 
-Now let us turn into the definition of the stepDec function. In order to make use of Agda's computational capabilities, We must pattern match on proofs about a function by pattern matching in the same way that function does. Let us look at each case individually:
+Now let us turn into the definition of the \texttt{stepDec} function. In order to make use of Agda's computational capabilities, We must pattern match on proofs about a function by pattern matching in the same way that function does. Let us look at each case individually:
 
 \begin{itemize}
   \item When both the lists of free men and engaged men are empty, our proposition is true since calling the step function will not modify the value of $k$, the sum of preference lists (according to the definition of step). We can in turn prove that k $\le$ k from the definition of ≤′-refl.
@@ -3035,9 +2898,9 @@ which is true at first glance, if you consider that the elements of the proposit
 %
 \\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{singleWomanLemma}%
-\>[1848I]\AgdaBound{freeMen}\<%
+\>[1843I]\AgdaBound{freeMen}\<%
 \\
-\>[.][@{}l@{}]\<[1848I]%
+\>[.][@{}l@{}]\<[1843I]%
 \>[17]\AgdaBound{n}\<%
 \\
 %
@@ -3057,11 +2920,11 @@ which is true at first glance, if you consider that the elements of the proposit
 \>[30]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaBound{y}\AgdaSpace{}%
 \AgdaSymbol{→}%
-\>[1853I]\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\>[1848I]\AgdaFunction{lengthPrefs}\AgdaSpace{}%
 \AgdaBound{freeMen}\AgdaSpace{}%
 \AgdaOperator{\AgdaPrimitive{+}}\<%
 \\
-\>[.][@{}l@{}]\<[1853I]%
+\>[.][@{}l@{}]\<[1848I]%
 \>[37]\AgdaFunction{lengthPrefs}\AgdaSpace{}%
 \AgdaSymbol{((}\AgdaBound{n}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
@@ -3079,9 +2942,9 @@ which is true at first glance, if you consider that the elements of the proposit
 \\
 \>[17][@{}l@{\AgdaIndent{0}}]%
 \>[30]\AgdaSymbol{(}\AgdaFunction{solve}%
-\>[1863I]\AgdaNumber{3}\<%
+\>[1858I]\AgdaNumber{3}\<%
 \\
-\>[.][@{}l@{}]\<[1863I]%
+\>[.][@{}l@{}]\<[1858I]%
 \>[37]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSpace{}%
 \AgdaBound{y}\AgdaSpace{}%
@@ -3134,8 +2997,8 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 \begin{code}%
 \>[0]\AgdaFunction{lemmaProposeTrue}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[1885I]\AgdaSymbol{∀}%
-\>[1886I]\AgdaSymbol{(}\AgdaBound{freeMen}\AgdaSpace{}%
+\>[1880I]\AgdaSymbol{∀}%
+\>[1881I]\AgdaSymbol{(}\AgdaBound{freeMen}\AgdaSpace{}%
 \AgdaBound{engagedMen}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{List}\AgdaSpace{}%
@@ -3144,7 +3007,7 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 \AgdaDatatype{List}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\AgdaSymbol{))}\<%
 \\
-\>[.][@{}l@{}]\<[1886I]%
+\>[.][@{}l@{}]\<[1881I]%
 \>[21]\AgdaSymbol{(}\AgdaBound{formerHusband}\AgdaSpace{}%
 \AgdaBound{man}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -3157,26 +3020,26 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 \AgdaDatatype{ℕ}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
-\>[.][@{}l@{}]\<[1885I]%
+\>[.][@{}l@{}]\<[1880I]%
 \>[19]\AgdaFunction{length}%
-\>[1901I]\AgdaSymbol{(}\AgdaField{proj₂}\<%
+\>[1896I]\AgdaSymbol{(}\AgdaField{proj₂}\<%
 \\
-\>[1901I][@{}l@{\AgdaIndent{0}}]%
+\>[1896I][@{}l@{\AgdaIndent{0}}]%
 \>[29]\AgdaSymbol{(}\AgdaField{proj₂}\<%
 \\
 %
 \>[29]\AgdaSymbol{(}\AgdaFunction{safeAddNewEngagedMan′}%
-\>[1902I]\AgdaSymbol{(}\AgdaBound{man}\AgdaSpace{}%
+\>[1897I]\AgdaSymbol{(}\AgdaBound{man}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{prefs}\AgdaSymbol{)}\<%
 \\
-\>[1902I][@{}l@{\AgdaIndent{0}}]%
+\>[1897I][@{}l@{\AgdaIndent{0}}]%
 \>[53]\AgdaBound{formerHusband}\<%
 \\
 %
 \>[53]\AgdaBound{engagedMen}\AgdaSymbol{))}\<%
 \\
-\>[.][@{}l@{}]\<[1901I]%
+\>[.][@{}l@{}]\<[1896I]%
 \>[26]\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaPrimitive{+}}\<%
 \\
@@ -3187,15 +3050,15 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 \\
 %
 \>[19]\AgdaFunction{lengthPrefs}%
-\>[1908I]\AgdaSymbol{(}\AgdaField{proj₁}\<%
+\>[1903I]\AgdaSymbol{(}\AgdaField{proj₁}\<%
 \\
-\>[1908I][@{}l@{\AgdaIndent{0}}]%
+\>[1903I][@{}l@{\AgdaIndent{0}}]%
 \>[33]\AgdaSymbol{(}\AgdaFunction{safeAddNewEngagedMan′}%
-\>[1909I]\AgdaSymbol{(}\AgdaBound{man}\AgdaSpace{}%
+\>[1904I]\AgdaSymbol{(}\AgdaBound{man}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{prefs}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[1909I]%
+\>[.][@{}l@{}]\<[1904I]%
 \>[56]\AgdaBound{formerHusband}\<%
 \\
 %
@@ -3206,11 +3069,11 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 \\
 %
 \>[19]\AgdaInductiveConstructor{suc}%
-\>[1912I]\AgdaSymbol{(}\AgdaFunction{length}\AgdaSpace{}%
+\>[1907I]\AgdaSymbol{(}\AgdaFunction{length}\AgdaSpace{}%
 \AgdaBound{prefs}\AgdaSpace{}%
 \AgdaOperator{\AgdaPrimitive{+}}\<%
 \\
-\>[1912I][@{}l@{\AgdaIndent{0}}]%
+\>[1907I][@{}l@{\AgdaIndent{0}}]%
 \>[24]\AgdaFunction{lengthPrefs}\AgdaSpace{}%
 \AgdaBound{freeMen}\AgdaSpace{}%
 \AgdaOperator{\AgdaPrimitive{+}}\<%
@@ -3224,21 +3087,21 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 \>[0]\AgdaFunction{lemmaProposeTrue}\AgdaSpace{}%
 \AgdaBound{freeMen}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}%
-\>[1920I]\AgdaBound{formerHusband}\AgdaSpace{}%
+\>[1915I]\AgdaBound{formerHusband}\AgdaSpace{}%
 \AgdaBound{man}\AgdaSpace{}%
 \AgdaBound{prefs}\AgdaSpace{}%
 \AgdaSymbol{=}\<%
 \\
-\>[1920I][@{}l@{\AgdaIndent{0}}]%
+\>[1915I][@{}l@{\AgdaIndent{0}}]%
 \>[30]\AgdaFunction{subst}%
 \>[37]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSpace{}%
 \AgdaSymbol{→}%
-\>[1926I]\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\>[1921I]\AgdaFunction{lengthPrefs}\AgdaSpace{}%
 \AgdaBound{freeMen}\AgdaSpace{}%
 \AgdaOperator{\AgdaPrimitive{+}}\<%
 \\
-\>[.][@{}l@{}]\<[1926I]%
+\>[.][@{}l@{}]\<[1921I]%
 \>[44]\AgdaSymbol{(}\AgdaFunction{length}\AgdaSpace{}%
 \AgdaBound{prefs}\AgdaSpace{}%
 \AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
@@ -3251,9 +3114,9 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 \\
 \>[30][@{}l@{\AgdaIndent{0}}]%
 \>[32]\AgdaSymbol{(}\AgdaFunction{solve}%
-\>[1934I]\AgdaNumber{2}\<%
+\>[1929I]\AgdaNumber{2}\<%
 \\
-\>[.][@{}l@{}]\<[1934I]%
+\>[.][@{}l@{}]\<[1929I]%
 \>[39]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSpace{}%
 \AgdaBound{y}\AgdaSpace{}%
@@ -3311,9 +3174,9 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 \AgdaBound{m}\<%
 \\
 \>[0]\AgdaFunction{lemmaProposeTrue}%
-\>[1967I]\AgdaBound{freeMen}\<%
+\>[1962I]\AgdaBound{freeMen}\<%
 \\
-\>[.][@{}l@{}]\<[1967I]%
+\>[.][@{}l@{}]\<[1962I]%
 \>[17]\AgdaSymbol{((}\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaInductiveConstructor{suc}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{(}}\AgdaDottedPattern{\AgdaBound{formerHusband}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaPrimitive{+}}}\AgdaSpace{}%
@@ -3332,23 +3195,23 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 %
 \>[17]\AgdaBound{prefs}\AgdaSpace{}%
 \AgdaSymbol{|}%
-\>[1976I]\AgdaInductiveConstructor{less}\AgdaSpace{}%
+\>[1971I]\AgdaInductiveConstructor{less}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.}}\AgdaDottedPattern{\AgdaBound{formerHusband}}\AgdaSpace{}%
 \AgdaBound{k}\AgdaSpace{}%
 \AgdaSymbol{=}\<%
 \\
-\>[.][@{}l@{}]\<[1976I]%
+\>[.][@{}l@{}]\<[1971I]%
 \>[25]\AgdaFunction{subst}\<%
 \\
 \>[25][@{}l@{\AgdaIndent{0}}]%
 \>[27]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSpace{}%
 \AgdaSymbol{→}%
-\>[1982I]\AgdaFunction{lengthPrefs}\AgdaSpace{}%
+\>[1977I]\AgdaFunction{lengthPrefs}\AgdaSpace{}%
 \AgdaBound{freeMen}\AgdaSpace{}%
 \AgdaOperator{\AgdaPrimitive{+}}\<%
 \\
-\>[.][@{}l@{}]\<[1982I]%
+\>[.][@{}l@{}]\<[1977I]%
 \>[34]\AgdaSymbol{(}\AgdaFunction{length}\AgdaSpace{}%
 \AgdaBound{prefs}\AgdaSpace{}%
 \AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
@@ -3368,7 +3231,7 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 \\
 \>[27][@{}l@{\AgdaIndent{0}}]%
 \>[29]\AgdaSymbol{(λ}%
-\>[1994I]\AgdaBound{x}\AgdaSpace{}%
+\>[1989I]\AgdaBound{x}\AgdaSpace{}%
 \AgdaBound{y}\AgdaSpace{}%
 \AgdaBound{z}\AgdaSpace{}%
 \AgdaSymbol{→}\AgdaSpace{}%
@@ -3381,7 +3244,7 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 \AgdaInductiveConstructor{con}\AgdaSpace{}%
 \AgdaNumber{0}\AgdaSymbol{))}\<%
 \\
-\>[.][@{}l@{}]\<[1994I]%
+\>[.][@{}l@{}]\<[1989I]%
 \>[32]\AgdaOperator{\AgdaFunction{:=}}\AgdaSpace{}%
 \AgdaBound{y}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{:+}}\AgdaSpace{}%
@@ -3415,7 +3278,7 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 %
 \\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{lemmaProposeTrue}%
-\>[2019I]\AgdaBound{freeMen}\AgdaSpace{}%
+\>[2014I]\AgdaBound{freeMen}\AgdaSpace{}%
 \AgdaSymbol{((}\AgdaBound{m}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{prefsM}\AgdaSymbol{)}\AgdaSpace{}%
@@ -3429,21 +3292,21 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 \AgdaDottedPattern{\AgdaSymbol{.}}\AgdaDottedPattern{\AgdaBound{m}}\AgdaSpace{}%
 \AgdaSymbol{=}\<%
 \\
-\>[.][@{}l@{}]\<[2019I]%
+\>[.][@{}l@{}]\<[2014I]%
 \>[17]\AgdaFunction{subst}\<%
 \\
 \>[17][@{}l@{\AgdaIndent{0}}]%
 \>[19]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSpace{}%
 \AgdaSymbol{→}%
-\>[2034I]\AgdaFunction{length}\AgdaSpace{}%
+\>[2029I]\AgdaFunction{length}\AgdaSpace{}%
 \AgdaBound{prefsM}\AgdaSpace{}%
 \AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
 \AgdaFunction{lengthPrefs}\AgdaSpace{}%
 \AgdaBound{freeMen}\AgdaSpace{}%
 \AgdaOperator{\AgdaPrimitive{+}}\<%
 \\
-\>[.][@{}l@{}]\<[2034I]%
+\>[.][@{}l@{}]\<[2029I]%
 \>[26]\AgdaSymbol{(}\AgdaFunction{length}\AgdaSpace{}%
 \AgdaBound{prefs}\AgdaSpace{}%
 \AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
@@ -3508,9 +3371,9 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 %
 \\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{lemmaProposeTrue}%
-\>[2072I]\AgdaBound{freeMen}\<%
+\>[2067I]\AgdaBound{freeMen}\<%
 \\
-\>[.][@{}l@{}]\<[2072I]%
+\>[.][@{}l@{}]\<[2067I]%
 \>[17]\AgdaSymbol{((}\AgdaBound{m}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{prefsM}\AgdaSymbol{)}\AgdaSpace{}%
@@ -3557,9 +3420,9 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 \\
 %
 \>[19]\AgdaSymbol{(}\AgdaFunction{solve}%
-\>[2100I]\AgdaNumber{3}\<%
+\>[2095I]\AgdaNumber{3}\<%
 \\
-\>[.][@{}l@{}]\<[2100I]%
+\>[.][@{}l@{}]\<[2095I]%
 \>[26]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSpace{}%
 \AgdaBound{y}\AgdaSpace{}%
@@ -3611,9 +3474,9 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 %
 \\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{lemmaProposeTrue}%
-\>[2126I]\AgdaBound{freeMen}\<%
+\>[2121I]\AgdaBound{freeMen}\<%
 \\
-\>[.][@{}l@{}]\<[2126I]%
+\>[.][@{}l@{}]\<[2121I]%
 \>[17]\AgdaSymbol{((}\AgdaBound{m}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{prefsM}\AgdaSymbol{)}\AgdaSpace{}%
@@ -3638,9 +3501,9 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 %
 \\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{lemmaProposeTrue}%
-\>[2137I]\AgdaBound{freeMen}\<%
+\>[2132I]\AgdaBound{freeMen}\<%
 \\
-\>[.][@{}l@{}]\<[2137I]%
+\>[.][@{}l@{}]\<[2132I]%
 \>[17]\AgdaSymbol{((}\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaInductiveConstructor{suc}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{(}}\AgdaDottedPattern{\AgdaBound{formerHusband}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaPrimitive{+}}}\AgdaSpace{}%
@@ -3660,19 +3523,19 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 \\
 %
 \>[17]\AgdaBound{prefs}%
-\>[2147I]\AgdaSymbol{|}\AgdaSpace{}%
+\>[2142I]\AgdaSymbol{|}\AgdaSpace{}%
 \AgdaInductiveConstructor{less}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.}}\AgdaDottedPattern{\AgdaBound{formerHusband}}\AgdaSpace{}%
 \AgdaBound{k}\<%
 \\
-\>[.][@{}l@{}]\<[2147I]%
+\>[.][@{}l@{}]\<[2142I]%
 \>[23]\AgdaKeyword{with}\AgdaSpace{}%
 \AgdaFunction{safeAddNewEngagedMan′}%
-\>[2152I]\AgdaSymbol{(}\AgdaBound{man}\AgdaSpace{}%
+\>[2147I]\AgdaSymbol{(}\AgdaBound{man}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{prefs}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[2152I]%
+\>[.][@{}l@{}]\<[2147I]%
 \>[50]\AgdaBound{formerHusband}\<%
 \\
 %
@@ -3685,9 +3548,9 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 \>[0]\AgdaComment{-- This is yet to be proven, but if it is, our lemma is sound.}\<%
 \\
 \>[0]\AgdaFunction{lemmaProposeTrue}%
-\>[2157I]\AgdaBound{freeMen}\<%
+\>[2152I]\AgdaBound{freeMen}\<%
 \\
-\>[.][@{}l@{}]\<[2157I]%
+\>[.][@{}l@{}]\<[2152I]%
 \>[17]\AgdaSymbol{((}\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaInductiveConstructor{suc}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{(}}\AgdaDottedPattern{\AgdaBound{formerHusband}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaPrimitive{+}}}\AgdaSpace{}%
@@ -3723,9 +3586,9 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 \>[0]\AgdaComment{-- The equal case can, of course, be solved with the semiring solver.}\<%
 \\
 \>[0]\AgdaFunction{lemmaProposeTrue}%
-\>[2177I]\AgdaBound{freeMen}\<%
+\>[2172I]\AgdaBound{freeMen}\<%
 \\
-\>[.][@{}l@{}]\<[2177I]%
+\>[.][@{}l@{}]\<[2172I]%
 \>[17]\AgdaSymbol{((}\AgdaBound{m}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{prefsM}\AgdaSymbol{)}\AgdaSpace{}%
@@ -3743,25 +3606,25 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 %
 \>[17]\AgdaBound{prefs}\AgdaSpace{}%
 \AgdaSymbol{|}%
-\>[2185I]\AgdaInductiveConstructor{equal}\AgdaSpace{}%
+\>[2180I]\AgdaInductiveConstructor{equal}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.}}\AgdaDottedPattern{\AgdaBound{m}}\AgdaSpace{}%
 \AgdaSymbol{=}\<%
 \\
-\>[.][@{}l@{}]\<[2185I]%
+\>[.][@{}l@{}]\<[2180I]%
 \>[25]\AgdaFunction{subst}\<%
 \\
 \>[25][@{}l@{\AgdaIndent{0}}]%
 \>[27]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaBound{x}\AgdaSpace{}%
 \AgdaSymbol{→}%
-\>[2190I]\AgdaFunction{length}\AgdaSpace{}%
+\>[2185I]\AgdaFunction{length}\AgdaSpace{}%
 \AgdaBound{prefsM}\AgdaSpace{}%
 \AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
 \AgdaFunction{lengthPrefs}\AgdaSpace{}%
 \AgdaBound{freeMen}\AgdaSpace{}%
 \AgdaOperator{\AgdaPrimitive{+}}\<%
 \\
-\>[.][@{}l@{}]\<[2190I]%
+\>[.][@{}l@{}]\<[2185I]%
 \>[34]\AgdaSymbol{(}\AgdaFunction{length}\AgdaSpace{}%
 \AgdaBound{prefs}\AgdaSpace{}%
 \AgdaOperator{\AgdaPrimitive{+}}\AgdaSpace{}%
@@ -3779,9 +3642,9 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 \\
 %
 \>[27]\AgdaSymbol{(}\AgdaFunction{solve}%
-\>[2206I]\AgdaNumber{5}\<%
+\>[2201I]\AgdaNumber{5}\<%
 \\
-\>[.][@{}l@{}]\<[2206I]%
+\>[.][@{}l@{}]\<[2201I]%
 \>[34]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaBound{u}\AgdaSpace{}%
 \AgdaBound{v}\AgdaSpace{}%
@@ -3848,7 +3711,7 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 \\
 \>[0]\AgdaFunction{lemmaProposeTrue}\AgdaSpace{}%
 \AgdaBound{freeMen}%
-\>[2239I]\AgdaSymbol{((}\AgdaBound{m}\AgdaSpace{}%
+\>[2234I]\AgdaSymbol{((}\AgdaBound{m}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{prefsM}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
@@ -3863,7 +3726,7 @@ For the case when a woman says yes to a proposal, thus dumping her current fianc
 \AgdaBound{prefs}\AgdaSpace{}%
 \AgdaSymbol{|}\<%
 \\
-\>[.][@{}l@{}]\<[2239I]%
+\>[.][@{}l@{}]\<[2234I]%
 \>[25]\AgdaInductiveConstructor{greater}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.}}\AgdaDottedPattern{\AgdaBound{m}}\AgdaSpace{}%
 \AgdaBound{k}\AgdaSpace{}%
@@ -4004,9 +3867,9 @@ With these different pieces in place we can write down the $stepDec$ function:
 
 We now proceed to discuss the correctness of the deferred acceptance algorithm. Again, we start by giving some definitions and a few helper functions.
 
+First we define the type of elements that belong to a list:
+
 \begin{code}%
-\>[0]\AgdaComment{-- The type of elements that belong to a list.}\<%
-\\
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{\AgdaUnderscore{}∈\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaBound{A}\AgdaSpace{}%
@@ -4054,11 +3917,11 @@ We now proceed to discuss the correctness of the deferred acceptance algorithm. 
 \AgdaSymbol{(}\AgdaBound{a'}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaBound{as}\AgdaSymbol{)}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- Bigger than comparison for Maybe ℕ-typed elements. }\<%
-\\
+\end{code}
+
+Then since we defined the lookup functions on the preference lists with Maybe-types, we give a bigger-than comparison for Maybe ℕ-typed elements:
+
+\begin{code}%
 \>[0]\AgdaKeyword{data}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{\AgdaUnderscore{}>just\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
@@ -4088,15 +3951,11 @@ We now proceed to discuss the correctness of the deferred acceptance algorithm. 
 \AgdaOperator{\AgdaDatatype{>just}}\AgdaSpace{}%
 \AgdaInductiveConstructor{just}\AgdaSpace{}%
 \AgdaBound{n}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- Helper for the condition of stability:}\<%
-\\
-\>[0]\AgdaComment{-- a person is better than another one}\<%
-\\
-\>[0]\AgdaComment{-- in a preference list if it appears earlier in it.}\<%
-\\
+\end{code}
+
+With that we can define a helper for the condition of stability: a person is better than another one in a preference list if it appears earlier in it.
+
+\begin{code}%
 \>[0]\AgdaOperator{\AgdaFunction{\AgdaUnderscore{}≻[\AgdaUnderscore{}]\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\AgdaSpace{}%
@@ -4121,20 +3980,14 @@ We now proceed to discuss the correctness of the deferred acceptance algorithm. 
 \AgdaFunction{positionInList}\AgdaSpace{}%
 \AgdaBound{person}\AgdaSpace{}%
 \AgdaBound{list}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- Given a man and a woman and their preferences,}\<%
-\\
-\>[0]\AgdaComment{-- the condition of stability is satisfied if}\<%
-\\
-\>[0]\AgdaComment{-- no other m' and w' are not better positioned}\<%
-\\
-\>[0]\AgdaComment{-- in their preference lists than their partners.}\<%
-\\
+\end{code}
+
+Given a man $m$ and a woman $w$ and their preferences, the condition of stability is satisfied if no other $m\prime$ and $w\prime$ are better positioned in their preference lists than their partners.
+
+\begin{code}%
 \>[0]\AgdaFunction{conditionOfStabilitySatisfied}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[2440I]\AgdaSymbol{(}\AgdaBound{c₁}\AgdaSpace{}%
+\>[2435I]\AgdaSymbol{(}\AgdaBound{c₁}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
@@ -4146,7 +3999,7 @@ We now proceed to discuss the correctness of the deferred acceptance algorithm. 
 \AgdaDatatype{List}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\AgdaSymbol{))}\<%
 \\
-\>[.][@{}l@{}]\<[2440I]%
+\>[.][@{}l@{}]\<[2435I]%
 \>[32]\AgdaSymbol{(}\AgdaBound{c₂}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaDatatype{ℕ}\AgdaSpace{}%
@@ -4216,13 +4069,11 @@ We now proceed to discuss the correctness of the deferred acceptance algorithm. 
 \AgdaBound{prefsW}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{]}}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSymbol{)))}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- A matching is stable if the condition of stability is satisfied}\<%
-\\
-\>[0]\AgdaComment{-- for every pair of man and woman not married.}\<%
-\\
+\end{code}
+
+We are ready to write down a definition of stable matching: a matching is stable if no man are waiting to be married and the condition of stability is satisfied for every two pairs of man and woman formed.
+
+\begin{code}%
 \>[0]\AgdaFunction{is-stable-matching}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaRecord{MatchingState}\AgdaSpace{}%
@@ -4249,7 +4100,7 @@ We now proceed to discuss the correctness of the deferred acceptance algorithm. 
 \\
 \>[2][@{}l@{\AgdaIndent{0}}]%
 \>[6]\AgdaSymbol{(}\AgdaBound{c₁}%
-\>[2521I]\AgdaBound{c₂}\AgdaSpace{}%
+\>[2516I]\AgdaBound{c₂}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
@@ -4269,12 +4120,12 @@ We now proceed to discuss the correctness of the deferred acceptance algorithm. 
 \AgdaBound{c₂}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
-\>[.][@{}l@{}]\<[2521I]%
+\>[.][@{}l@{}]\<[2516I]%
 \>[10]\AgdaFunction{conditionOfStabilitySatisfied}\<%
 \\
 %
 \>[10]\AgdaSymbol{(}%
-\>[2540I]\AgdaSymbol{(}\AgdaSpace{}%
+\>[2535I]\AgdaSymbol{(}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{proj₁}\AgdaSpace{}%
 \AgdaBound{c₁}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
@@ -4284,7 +4135,7 @@ We now proceed to discuss the correctness of the deferred acceptance algorithm. 
 \AgdaBound{men}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\<%
 \\
-\>[.][@{}l@{}]\<[2540I]%
+\>[.][@{}l@{}]\<[2535I]%
 \>[12]\AgdaSymbol{(}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{proj₂}\AgdaSpace{}%
 \AgdaBound{c₁}\AgdaSymbol{)}\AgdaSpace{}%
@@ -4296,7 +4147,7 @@ We now proceed to discuss the correctness of the deferred acceptance algorithm. 
 \\
 %
 \>[10]\AgdaSymbol{(}%
-\>[2556I]\AgdaSymbol{(}\AgdaSpace{}%
+\>[2551I]\AgdaSymbol{(}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{proj₁}\AgdaSpace{}%
 \AgdaBound{c₂}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
@@ -4306,7 +4157,7 @@ We now proceed to discuss the correctness of the deferred acceptance algorithm. 
 \AgdaBound{men}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\<%
 \\
-\>[.][@{}l@{}]\<[2556I]%
+\>[.][@{}l@{}]\<[2551I]%
 \>[12]\AgdaSymbol{(}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{proj₂}\AgdaSpace{}%
 \AgdaBound{c₂}\AgdaSymbol{)}\AgdaSpace{}%
@@ -4436,7 +4287,7 @@ Now let us examine some examples to make use of these definitions. We look at th
 \\
 \>[0]\AgdaFunction{listDifficultMen}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[2663I]\AgdaSymbol{(}\AgdaNumber{1}\AgdaSpace{}%
+\>[2658I]\AgdaSymbol{(}\AgdaNumber{1}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaSpace{}%
 \AgdaNumber{1}\AgdaSpace{}%
@@ -4451,7 +4302,7 @@ Now let us examine some examples to make use of these definitions. We look at th
 \AgdaSymbol{))}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\<%
 \\
-\>[.][@{}l@{}]\<[2663I]%
+\>[.][@{}l@{}]\<[2658I]%
 \>[19]\AgdaSymbol{(}\AgdaNumber{2}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaSpace{}%
@@ -4512,7 +4363,7 @@ Now let us examine some examples to make use of these definitions. We look at th
 \\
 \>[0]\AgdaFunction{listDifficultWomen}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[2724I]\AgdaSymbol{(}\AgdaNumber{1}\AgdaSpace{}%
+\>[2719I]\AgdaSymbol{(}\AgdaNumber{1}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaSpace{}%
 \AgdaNumber{4}\AgdaSpace{}%
@@ -4527,7 +4378,7 @@ Now let us examine some examples to make use of these definitions. We look at th
 \AgdaSymbol{))}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\<%
 \\
-\>[.][@{}l@{}]\<[2724I]%
+\>[.][@{}l@{}]\<[2719I]%
 \>[21]\AgdaSymbol{(}\AgdaNumber{2}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaSpace{}%
@@ -4596,19 +4447,16 @@ We can check that our implementation reaches the result promised by Gale and Sha
 \AgdaInductiveConstructor{[]}\AgdaSpace{}%
 \AgdaNumber{9}\AgdaSpace{}%
 \AgdaInductiveConstructor{refl}\<%
-\\
-\>[0]\AgdaComment{-- Gale and Shapley tell us that, for the first simple example, each men}\<%
-\\
-\>[0]\AgdaComment{-- gets his first woman from the list as a wife and there are no}\<%
-\\
-\>[0]\AgdaComment{-- conflicts amongst them. So we expect the following end state:}\<%
-\\
+\end{code}
+
+Gale and Shapley tell us that, for the first simple example, each men gets his first woman from the list as a wife and there are no conflicts amongst them. So we expect the following end state:
+\begin{code}%
 \>[0]\AgdaFunction{exEndExpected}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{mkState}%
-\>[2793I]\AgdaFunction{listMen}\<%
+\>[2788I]\AgdaFunction{listMen}\<%
 \\
-\>[.][@{}l@{}]\<[2793I]%
+\>[.][@{}l@{}]\<[2788I]%
 \>[24]\AgdaInductiveConstructor{[]}\<%
 \\
 %
@@ -4674,9 +4522,11 @@ We can check that our implementation reaches the result promised by Gale and Sha
 \AgdaSymbol{(}\AgdaFunction{step}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{step}\AgdaSpace{}%
 \AgdaFunction{exStart}\AgdaSymbol{)))}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}
+
+Which we can see is what we get:
+
+\begin{code}%
 \>[0]\AgdaFunction{resultIsWhatWeExpected}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaFunction{exEnd}\AgdaSpace{}%
@@ -4686,9 +4536,11 @@ We can check that our implementation reaches the result promised by Gale and Sha
 \>[0]\AgdaFunction{resultIsWhatWeExpected}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{refl}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\end{code}
+
+The same goes for the second, harder example:
+
+\begin{code}%
 \>[0]\AgdaFunction{ex2Start}\AgdaSpace{}%
 \AgdaFunction{ex2End}\AgdaSpace{}%
 \AgdaFunction{ex2EndExpected}\AgdaSpace{}%
@@ -4706,16 +4558,14 @@ We can check that our implementation reaches the result promised by Gale and Sha
 \AgdaNumber{16}\AgdaSpace{}%
 \AgdaInductiveConstructor{refl}\<%
 \\
-\>[0]\AgdaComment{-- A second, harder example is given where}\<%
-\\
-\>[0]\AgdaComment{-- there is only one possible stable set of marriages.}\<%
-\\
+%
+\\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{ex2EndExpected}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{mkState}%
-\>[2855I]\AgdaFunction{listDifficultMen}\<%
+\>[2850I]\AgdaFunction{listDifficultMen}\<%
 \\
-\>[2855I][@{}l@{\AgdaIndent{0}}]%
+\>[2850I][@{}l@{\AgdaIndent{0}}]%
 \>[27]\AgdaInductiveConstructor{[]}\<%
 \\
 %
@@ -4786,15 +4636,17 @@ We can check that our implementation reaches the result promised by Gale and Sha
 %
 \>[27]\AgdaInductiveConstructor{refl}\<%
 \\
+%
+\\[\AgdaEmptyExtraSkip]%
 \>[0]\AgdaFunction{ex2End}%
 \>[8]\AgdaSymbol{=}\AgdaSpace{}%
 \AgdaFunction{step}%
-\>[2907I]\AgdaSymbol{(}\AgdaFunction{step}\AgdaSpace{}%
+\>[2902I]\AgdaSymbol{(}\AgdaFunction{step}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{step}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{step}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{step}\<%
 \\
-\>[.][@{}l@{}]\<[2907I]%
+\>[.][@{}l@{}]\<[2902I]%
 \>[15]\AgdaSymbol{(}\AgdaFunction{step}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{step}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaFunction{step}\AgdaSpace{}%
@@ -4816,7 +4668,7 @@ We can check that our implementation reaches the result promised by Gale and Sha
 \>[0]\<%
 \end{code}
 
-Expectably, these applications are precisely the total applications of step if we utilize our previously defined allSteps function:
+Expectably, these consecutive \texttt{step} applications are precisely the total applications of step if we utilize our previously defined \texttt{allSteps} function:
 
 \begin{code}%
 \>[0]\AgdaFunction{numberOfStepsIsCorrect}\AgdaSpace{}%
@@ -4849,8 +4701,6 @@ Expressing such properties in the code also calls our attention to later inconsi
 What about showing that the matching returned by the deferred acceptance algorithm is stable? Let's do it for $exEnd$:
 
 \begin{code}%
-\>[0]\AgdaComment{-- What does it mean to be stable?}\<%
-\\
 \>[0]\AgdaFunction{matchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{c₁}\AgdaSpace{}%
@@ -4957,7 +4807,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \>[0]\AgdaFunction{matchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[2982I]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
+\>[2977I]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{3}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaNumber{3}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSpace{}%
@@ -4968,7 +4818,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[2982I]%
+\>[.][@{}l@{}]\<[2977I]%
 \>[24]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{3}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
@@ -4994,7 +4844,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \>[0]\AgdaFunction{matchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3011I]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
+\>[3006I]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{3}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaNumber{3}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSpace{}%
@@ -5005,7 +4855,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[3011I]%
+\>[.][@{}l@{}]\<[3006I]%
 \>[24]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
@@ -5017,7 +4867,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 %
 \>[24]\AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[3028I]\AgdaSymbol{(λ}\AgdaSpace{}%
+\>[3023I]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}from>\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaSymbol{()}\AgdaSpace{}%
@@ -5026,7 +4876,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \AgdaSymbol{\})}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\<%
 \\
-\>[3028I][@{}l@{\AgdaIndent{0}}]%
+\>[3023I][@{}l@{\AgdaIndent{0}}]%
 \>[29]\AgdaSymbol{λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}from>\AgdaUnderscore{}}}\AgdaSpace{}%
@@ -5038,7 +4888,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \>[0]\AgdaFunction{matchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3044I]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
+\>[3039I]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{3}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaNumber{3}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSpace{}%
@@ -5049,7 +4899,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[3044I]%
+\>[.][@{}l@{}]\<[3039I]%
 \>[24]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
@@ -5058,7 +4908,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 %
 \>[24]\AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[3058I]\AgdaSymbol{(λ}\AgdaSpace{}%
+\>[3053I]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}from>\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaSymbol{()}\AgdaSpace{}%
@@ -5067,7 +4917,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \AgdaSymbol{\})}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\<%
 \\
-\>[3058I][@{}l@{\AgdaIndent{0}}]%
+\>[3053I][@{}l@{\AgdaIndent{0}}]%
 \>[29]\AgdaSymbol{λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}from>\AgdaUnderscore{}}}\AgdaSpace{}%
@@ -5079,7 +4929,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \>[0]\AgdaFunction{matchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3074I]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
+\>[3069I]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{3}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaNumber{3}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSpace{}%
@@ -5090,7 +4940,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[3074I]%
+\>[.][@{}l@{}]\<[3069I]%
 \>[24]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
@@ -5102,7 +4952,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \>[0]\AgdaFunction{matchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3089I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
+\>[3084I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
@@ -5110,7 +4960,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSymbol{))}\<%
 \\
-\>[.][@{}l@{}]\<[3089I]%
+\>[.][@{}l@{}]\<[3084I]%
 \>[24]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{3}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
@@ -5125,7 +4975,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 %
 \>[24]\AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[3106I]\AgdaSymbol{(λ}\AgdaSpace{}%
+\>[3101I]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}from>\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaSymbol{()}\AgdaSpace{}%
@@ -5134,7 +4984,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \AgdaSymbol{\})}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\<%
 \\
-\>[3106I][@{}l@{\AgdaIndent{0}}]%
+\>[3101I][@{}l@{\AgdaIndent{0}}]%
 \>[29]\AgdaSymbol{λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}from>\AgdaUnderscore{}}}\AgdaSpace{}%
@@ -5146,7 +4996,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \>[0]\AgdaFunction{matchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3122I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
+\>[3117I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
@@ -5154,7 +5004,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSymbol{))}\<%
 \\
-\>[.][@{}l@{}]\<[3122I]%
+\>[.][@{}l@{}]\<[3117I]%
 \>[24]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
@@ -5173,7 +5023,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \>[0]\AgdaFunction{matchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3141I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
+\>[3136I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
@@ -5181,7 +5031,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSymbol{))}\<%
 \\
-\>[.][@{}l@{}]\<[3141I]%
+\>[.][@{}l@{}]\<[3136I]%
 \>[24]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
@@ -5190,7 +5040,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 %
 \>[24]\AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[3152I]\AgdaSymbol{(λ}\AgdaSpace{}%
+\>[3147I]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}from>\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaSymbol{()}\AgdaSpace{}%
@@ -5199,7 +5049,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \AgdaSymbol{\})}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\<%
 \\
-\>[3152I][@{}l@{\AgdaIndent{0}}]%
+\>[3147I][@{}l@{\AgdaIndent{0}}]%
 \>[29]\AgdaSymbol{λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}from>\AgdaUnderscore{}}}\AgdaSpace{}%
@@ -5211,7 +5061,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \>[0]\AgdaFunction{matchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3168I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
+\>[3163I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
@@ -5219,7 +5069,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSymbol{))}\<%
 \\
-\>[.][@{}l@{}]\<[3168I]%
+\>[.][@{}l@{}]\<[3163I]%
 \>[24]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
@@ -5228,12 +5078,12 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \>[0]\AgdaFunction{matchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3180I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
+\>[3175I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.}}\AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaSymbol{)))}\<%
 \\
-\>[.][@{}l@{}]\<[3180I]%
+\>[.][@{}l@{}]\<[3175I]%
 \>[24]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{3}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
@@ -5248,7 +5098,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 %
 \>[24]\AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[3194I]\AgdaSymbol{(λ}\AgdaSpace{}%
+\>[3189I]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}from>\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaSymbol{()}\AgdaSpace{}%
@@ -5257,7 +5107,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \AgdaSymbol{\})}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\<%
 \\
-\>[3194I][@{}l@{\AgdaIndent{0}}]%
+\>[3189I][@{}l@{\AgdaIndent{0}}]%
 \>[29]\AgdaSymbol{λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}from>\AgdaUnderscore{}}}\AgdaSpace{}%
@@ -5269,12 +5119,12 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \>[0]\AgdaFunction{matchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3210I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
+\>[3205I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.}}\AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaSymbol{)))}\<%
 \\
-\>[.][@{}l@{}]\<[3210I]%
+\>[.][@{}l@{}]\<[3205I]%
 \>[24]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
@@ -5286,7 +5136,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 %
 \>[24]\AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[3221I]\AgdaSymbol{(λ}\AgdaSpace{}%
+\>[3216I]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}from>\AgdaUnderscore{}}}\AgdaSpace{}%
 \AgdaSymbol{()}\AgdaSpace{}%
@@ -5295,7 +5145,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \AgdaSymbol{\})}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\<%
 \\
-\>[3221I][@{}l@{\AgdaIndent{0}}]%
+\>[3216I][@{}l@{\AgdaIndent{0}}]%
 \>[29]\AgdaSymbol{λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaOperator{\AgdaInductiveConstructor{\AgdaUnderscore{}from>\AgdaUnderscore{}}}\AgdaSpace{}%
@@ -5307,12 +5157,12 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \>[0]\AgdaFunction{matchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3237I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
+\>[3232I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.}}\AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaSymbol{)))}\<%
 \\
-\>[.][@{}l@{}]\<[3237I]%
+\>[.][@{}l@{}]\<[3232I]%
 \>[24]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
@@ -5328,12 +5178,12 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \>[0]\AgdaFunction{matchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3250I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
+\>[3245I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.}}\AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaSymbol{)))}\<%
 \\
-\>[.][@{}l@{}]\<[3250I]%
+\>[.][@{}l@{}]\<[3245I]%
 \>[24]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
@@ -5375,35 +5225,52 @@ Let us now take that promised leap onto the next level. We postulate that, indee
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{∀}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
-\AgdaBound{m'}\AgdaSpace{}%
+\AgdaBound{m′}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaRecord{MatchingState}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaBound{m'}\AgdaSpace{}%
+\AgdaSymbol{→}\<%
+\\
+\>[2][@{}l@{\AgdaIndent{0}}]%
+\>[19]\AgdaBound{m′}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{≡}}\AgdaSpace{}%
 \AgdaFunction{allSteps}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
-\>[2][@{}l@{\AgdaIndent{0}}]%
+%
+\>[19]\AgdaField{MatchingState.freeMen}\AgdaSpace{}%
+\AgdaBound{m′}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{≡}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaSymbol{→}\<%
+\\
+%
 \>[19]\AgdaFunction{is-stable-matching}\AgdaSpace{}%
-\AgdaBound{m'}\<%
+\AgdaBound{m′}\<%
 \end{code}
 
-We go about trying to prove it by providing similar elements to the ones used in the proof of the particular case before.
+We can go about trying to prove it by providing similar elements to the ones used in the proof of the particular case before (the proof is incomplete, but the given pattern matching is a good start):
 
 \begin{code}%
 \>[0]\AgdaFunction{anyMatchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
+\AgdaSymbol{∀}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
-\AgdaRecord{MatchingState}\AgdaSymbol{)(}\AgdaBound{c₁}\AgdaSpace{}%
+\AgdaRecord{MatchingState}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaField{MatchingState.freeMen}\AgdaSpace{}%
+\AgdaBound{m}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{≡}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSymbol{)}\AgdaSpace{}%
+\AgdaSymbol{→}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{c₁}\AgdaSpace{}%
 \AgdaBound{c₂}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\AgdaSpace{}%
 \AgdaOperator{\AgdaFunction{×}}\AgdaSpace{}%
 \AgdaDatatype{ℕ}\AgdaSymbol{)}%
-\>[61]\AgdaSymbol{→}\<%
+\>[99]\AgdaSymbol{→}\<%
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[6]\AgdaComment{-- Given any two couples in a matching}\<%
@@ -5430,16 +5297,6 @@ We go about trying to prove it by providing similar elements to the ones used in
 \AgdaSymbol{(}\AgdaBound{c₁}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{≡}}\AgdaSpace{}%
 \AgdaBound{c₂}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\<%
-\\
-%
-\>[6]\AgdaComment{-- When there are no more free men}\<%
-\\
-%
-\>[6]\AgdaField{MatchingState.freeMen}\AgdaSpace{}%
-\AgdaBound{m}\AgdaSpace{}%
-\AgdaOperator{\AgdaDatatype{≡}}\AgdaSpace{}%
-\AgdaInductiveConstructor{[]}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
 %
@@ -5497,15 +5354,13 @@ We go about trying to prove it by providing similar elements to the ones used in
 \AgdaBound{c₂}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaField{MatchingState.women}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSymbol{))))}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
-\>[0]\AgdaComment{-- Absurd pattern: if there are no couples at all}\<%
-\\
-\>[0]\AgdaComment{-- we can't possibly think about this!}\<%
-\\
+\end{code}
+
+The first pattern is absurd: if there are no couples at all we can't possibly think about this!
+
+\begin{code}%
 \>[0]\AgdaFunction{anyMatchIsStableHelper}%
-\>[3336I]\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
+\>[3338I]\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
@@ -5514,8 +5369,9 @@ We go about trying to prove it by providing similar elements to the ones used in
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{})}\<%
 \\
-\>[.][@{}l@{}]\<[3336I]%
-\>[23]\AgdaSymbol{(}\AgdaBound{fst}\AgdaSpace{}%
+\>[.][@{}l@{}]\<[3338I]%
+\>[23]\AgdaBound{p₁}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{fst}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{snd}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{fst₁}\AgdaSpace{}%
@@ -5523,14 +5379,15 @@ We go about trying to prove it by providing similar elements to the ones used in
 \AgdaBound{snd₁}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{()}\AgdaSpace{}%
 \AgdaBound{p₂}\AgdaSpace{}%
-\AgdaBound{p₃}\AgdaSpace{}%
-\AgdaBound{p₄}\<%
-\\
-%
-\\[\AgdaEmptyExtraSkip]%
+\AgdaBound{p₃}\<%
+\end{code}
+
+What interests us is the case when there are no more free men and at least one couple has been formed:
+
+\begin{code}%
 \>[0]\AgdaFunction{anyMatchIsStableHelper}%
-\>[3353I]\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}%
-\>[3354I]\AgdaBound{men}\AgdaSpace{}%
+\>[3355I]\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}%
+\>[3356I]\AgdaBound{men}\AgdaSpace{}%
 \AgdaInductiveConstructor{[]}\AgdaSpace{}%
 \AgdaBound{engagedMen}\AgdaSpace{}%
 \AgdaBound{women}\AgdaSpace{}%
@@ -5538,12 +5395,13 @@ We go about trying to prove it by providing similar elements to the ones used in
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaBound{couples}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[3354I]%
+\>[.][@{}l@{}]\<[3356I]%
 \>[32]\AgdaBound{sumPrefLists}\AgdaSpace{}%
 \AgdaBound{sumEq}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[3353I]%
-\>[23]\AgdaSymbol{(}\AgdaBound{fst}\AgdaSpace{}%
+\>[.][@{}l@{}]\<[3355I]%
+\>[23]\AgdaInductiveConstructor{refl}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{fst}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaBound{snd}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{fst₁}\AgdaSpace{}%
@@ -5552,20 +5410,19 @@ We go about trying to prove it by providing similar elements to the ones used in
 \AgdaBound{p₁}\AgdaSpace{}%
 \AgdaBound{p₂}\AgdaSpace{}%
 \AgdaBound{p₃}\AgdaSpace{}%
-\AgdaBound{p₄}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaSymbol{\{!!\}}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaSymbol{\{!!\}}\<%
-\\
-\>[0]\AgdaComment{-- Absurd pattern: if there are still some free men}\<%
-\\
-\>[0]\AgdaComment{-- we can't possibly think about this either!}\<%
-\\
+\end{code}
+
+Another absurd pattern which is cancelled out by Agda in this suggested version is the one where there are still some free men:
+
+\begin{code}%
 \>[0]\AgdaFunction{anyMatchIsStableHelper}%
-\>[3375I]\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
+\>[3377I]\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
-\AgdaSymbol{(}\AgdaBound{x}\AgdaSpace{}%
+\AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{∷}}\AgdaSpace{}%
 \AgdaBound{freeMen}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
@@ -5574,39 +5431,55 @@ We go about trying to prove it by providing similar elements to the ones used in
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{})}\<%
 \\
-\>[.][@{}l@{}]\<[3375I]%
-\>[23]\AgdaBound{c₁}\AgdaSpace{}%
+\>[.][@{}l@{}]\<[3377I]%
+\>[23]\AgdaSymbol{()}\AgdaSpace{}%
+\AgdaBound{c₁}\AgdaSpace{}%
 \AgdaBound{c₂}\AgdaSpace{}%
-\AgdaBound{p₁}\AgdaSpace{}%
 \AgdaBound{p₂}\AgdaSpace{}%
 \AgdaBound{p₃}\AgdaSpace{}%
-\AgdaSymbol{()}\<%
+\AgdaBound{p₄}\<%
 \\
-%
-\\[\AgdaEmptyExtraSkip]%
+\>[0]\<%
+\end{code}
+
+With the helper proof we can then prove the match is stable 
+
+\begin{code}%
 \>[0]\AgdaFunction{anyMatchIsStable}\AgdaSpace{}%
 \AgdaSymbol{:}%
-\>[3391I]\AgdaSymbol{∀}\AgdaSpace{}%
+\>[3393I]\AgdaSymbol{∀}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
-\AgdaBound{m'}\AgdaSpace{}%
+\AgdaBound{m′}\AgdaSpace{}%
 \AgdaSymbol{:}\AgdaSpace{}%
 \AgdaRecord{MatchingState}\AgdaSymbol{)}\AgdaSpace{}%
-\AgdaSymbol{→}\AgdaSpace{}%
-\AgdaBound{m'}\AgdaSpace{}%
+\AgdaSymbol{→}\<%
+\\
+\>[.][@{}l@{}]\<[3393I]%
+\>[19]\AgdaBound{m′}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{≡}}\AgdaSpace{}%
 \AgdaFunction{allSteps}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
-\>[.][@{}l@{}]\<[3391I]%
+%
+\>[19]\AgdaField{MatchingState.freeMen}\AgdaSpace{}%
+\AgdaBound{m′}\AgdaSpace{}%
+\AgdaOperator{\AgdaDatatype{≡}}\AgdaSpace{}%
+\AgdaInductiveConstructor{[]}\AgdaSpace{}%
+\AgdaSymbol{→}\<%
+\\
+%
 \>[19]\AgdaFunction{is-stable-matching}\AgdaSpace{}%
-\AgdaBound{m'}\<%
+\AgdaBound{m′}\<%
 \\
 \>[0]\AgdaFunction{anyMatchIsStable}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSpace{}%
 \AgdaBound{m′}\AgdaSpace{}%
-\AgdaBound{p}\AgdaSpace{}%
+\AgdaBound{p₁}\AgdaSpace{}%
+\AgdaBound{p₂}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
+\AgdaBound{p₂}\AgdaSpace{}%
+\AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
 \AgdaSymbol{\{!!\}}\<%
 \end{code}
 
@@ -5633,7 +5506,7 @@ We have logically reasoned in Section \ref{output-is-optimal} that, given every 
 \AgdaPrimitiveType{Set}\<%
 \\
 \>[0]\AgdaFunction{is-better-matching}%
-\>[3415I]\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
+\>[3423I]\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
 \AgdaBound{men}\AgdaSpace{}%
 \AgdaBound{freeMen}\AgdaSpace{}%
 \AgdaBound{engagedMen}\AgdaSpace{}%
@@ -5642,7 +5515,7 @@ We have logically reasoned in Section \ref{output-is-optimal} that, given every 
 \AgdaBound{k}\AgdaSpace{}%
 \AgdaBound{p}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[3415I]%
+\>[.][@{}l@{}]\<[3423I]%
 \>[19]\AgdaSymbol{(}\AgdaInductiveConstructor{mkState}\AgdaSpace{}%
 \AgdaBound{men₁}\AgdaSpace{}%
 \AgdaBound{freeMen₁}\AgdaSpace{}%
@@ -5751,9 +5624,9 @@ Let us define another possible stable matching from the first example given by G
 \>[0]\AgdaFunction{anotherPossibleStableMatching}\AgdaSpace{}%
 \AgdaSymbol{=}\AgdaSpace{}%
 \AgdaInductiveConstructor{mkState}%
-\>[3483I]\AgdaFunction{listMen}\<%
+\>[3491I]\AgdaFunction{listMen}\<%
 \\
-\>[.][@{}l@{}]\<[3483I]%
+\>[.][@{}l@{}]\<[3491I]%
 \>[40]\AgdaInductiveConstructor{[]}\<%
 \\
 %
@@ -5886,7 +5759,7 @@ We go about proving it as we have seen before:
 \>[0]\AgdaFunction{anotherMatchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3556I]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
+\>[3564I]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaNumber{3}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSpace{}%
@@ -5897,7 +5770,7 @@ We go about proving it as we have seen before:
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[3556I]%
+\>[.][@{}l@{}]\<[3564I]%
 \>[31]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
@@ -5919,7 +5792,7 @@ We go about proving it as we have seen before:
 \>[0]\AgdaFunction{anotherMatchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3581I]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
+\>[3589I]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaNumber{3}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSpace{}%
@@ -5930,7 +5803,7 @@ We go about proving it as we have seen before:
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[3581I]%
+\>[.][@{}l@{}]\<[3589I]%
 \>[31]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
@@ -5942,7 +5815,7 @@ We go about proving it as we have seen before:
 %
 \>[31]\AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[3598I]\AgdaSymbol{(λ}\AgdaSpace{}%
+\>[3606I]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
@@ -5951,7 +5824,7 @@ We go about proving it as we have seen before:
 \AgdaSymbol{\})}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\<%
 \\
-\>[3598I][@{}l@{\AgdaIndent{0}}]%
+\>[3606I][@{}l@{\AgdaIndent{0}}]%
 \>[36]\AgdaSymbol{λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(\AgdaUnderscore{}}\AgdaSpace{}%
@@ -5963,7 +5836,7 @@ We go about proving it as we have seen before:
 \>[0]\AgdaFunction{anotherMatchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3614I]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
+\>[3622I]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaNumber{3}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSpace{}%
@@ -5974,7 +5847,7 @@ We go about proving it as we have seen before:
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[3614I]%
+\>[.][@{}l@{}]\<[3622I]%
 \>[31]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
@@ -5983,7 +5856,7 @@ We go about proving it as we have seen before:
 %
 \>[31]\AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[3628I]\AgdaSymbol{(λ}\AgdaSpace{}%
+\>[3636I]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
@@ -5992,7 +5865,7 @@ We go about proving it as we have seen before:
 \AgdaSymbol{\})}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\<%
 \\
-\>[3628I][@{}l@{\AgdaIndent{0}}]%
+\>[3636I][@{}l@{\AgdaIndent{0}}]%
 \>[36]\AgdaSymbol{λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(\AgdaUnderscore{}}\AgdaSpace{}%
@@ -6004,7 +5877,7 @@ We go about proving it as we have seen before:
 \>[0]\AgdaFunction{anotherMatchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3644I]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
+\>[3652I]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaNumber{3}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSpace{}%
@@ -6015,7 +5888,7 @@ We go about proving it as we have seen before:
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSymbol{)}\<%
 \\
-\>[.][@{}l@{}]\<[3644I]%
+\>[.][@{}l@{}]\<[3652I]%
 \>[31]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
@@ -6031,7 +5904,7 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 \>[0]\AgdaFunction{anotherMatchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3659I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
+\>[3667I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
@@ -6039,7 +5912,7 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSymbol{))}\<%
 \\
-\>[.][@{}l@{}]\<[3659I]%
+\>[.][@{}l@{}]\<[3667I]%
 \>[31]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
@@ -6054,7 +5927,7 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 %
 \>[31]\AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[3676I]\AgdaSymbol{(λ}\AgdaSpace{}%
+\>[3684I]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
@@ -6063,7 +5936,7 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 \AgdaSymbol{\})}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\<%
 \\
-\>[3676I][@{}l@{\AgdaIndent{0}}]%
+\>[3684I][@{}l@{\AgdaIndent{0}}]%
 \>[36]\AgdaSymbol{λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(\AgdaUnderscore{}}\AgdaSpace{}%
@@ -6075,12 +5948,12 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 \>[0]\AgdaFunction{anotherMatchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3692I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
+\>[3700I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.}}\AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaSymbol{)))}\<%
 \\
-\>[.][@{}l@{}]\<[3692I]%
+\>[.][@{}l@{}]\<[3700I]%
 \>[31]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
@@ -6095,7 +5968,7 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 %
 \>[31]\AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[3706I]\AgdaSymbol{(λ}\AgdaSpace{}%
+\>[3714I]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
@@ -6104,7 +5977,7 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 \AgdaSymbol{\})}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\<%
 \\
-\>[3706I][@{}l@{\AgdaIndent{0}}]%
+\>[3714I][@{}l@{\AgdaIndent{0}}]%
 \>[36]\AgdaSymbol{λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(\AgdaUnderscore{}}\AgdaSpace{}%
@@ -6116,12 +5989,12 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 \>[0]\AgdaFunction{anotherMatchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3722I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
+\>[3730I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{())))}\<%
 \\
-\>[.][@{}l@{}]\<[3722I]%
+\>[.][@{}l@{}]\<[3730I]%
 \>[31]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
@@ -6139,7 +6012,7 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 \>[0]\AgdaFunction{anotherMatchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3737I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
+\>[3745I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
@@ -6147,7 +6020,7 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSymbol{))}\<%
 \\
-\>[.][@{}l@{}]\<[3737I]%
+\>[.][@{}l@{}]\<[3745I]%
 \>[31]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
@@ -6166,7 +6039,7 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 \>[0]\AgdaFunction{anotherMatchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3756I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
+\>[3764I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
@@ -6174,7 +6047,7 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSymbol{))}\<%
 \\
-\>[.][@{}l@{}]\<[3756I]%
+\>[.][@{}l@{}]\<[3764I]%
 \>[31]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
@@ -6183,7 +6056,7 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 %
 \>[31]\AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[3767I]\AgdaSymbol{(λ}\AgdaSpace{}%
+\>[3775I]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
@@ -6192,7 +6065,7 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 \AgdaSymbol{\})}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\<%
 \\
-\>[3767I][@{}l@{\AgdaIndent{0}}]%
+\>[3775I][@{}l@{\AgdaIndent{0}}]%
 \>[36]\AgdaSymbol{λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(\AgdaUnderscore{}}\AgdaSpace{}%
@@ -6204,7 +6077,7 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 \>[0]\AgdaFunction{anotherMatchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3783I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
+\>[3791I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
@@ -6212,7 +6085,7 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSymbol{))}\<%
 \\
-\>[.][@{}l@{}]\<[3783I]%
+\>[.][@{}l@{}]\<[3791I]%
 \>[31]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
@@ -6224,12 +6097,12 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 \>[0]\AgdaFunction{anotherMatchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3795I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
+\>[3803I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.}}\AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaSymbol{)))}\<%
 \\
-\>[.][@{}l@{}]\<[3795I]%
+\>[.][@{}l@{}]\<[3803I]%
 \>[31]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
@@ -6241,7 +6114,7 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 %
 \>[31]\AgdaBound{p}\AgdaSpace{}%
 \AgdaSymbol{=}%
-\>[3806I]\AgdaSymbol{(λ}\AgdaSpace{}%
+\>[3814I]\AgdaSymbol{(λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\AgdaSpace{}%
@@ -6250,7 +6123,7 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 \AgdaSymbol{\})}\AgdaSpace{}%
 \AgdaOperator{\AgdaInductiveConstructor{,}}\<%
 \\
-\>[3806I][@{}l@{\AgdaIndent{0}}]%
+\>[3814I][@{}l@{\AgdaIndent{0}}]%
 \>[36]\AgdaSymbol{λ}\AgdaSpace{}%
 \AgdaSymbol{\{}\AgdaSpace{}%
 \AgdaSymbol{(\AgdaUnderscore{}}\AgdaSpace{}%
@@ -6262,12 +6135,12 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 \>[0]\AgdaFunction{anotherMatchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3822I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
+\>[3830I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{())))}\<%
 \\
-\>[.][@{}l@{}]\<[3822I]%
+\>[.][@{}l@{}]\<[3830I]%
 \>[31]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
@@ -6282,12 +6155,12 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 \>[0]\AgdaFunction{anotherMatchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3834I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
+\>[3842I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.}}\AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaSymbol{)))}\<%
 \\
-\>[.][@{}l@{}]\<[3834I]%
+\>[.][@{}l@{}]\<[3842I]%
 \>[31]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
@@ -6303,12 +6176,12 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 \>[0]\AgdaFunction{anotherMatchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3847I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
+\>[3855I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.}}\AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaSymbol{)))}\<%
 \\
-\>[.][@{}l@{}]\<[3847I]%
+\>[.][@{}l@{}]\<[3855I]%
 \>[31]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
@@ -6320,12 +6193,12 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 \>[0]\AgdaFunction{anotherMatchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3856I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
+\>[3864I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{())))}\<%
 \\
-\>[.][@{}l@{}]\<[3856I]%
+\>[.][@{}l@{}]\<[3864I]%
 \>[31]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
@@ -6337,12 +6210,12 @@ Further cases are omitted for the sake of brevity, as it works exactly as the $m
 \>[0]\AgdaFunction{anotherMatchIsStableHelper}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}\AgdaSpace{}%
 \AgdaSymbol{\AgdaUnderscore{}}%
-\>[3865I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
+\>[3873I]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{())))}\<%
 \\
-\>[.][@{}l@{}]\<[3865I]%
+\>[.][@{}l@{}]\<[3873I]%
 \>[31]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
@@ -6432,7 +6305,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaBound{m₂}\AgdaSymbol{)}\<%
 \\
 \>[0]\AgdaFunction{matchIsBetterHelper}%
-\>[3916I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{3}}\AgdaSpace{}%
+\>[3924I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{3}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
@@ -6443,7 +6316,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\<%
 \\
-\>[.][@{}l@{}]\<[3916I]%
+\>[.][@{}l@{}]\<[3924I]%
 \>[20]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
@@ -6480,7 +6353,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaInductiveConstructor{z≤n}\<%
 \\
 \>[0]\AgdaFunction{matchIsBetterHelper}%
-\>[3956I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{3}}\AgdaSpace{}%
+\>[3964I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{3}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
@@ -6491,7 +6364,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\<%
 \\
-\>[.][@{}l@{}]\<[3956I]%
+\>[.][@{}l@{}]\<[3964I]%
 \>[20]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
@@ -6525,7 +6398,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaInductiveConstructor{z≤n}\<%
 \\
 \>[0]\AgdaFunction{matchIsBetterHelper}%
-\>[3993I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{3}}\AgdaSpace{}%
+\>[4001I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{3}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
@@ -6536,7 +6409,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\<%
 \\
-\>[.][@{}l@{}]\<[3993I]%
+\>[.][@{}l@{}]\<[4001I]%
 \>[20]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
@@ -6567,7 +6440,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaInductiveConstructor{z≤n}\<%
 \\
 \>[0]\AgdaFunction{matchIsBetterHelper}%
-\>[4027I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{3}}\AgdaSpace{}%
+\>[4035I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{3}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
@@ -6576,7 +6449,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSpace{}%
 \AgdaBound{m₂}\<%
 \\
-\>[.][@{}l@{}]\<[4027I]%
+\>[.][@{}l@{}]\<[4035I]%
 \>[20]\AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
@@ -6605,7 +6478,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaBound{p₄}\<%
 \\
 \>[0]\AgdaFunction{matchIsBetterHelper}%
-\>[4057I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
+\>[4065I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaNumber{3}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
@@ -6616,7 +6489,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\<%
 \\
-\>[.][@{}l@{}]\<[4057I]%
+\>[.][@{}l@{}]\<[4065I]%
 \>[20]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
@@ -6646,7 +6519,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaInductiveConstructor{z≤n}\<%
 \\
 \>[0]\AgdaFunction{matchIsBetterHelper}%
-\>[4090I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
+\>[4098I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
@@ -6657,7 +6530,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\<%
 \\
-\>[.][@{}l@{}]\<[4090I]%
+\>[.][@{}l@{}]\<[4098I]%
 \>[20]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
@@ -6680,12 +6553,12 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaInductiveConstructor{z≤n}\<%
 \\
 \>[0]\AgdaFunction{matchIsBetterHelper}%
-\>[4116I]\AgdaBound{m₁}\AgdaSpace{}%
+\>[4124I]\AgdaBound{m₁}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{3}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\<%
 \\
-\>[.][@{}l@{}]\<[4116I]%
+\>[.][@{}l@{}]\<[4124I]%
 \>[20]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
@@ -6706,7 +6579,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaBound{p₄}\<%
 \\
 \>[0]\AgdaFunction{matchIsBetterHelper}%
-\>[4134I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
+\>[4142I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaNumber{3}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
@@ -6717,7 +6590,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\<%
 \\
-\>[.][@{}l@{}]\<[4134I]%
+\>[.][@{}l@{}]\<[4142I]%
 \>[20]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
@@ -6744,7 +6617,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaInductiveConstructor{z≤n}\<%
 \\
 \>[0]\AgdaFunction{matchIsBetterHelper}%
-\>[4164I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
+\>[4172I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaNumber{3}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
@@ -6755,7 +6628,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\<%
 \\
-\>[.][@{}l@{}]\<[4164I]%
+\>[.][@{}l@{}]\<[4172I]%
 \>[20]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
@@ -6779,7 +6652,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaInductiveConstructor{z≤n}\<%
 \\
 \>[0]\AgdaFunction{matchIsBetterHelper}%
-\>[4191I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
+\>[4199I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaNumber{3}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
@@ -6788,7 +6661,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSpace{}%
 \AgdaBound{m₂}\<%
 \\
-\>[.][@{}l@{}]\<[4191I]%
+\>[.][@{}l@{}]\<[4199I]%
 \>[20]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.((}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
@@ -6810,7 +6683,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaBound{p₄}\<%
 \\
 \>[0]\AgdaFunction{matchIsBetterHelper}%
-\>[4214I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
+\>[4222I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
@@ -6821,7 +6694,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\<%
 \\
-\>[.][@{}l@{}]\<[4214I]%
+\>[.][@{}l@{}]\<[4222I]%
 \>[20]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
@@ -6841,12 +6714,12 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaInductiveConstructor{z≤n}\<%
 \\
 \>[0]\AgdaFunction{matchIsBetterHelper}%
-\>[4237I]\AgdaBound{m₁}\AgdaSpace{}%
+\>[4245I]\AgdaBound{m₁}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\<%
 \\
-\>[.][@{}l@{}]\<[4237I]%
+\>[.][@{}l@{}]\<[4245I]%
 \>[20]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
@@ -6864,7 +6737,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaBound{p₄}\<%
 \\
 \>[0]\AgdaFunction{matchIsBetterHelper}%
-\>[4252I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
+\>[4260I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
@@ -6875,7 +6748,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\<%
 \\
-\>[.][@{}l@{}]\<[4252I]%
+\>[.][@{}l@{}]\<[4260I]%
 \>[20]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
@@ -6892,7 +6765,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaInductiveConstructor{z≤n}\<%
 \\
 \>[0]\AgdaFunction{matchIsBetterHelper}%
-\>[4272I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
+\>[4280I]\AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{1}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{∷}}}\AgdaSpace{}%
@@ -6901,7 +6774,7 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\AgdaSpace{}%
 \AgdaBound{m₂}\<%
 \\
-\>[.][@{}l@{}]\<[4272I]%
+\>[.][@{}l@{}]\<[4280I]%
 \>[20]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{now}\AgdaSpace{}%
@@ -6916,12 +6789,12 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaBound{p₄}\<%
 \\
 \>[0]\AgdaFunction{matchIsBetterHelper}%
-\>[4288I]\AgdaBound{m₁}\AgdaSpace{}%
+\>[4296I]\AgdaBound{m₁}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaSymbol{.(}}\AgdaDottedPattern{\AgdaNumber{2}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaOperator{\AgdaInductiveConstructor{,}}}\AgdaSpace{}%
 \AgdaDottedPattern{\AgdaInductiveConstructor{[]}}\AgdaDottedPattern{\AgdaSymbol{)}}\<%
 \\
-\>[.][@{}l@{}]\<[4288I]%
+\>[.][@{}l@{}]\<[4296I]%
 \>[20]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
@@ -6936,10 +6809,10 @@ We are then able to give a proof that this second matching is also stable, but t
 \AgdaBound{p₄}\<%
 \\
 \>[0]\AgdaFunction{matchIsBetterHelper}%
-\>[4300I]\AgdaBound{m₁}\AgdaSpace{}%
+\>[4308I]\AgdaBound{m₁}\AgdaSpace{}%
 \AgdaBound{m₂}\<%
 \\
-\>[.][@{}l@{}]\<[4300I]%
+\>[.][@{}l@{}]\<[4308I]%
 \>[20]\AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaInductiveConstructor{later}\AgdaSpace{}%
@@ -6989,7 +6862,7 @@ We postulate that a proof can be written for any stable matching in the same vei
 \\
 \>[0][@{}l@{\AgdaIndent{0}}]%
 \>[2]\AgdaPostulate{pAnyMatchIsBetter}%
-\>[4320I]\AgdaSymbol{:}\AgdaSpace{}%
+\>[4328I]\AgdaSymbol{:}\AgdaSpace{}%
 \AgdaSymbol{∀}\AgdaSpace{}%
 \AgdaSymbol{(}\AgdaBound{m}\AgdaSpace{}%
 \AgdaBound{m₁}\AgdaSpace{}%
@@ -6998,7 +6871,7 @@ We postulate that a proof can be written for any stable matching in the same vei
 \AgdaRecord{MatchingState}\AgdaSymbol{)}\AgdaSpace{}%
 \AgdaSymbol{→}\<%
 \\
-\>[4320I][@{}l@{\AgdaIndent{0}}]%
+\>[4328I][@{}l@{\AgdaIndent{0}}]%
 \>[21]\AgdaFunction{allSteps}\AgdaSpace{}%
 \AgdaBound{m}\AgdaSpace{}%
 \AgdaOperator{\AgdaDatatype{≡}}\AgdaSpace{}%
