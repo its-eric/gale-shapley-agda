@@ -152,14 +152,14 @@ safeAddNewCouple (m , w) ((a , b) ∷ (c ∷ cs)) with compare w b
 ... | _       = (a , b) ∷ safeAddNewCouple (m , w) (c ∷ cs)
 \end{code}
 
-It is perhaps worth it to stop here and examine what these implementation decisions mean for our later proofs. Since our proofs will be just functions, type-checked and computed down to normal form, the \emph{consistency} of our pattern matching definitions is key to enjoy Agda's computing power (remember: proof-checking is the same activity as type-checking). Suppose we want to prove a simple property of the $safeNewAddCouple$ operation, for example, that it indeed will work for a particular, very easy case: let us prove that, if woman 3 is in the list of couples with husband 1 and should now be married to husband 2, the new couple will indeed be added.
+It is perhaps worth it to stop here and examine what these implementation decisions mean for our later proofs. Since our proofs will be just functions, type-checked and computed down to normal form, the \emph{consistency} of our pattern matching definitions is key to enjoy Agda's computing power (remember: proof-checking is the same activity as type-checking). Suppose we want to prove a simple property of the \texttt{safeNewAddCouple} operation, for example, that it will work for a particular, very easy case: let us prove that, if woman 3 is in the list of couples with husband 1 and should now be married to husband 2, the new couple will indeed be added.
 
 \begin{code}
 p : (l : List (ℕ × ℕ))(a : ℕ) → a ≡ 3 →
     safeAddNewCouple (2 , 3) ((1 , a) ∷ l) ≡ ((2 , a) ∷ l)
 \end{code}
 
-What are the components of this proof, in other words, the parameters to this function? We provide a list, a natural number $a$, a proof that $a = 3$, and must return a proof that the operation returns a new list of couples where man 2 is married to woman 3. First we pattern match on $l$, it has two constructors, [] and \:::. Using Agda's proof assistant capabilities, we will observe that the "goal", that is, the expected type of the function return will contain the \texttt{compare 3 a} application. Therefore we must use a \emph{with} construct in our proofs too in order to allow Agda to further reduce down the terms. Depending on the order in which the patterns are opened up, we might end up with different definitions for this function, here is one:
+What are the components of this proof, in other words, the parameters to this function? We provide a list, a natural number $a$, a proof that $a = 3$, and must return a proof that the operation returns a new list of couples where man 2 is married to woman 3. First, we pattern match on $l$, it has two constructors, [] and ∷. Using Agda's proof assistant capabilities, we will observe that the "goal", that is, the expected type of the function return will contain the \texttt{compare 3 a} application. Therefore, we must use a \emph{with} construct in our proofs too in order to allow Agda to further reduce down the terms. Depending on the order in which the patterns are opened up, we might end up with different definitions for this function, here is one:
 
 \begin{code}
 p [] a e with compare 3 a
@@ -172,9 +172,9 @@ p (x ∷ l) zero ()
 p (x ∷ l) (suc .2) refl = refl
 \end{code}
 
-The clauses without a right hand side that can be seen are \emph{absurd patterns}: there is no way we can provide the proof we're hoping for when the number given as the second parameter is not 3 (in other words, \texttt{suc (suc (suc zero))} or \texttt{suc 2}...). If they were possible cases to prove, that is, cases where \emph{there would be a constructor} for the type we hope to achieve, we might for example open up a second \emph{with} construct where in this case only $| w$ was left by Agda, and continue pattern matching and reducing further and further from there until we are able to construct the goal.
+The clauses without a right hand side that can be seen are \emph{absurd patterns}: there is no way we can provide the proof we're hoping for when the number given as the second parameter is not 3 (in other words, \texttt{suc (suc (suc zero))} or \texttt{suc 2}...). If they were possible cases to prove, that is, cases where \emph{there would be a constructor} for the type we hope to achieve, we might for example open up a second \emph{with} construct where in this case only \texttt{| w} was left by Agda, and continue pattern matching and reducing further and further from there until we are able to construct the goal.
 
-In a similar fashion, when the list of engaged men is updated, the previous husband must be removed from it. Ww give two versions for this function, one which simply returns the updated $engagedMen$ list and another one which returns also some extra information (the man who was dumped and goes back to being free).
+In a similar fashion, when the list of engaged men is updated, the previous husband must be removed from it. We give two versions of this function, one which simply returns the updated $engagedMen$ list and another one which returns also some extra information (the man who was dumped and goes back to being free).
 
 \begin{code}
 safeAddNewEngagedMan : (newEngagedMan : (ℕ × List ℕ))
@@ -182,7 +182,7 @@ safeAddNewEngagedMan : (newEngagedMan : (ℕ × List ℕ))
                        (prevEngagedMen : List (ℕ × List ℕ))
                        → List (ℕ × List ℕ)
 \end{code}
-The first one is again a dummy case: this function is only invoked if a woman is already married, so the list of engaged men can not possibly be empty...
+The first one is a dummy case again: this function is only invoked if a woman is already married, so the list of engaged men cannot possibly be empty...
 \begin{code}
 safeAddNewEngagedMan (newFiance , prefs) prevFiance [] = (newFiance , prefs) ∷ []
 
@@ -280,7 +280,7 @@ step (mkState men ((n , w ∷ prefs) ∷ freeMen) engagedMen women couples k p)
                (compSumPrefLists freeMen ((n , prefs) ∷ engagedMen)) refl
 \end{code}
 
-In order to calculate a final result we just apply the step function until there are no more free men waiting for a wife. \footnote{We apply a special TERMINATING pragma so Agda's termination checker accepts this function: since the preference lists are hidden inside the matching state structure, it is not immediately obvious that some term is always decreasing in the recursive call. An alternative implementation could be done with the Bove-Capretta method, discussed in Chapter \ref{Chapter5}.}:
+In order to calculate a final result we just apply the step function until there are no more free men waiting for a wife:\footnote{We apply a special TERMINATING pragma so Agda's termination checker accepts this function: since the preference lists are hidden inside the matching state structure, it is not immediately obvious that some term is always decreasing in the recursive call. An alternative implementation could be done with the Bove-Capretta method, discussed later in this chapter.}
 
 \begin{code}
 {-# TERMINATING #-}
@@ -315,8 +315,8 @@ rightInv zero = refl
 rightInv (suc a) = cong suc (rightInv a)
 \end{code}
 
-What is the difference between the proofs above? In the first case, if we inspect the type we hope to construct, Agda is able to reduce it from $zero + a$ on the left-hand side to just $a$, since there is a pattern on the plus function definition that says $zero + m = m$. Then we can simply say that for any input, the $refl$ constructor constructs a proof that \begin{math}a = a\end{math}.
-For the second case, however, the $zero + m = m$ definition is not enough, since we must construct a proof that suc ($a + 0$) = suc $a$. That almost looks like the definition of our $rightInv$ function, expect for a $suc$ call on both sides. The solution is to define the function recursively: $cong$ adds a parameter to both sides of an equivalence. A similar solution is applied for the next proofs.
+What is the difference between the proofs above? In the first case, if we inspect the type we hope to construct, Agda is able to reduce it from \texttt{zero + a} on the left-hand side to just \texttt{a}, since there is a pattern on the plus function definition that says \texttt{zero + m = m}. Then we can simply say that for any input, the \texttt{refl} constructor constructs a proof that \begin{math}a = a\end{math}.
+For the second case, however, the \texttt{zero + m = m} definition is not enough, since we must construct a proof that \texttt{suc (a + 0) = suc a}. That almost looks like the definition of our \texttt{rightInv} function, expect for a \texttt{suc} call on both sides. The solution is to define the function recursively: \texttt{cong} adds a parameter to both sides of an equivalence. A similar solution is applied for the next proofs.
 
 \begin{code}
 +-zero : ∀ n k → k ≡ n + 0 → k ≡ n
@@ -332,7 +332,7 @@ For the second case, however, the $zero + m = m$ definition is not enough, since
 +-move-zero (suc n) (suc .(n + 0)) refl = cong suc (+-move-zero n (n + 0) refl)
 \end{code}
 
-These proofs state some similar facts to the proofs before, but they \emph{take in as a parameter} a proof that implies our goal, which we may reuse in our pattern definitions: for example, in +-zero, in the case we get two zeroes as arguments, the definition of the plus function will simply reduce them all to $0 = 0$, which is already the proof we want. It is also interesting to notice that we don't need to give a definition for some of these cases; it will never be true that 0 = (suc k) + 0 or (suc n) = 0 + 0 as we can see in the +-move-zero function, and Agda can discard these cases immediately since there are \emph{no constructors} for them.
+These proofs state some similar facts to the proofs before, but they \emph{take in a proof that implies our goal as a parameter}, which we may reuse in our pattern definitions: for example, in \texttt{+-zero}, in the case we get two zeroes as arguments, the definition of the plus function will simply reduce them all to \texttt{0 = 0}, which is already the proof we want. It is also interesting to notice that we don't need to give a definition for some of these cases; it will never be true that \texttt{0 = (suc k) + 0} or \texttt{(suc n) = 0 + 0} as we can see in the \texttt{+-move-zero} function, and Agda can discard these cases immediately since there are \emph{no constructors} for them.
 
 Now onto the definition of the $\le$ operator in Agda. There are two constructors for the data type $\le$ (i.e. type of proofs about $\le$): z≤n for the cases involving zero and some other natural number $n$ and s≤s for the cases involving two numbers bigger than zero. By using extensive pattern matching, we can ask Agda to find constructors that match the types we hope to return, in fact, most of the following proofs can be written automatically by asking Agda to search for a solution:
 
@@ -368,7 +368,7 @@ But how are these proofs being computed down and how does it all type-check? Let
 --  ≤′-step : ∀ {n} (m≤′n : m ≤′ n) → m ≤′ suc n
 \end{code}
 
-In this interpretation, there are two ways of expressing $\le$: a number $m$ is always less than or equal to itself; or if it's less than or equal to another number $n$, the property will hold also for successors of $n$. With these tools we can then reconstruct what we had previously with the traditional $\le$ operator:
+In this interpretation, there are two ways of expressing $\le$: a number $m$ is always less than or equal to itself; or if it's less than or equal to another number $n$, the property will also hold for successors of $n$. With these tools we can then reconstruct what we had previously with the traditional $\le$ operator:
 
 \begin{code}
 -- z≤′n : ∀ {n} → zero ≤′ n
@@ -412,7 +412,7 @@ In the third case, although the goal is simply \texttt{zero ≤′ suc m} we can
 n≤n+m (suc n) zero = ≤′-step (n≤n+m n zero)
 \end{code}
 
-In the fourth case we conform to the pattern of the \texttt{s≤′s} function.
+In the fourth case, we conform to the pattern of the \texttt{s≤′s} function.
 
 \begin{code}  
 n≤n+m (suc n) (suc m) = s≤′s (n≤n+m (suc n) m)
@@ -432,7 +432,9 @@ n≤2+m+n zero zero = ≤′-step (≤′-step ≤′-refl)
 
 Here the goal doesn't reduce down completely, so we must construct the type
 
-\texttt{suc (n + 0) ≤′ suc (suc (suc (n + 0)))}
+\begin{center}
+  \texttt{suc (n + 0) ≤′ suc (suc (suc (n + 0)))}
+\end{center}
 
 But we may notice that if we take \texttt{(suc (n + 0))} as a number $n$, then our goal is again to prove \texttt{n ≤ n + 2} which can be done with the same solution above:
 
@@ -461,7 +463,7 @@ m≤n+r+m (suc m) (suc n) zero = s≤′s (m≤n+r+m m n 1)
 m≤n+r+m (suc m) (suc n) (suc r) = ≤′-step (m≤n+r+m (suc m) n (suc r))
 \end{code}
 
-Now let us turn this knowledge into action with some warmup proofs about the Gale-Shapley algorithm itself. Again, Agda allows us to express ourselves quite naturally in writing down our postulates; as a first example, let us try to prove that, if a list of men is extended by a certain element (remember a man is represented by a tuple of natural number and list of natural numbers), then the length of the preference lists of that particular list is equal or bigger than by some $n$ than the previous length:
+Now let us turn this knowledge into action with some warmup proofs about the Gale-Shapley algorithm itself. Again, Agda allows us to express ourselves quite naturally in writing down our postulates; as a first example, let us try to prove that, if a list of men is extended by a certain element (remember a man is represented by a tuple of natural number and list of natural numbers), then the length of the preference lists of that particular list is equal or bigger by some $n$ than the previous length:
 
 \begin{code}
 lengthPrefsExtLemma : ∀ (x : ℕ × List ℕ)(xs : List (ℕ × List ℕ))(n : ℕ) →
@@ -565,9 +567,9 @@ lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen)
 
 \end{code}
 
-We hope the previous examples showed how we can put together different pieces of proofs in order to achieve bigger results in Agda. It is worth noticing that many of these proofs can be defined in different ways; whenever possible we tried to use some properties already provided by Agda's standard library, but as we have seen these can all be redefined at any time with some simple mathematical constructs (such as induction, recursion, congruency, symmetry, transitivity and so on).
+We hope that the previous examples showed how we can put together different pieces of proofs in order to achieve bigger results in Agda. It is worth noticing that many of these proofs can be defined in different ways; whenever possible we tried to use some properties already provided by Agda's standard library, but as we have seen, these can all be redefined at any time with some simple mathematical constructs (such as induction, recursion, congruency, symmetry, transitivity and so on).
 
-Finally, we introduce an extra feature of Agda that precisely allowed us to simplify some proofs. Agda constains a semiring solver for natural numbers, which allow us to prove some equalities by simply calling on a solver which reduces things to its normal form \cite{2018UsingSolver}.
+Finally, we introduce an extra feature of Agda that precisely allows us to simplify some proofs. Agda constains a semiring solver for natural numbers, which allow us to prove some equalities by simply calling on a solver which reduces things to its normal form \cite{2018UsingSolver}.
 
 \begin{code}
 import Data.Nat.Solver
@@ -575,7 +577,7 @@ open Data.Nat.Solver.+-*-Solver
   using (prove; solve; _:=_; con; var; _:+_; _:*_; :-_; _:-_)
 \end{code}
 
-Here an alternative language is imported for expressing the proof obligations we would like to fulfill: the := operator instead of =; the :+ and :* and so on operators instead of their natural number counterparts; \texttt{con n} instead of n and so on.
+Here an alternative language is imported for expressing the proof obligations we would like to fulfill: the := operator instead of =; the :+ and :* operators instead of their natural number counterparts; \texttt{con n} instead of n and so on.
 
 We know the following equation to be true for any x natural number:
 
@@ -593,7 +595,7 @@ lem = solve 1 (λ x' → con 2 :* (x' :+ con 4) := con 8 :+ con 2 :* x') refl
 Now let us turn into the definition of the \texttt{stepDec} function. In order to make use of Agda's computational capabilities, We must pattern match on proofs about a function by pattern matching in the same way that function does. Let us look at each case individually:
 
 \begin{itemize}
-  \item When both the lists of free men and engaged men are empty, our proposition is true since calling the step function will not modify the value of $k$, the sum of preference lists (according to the definition of step). We can in turn prove that k $\le$ k from the definition of ≤′-refl.
+  \item When both the lists of free men and engaged men are empty, our proposition is true since calling the step function will not modify the value of $k$, the sum of preference lists (according to the definition of step). We can in turn prove that $k \le k$ from the definition of ≤′-refl.
   \item When the list of free men is empty but there is at least one man engaged, our proposition is true since calling the step function will not modify the value of $k$ either.
   \item When there is at least one free man but he has no woman to propose to (as pointed before, a dummy case), calling the step function will again not modify the value of $k$.
   \item When there is a free man who has a woman to propose to, we analyse if the woman has a partner or not.
@@ -759,7 +761,8 @@ lemmaProposeTrue freeMen
                  prefs | equal .m =
                          subst
                            (λ x → length prefsM + lengthPrefs freeMen +
-                                  (length prefs + (length (proj₂ ms) + lengthPrefs engagedMen))
+                                  (length prefs + (length (proj₂ ms) +
+                                   lengthPrefs engagedMen))
                                   ≤′ suc x)
                            (solve 5
                                   (λ u v w y z →
@@ -846,7 +849,7 @@ is-stable-matching (mkState men freeMen engagedMen women couples k p) =
             ( (proj₂ c₂) , getPreferenceList (proj₂ c₂) women)))
 \end{code}
 
-Now let us examine some examples to make use of these definitions. We look at the two cases from Gale and Shapley's original paper, one where we have an uncomplicated setup for which the deferred acceptance algorithm gives every man the first possible choice of woman, and another where there is in fact only one possible stable set of marriages and the algorithm takes a longer number of steps to arrive to its final state.
+Now, let us examine some examples to make use of these definitions. We look at the two cases from Gale and Shapley's original paper, one where we have an uncomplicated setup for which the deferred acceptance algorithm gives every man the first possible choice of woman, and another where there is in fact only one possible stable set of marriages and the algorithm takes a longer number of steps to arrive to its final state.
 
 \begin{code}
 -- List of preferences of men and women from the
@@ -936,7 +939,7 @@ numberOfStepsIsCorrectAgain = refl
 
 Expressing such properties in the code also calls our attention to later inconsistencies during coding: in case we do some modification that breaks the step function, the type checking will fail for these small proofs of equality as if a test failed. Here, we are still on the same level as a unit tester running a test suite in their code, but we will soon take the leap to the next one.
 
-What about showing that the matching returned by the deferred acceptance algorithm is stable? Let's do it for $exEnd$:
+What about showing that the matching returned by the deferred acceptance algorithm is stable? Let's do it for \texttt{exEnd}:
 
 \begin{code}
 matchIsStableHelper : (c₁ c₂ : ℕ × ℕ)  →
@@ -962,7 +965,7 @@ The proof for a particular case can be done by exhaustive pattern matching on th
 \begin{itemize}
   \item We are looking at the case where $c_1$ and $c_2$ are in fact the same couple: we use the proof that $\neg (c_1 \== c_2)$ to eliminate this impossible case.
   \item The pattern is simply not possible (the combinations with less than 2 couples), so we write them out as absurd patterns. 
-  \item We are looking at two different couples indeed, and must provide a proof that at least one person prefers their partner to the possibility in the other couple (since the condition of stability is written down as a pair, or cartesian product, only one suffices). Since our comparison helper function for persons in preference lists, $\succ$, is total and , we use our helper >from> constructor that compares Maybe-N typed elements to show that this is true for the side of the men in every one of these cases\footnote{Remember every man gets the best possible wife, so surely his wife is preferred to any alternative.}, and the second part of the proof can be skipped with an underline marker since it is sufficient for the condition of stability that at least one side fullfills it.
+  \item We are looking at two different couples indeed, and must provide a proof that at least one person prefers their partner to the possibility in the other couple (since the condition of stability is written down as a pair, or cartesian product, only one suffices). Since our comparison helper function for persons in preference lists, $\succ$, is total and the preference list search function only maybe returns an element, we use our helper \texttt{>from>} constructor that compares Maybe-N typed elements to show that this is true for the side of the men in every one of these cases,\footnote{Remember every man gets the best possible wife, so surely his wife is preferred to any alternative.} and the second part of the proof can be skipped with an underline marker since it is sufficient for the condition of stability that at least one side fullfills it.
 \end{itemize}
 
 \begin{code}
@@ -1009,7 +1012,7 @@ matchIsStableHelper _ _ (later (later (now .[])))
 matchIsStableHelper _ _ (later (later (later ()))) _ _
 \end{code}
 
-So, again, what does it mean for a matching to be stable according to our definition? To have an empty list of free men... which we can prove for $exEnd$ using the refl axiom; and to satisfy the condition of stability for every two couples... which is the definition we have just provided of matchIsStableHelper. We can then give a proof that $exEnd$ is indeed a stable matching: 
+So, again, what does it mean for a matching to be stable according to our definition? To have an empty list of free men... which we can prove for \texttt{exEnd} using the refl axiom; and to satisfy the condition of stability for every two couples... which is the definition we have just provided of \texttt{matchIsStableHelper}. We can then give a proof that \texttt{exEnd} is indeed a stable matching: 
 
 \begin{code}
 matchIsStable : is-stable-matching exEnd
