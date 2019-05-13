@@ -29,7 +29,7 @@ data Vector (A : Set) : Nat → Set where
   _∷_ : {n : Nat} → A → Vector A n → Vector A (suc n)
 \end{code}
 
-The $Set$ type represents the \emph{type of types} in Agda. That poses a direct problem since, per Russel's paradox, the collection of all sets is not a set \cite{2019Official2.5.4.2}; however, it is important to have the possibility of defining a $Set : Set$.
+The $Set$ type represents the \emph{type of types} in Agda. That poses a direct problem since, per Russel's paradox, the collection of all sets is not a set \cite{Unknown2019OfficialHttps://agda.readthedocs.io/en/v2.5.4.2/index.html}; however, it is important to have the possibility of defining a $Set : Set$.
 
 In order to circumvent the paradox, Agda introduces universe levels: it says that the right-hand side type is a \emph{larger set} than the one on the left-hand side and only allows writing such expressions as $Set : Set₁$. With the power of dependent types and special type $Level$, it also gives us the possibility of defining functions for any universe level:
 

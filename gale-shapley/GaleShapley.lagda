@@ -569,7 +569,7 @@ lengthPrefsOneSide ((fst , x ∷ snd) ∷ freeMen)
 
 We hope that the previous examples showed how we can put together different pieces of proofs in order to achieve bigger results in Agda. It is worth noticing that many of these proofs can be defined in different ways; whenever possible we tried to use some properties already provided by Agda's standard library, but as we have seen, these can all be redefined at any time with some simple mathematical constructs (such as induction, recursion, congruency, symmetry, transitivity and so on).
 
-Finally, we introduce an extra feature of Agda that precisely allows us to simplify some proofs. Agda constains a semiring solver for natural numbers, which allow us to prove some equalities by simply calling on a solver which reduces things to its normal form \cite{2018UsingSolver}.
+Finally, we introduce an extra feature of Agda that precisely allows us to simplify some proofs. Agda constains a semiring solver for natural numbers, which allow us to prove some equalities by simply calling on a solver which reduces things to its normal form \cite{Unknown2018UsingHttps://wiki.portal.chalmers.se/agda/22n=Libraries.UsingTheRingSolver}.
 
 \begin{code}
 import Data.Nat.Solver
